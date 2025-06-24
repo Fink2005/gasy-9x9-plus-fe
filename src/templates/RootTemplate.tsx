@@ -4,6 +4,7 @@ const RootTemplate = (props: {
   children: React.ReactNode;
 }) => {
   return (
+
     <main>{props.children}</main>
   );
   // hello

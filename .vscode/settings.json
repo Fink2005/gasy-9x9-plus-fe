@@ -29,12 +29,12 @@
   "editor.codeActionsOnSave": {
     "source.addMissingImports": "always",
     "source.fixAll.eslint": "explicit",
-    "source.removeUnused.ts": "explicit",
+    // "source.removeUnused.ts": "explicit",
     "source.fixAll.ts": "explicit",
     "source.organizeImports": "explicit",
     "source.sortImports": "explicit",
-    "source.addMissingImports.ts": "always"
-    // "source.removeUnusedImports": "explicit"
+    "source.addMissingImports.ts": "always",
+    "source.removeUnusedImports": "explicit"
   },
   "editor.autoIndent": "full",
 

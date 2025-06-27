@@ -6,8 +6,13 @@ declare interface IntlMessages extends Messages {}
 
 declare global {
   interface Window {
-    safepal?: {
+    safepalProvider?: {
       connect: () => Promise<void>;
+      request: ({ method, params }: {
+        method: string;
+        params: string[];
+      }) => Promise<string>;
+      enable: () => Promise<string[]>;
       getAccount: () => Promise<{
         toString: () => string;
       }>;

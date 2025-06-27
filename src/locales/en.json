@@ -33,13 +33,13 @@
   "About": {
     "meta_title": "About",
     "meta_description": "About page description",
-    "about_paragraph": "Welcome to our About page! We are a team of passionate individuals dedicated to creating amazing software.",
+    "about_paragraph": "login to our About page! We are a team of passionate individuals dedicated to creating amazing software.",
     "translation_powered_by": "Translation powered by"
   },
   "Portfolio": {
     "meta_title": "Portfolio",
-    "meta_description": "Welcome to my portfolio page!",
-    "presentation": "Welcome to my portfolio page! Here you will find a carefully curated collection of my work and accomplishments. Through this portfolio, I'm to showcase my expertise, creativity, and the value I can bring to your projects.",
+    "meta_description": "login to my portfolio page!",
+    "presentation": "login to my portfolio page! Here you will find a carefully curated collection of my work and accomplishments. Through this portfolio, I'm to showcase my expertise, creativity, and the value I can bring to your projects.",
     "portfolio_name": "Portfolio {name}",
     "error_reporting_powered_by": "Error reporting powered by",
     "coverage_powered_by": "Code coverage powered by"

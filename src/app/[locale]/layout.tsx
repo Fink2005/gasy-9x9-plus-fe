@@ -1,5 +1,8 @@
+import { sfPro } from '@/app/fonts/sfPro';
+import { Toaster } from '@/components/ui/sonner';
 import { routing } from '@/libs/i18nRouting';
 import '@/styles/global.css';
+import RootTemplate from '@/templates/RootTemplate';
 import type { Metadata } from 'next';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
@@ -47,10 +50,13 @@ export default async function RootLayout(props: {
   setRequestLocale(locale);
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={sfPro.variable}>
       <body>
         <NextIntlClientProvider>
-          {props.children}
+          <RootTemplate>
+            {props.children}
+          </RootTemplate>
+          <Toaster position="top-center" />
         </NextIntlClientProvider>
       </body>
     </html>

@@ -1,98 +1,51 @@
-// hooks/useSafePalWallet.ts
-import { Buffer } from 'node:buffer';
-import { useCallback, useState } from 'react';
+'use client';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
-interface WalletData {
-  address: string;
-  signature: string;
-  message: string;
-}
-
-interface SafePalProvider {
-  isSafePal: boolean;
-  connect: () => Promise<{ publicKey: { toString: () => string } }>;
-  disconnect: () => Promise<void>;
-  signMessage: (message: Uint8Array, display: string) => Promise<Uint8Array>;
-}
-
-declare global {
-  interface Window {
-    solana?: SafePalProvider;
-  }
-}
-
-export function useSafePalWallet() {
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [walletData, setWalletData] = useState<WalletData | null>(null);
-
-  const connect = useCallback(async () => {
+const useSafePalWallet = (type: 'large' | 'small') => {
+  const router = useRouter();
+  const [isConnecting, setIsConnecting] = useState<boolean>(false);
+  const [addressWallet, setAddressWallet] = useState<string>('');
+  async function connectWallet() {
     setIsConnecting(true);
     try {
-      const provider = window.solana;
+      if (typeof window !== 'undefined') {
+        const provider = window.safepalProvider;
+        const message = `Welcome to 9x9 plus! Please sign this message to connect your wallet.`;
+        if (!provider) {
+          window.open('https://www.csafepal.com/download?product=2');
+          throw new Error('SafePal wallet not installed');
+        }
+        const response = await provider.enable();
 
-      if (!provider || !provider.isSafePal) {
-        window.open('https://www.safepal.com/download?product=2');
-        throw new Error('SafePal wallet not installed');
+        if (response[0]) {
+          setAddressWallet(response[0]);
+          // sign message
+          await provider.request({
+            method: 'personal_sign',
+            params: [message, response[0]]
+          });
+          toast.success('Wallet connected successfully!');
+
+          if (type === 'large') {
+            router.replace('/policy-terms');
+          }
+        }
       }
-
-      // Connect and get public key
-      const response = await provider.connect();
-      const address = response.publicKey.toString();
-
-      // Create message with timestamp for security
-      const message = `Sign this message to authenticate with our app.\nTimestamp: ${Date.now()}\nNonce: ${Math.random().toString(36).substring(7)}`;
-      const encodedMessage = new TextEncoder().encode(message);
-
-      // Request signature
-      const signatureArray = await provider.signMessage(encodedMessage, 'utf8');
-      const signature = Buffer.from(signatureArray).toString('base64');
-
-      const data: WalletData = {
-        address,
-        signature,
-        message
-      };
-
-      setWalletData(data);
-      toast.success('Wallet connected successfully!');
-
-      return data;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Connection error:', error);
-
-      if (error.code === 4001) {
-        toast.error('User rejected the request');
-      } else {
-        toast.error('Failed to connect wallet. Please try again.');
-      }
-      throw error;
+      toast.error('Failed to connect wallet. Please try again.');
     } finally {
       setIsConnecting(false);
     }
-  }, []);
-
-  const disconnect = useCallback(async () => {
-    try {
-      const provider = window.solana;
-      if (provider && provider.disconnect) {
-        await provider.disconnect();
-        setWalletData(null);
-        toast.success('Wallet disconnected');
-      }
-    } catch (error) {
-      console.error('Disconnect error:', error);
-      toast.error('Failed to disconnect wallet');
-    }
-  }, []);
+  }
 
   return {
-    connect,
-    disconnect,
+    connectWallet,
     isConnecting,
-    walletData,
-    isConnected: !!walletData,
-    address: walletData?.address,
-    signature: walletData?.signature
+    addressWallet,
   };
-}
+};
+
+export default useSafePalWallet;

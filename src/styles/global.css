@@ -190,7 +190,7 @@
   box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
 }
 
-.text-base {
+.text-base-custom {
   text-shadow: 0px 4px 15px rgba(145, 213, 255, 0.5);
   box-shadow:
     0px 20px 24px -4px rgba(16, 24, 40, 0.08),
@@ -474,8 +474,8 @@ input[type='number'] {
 
 .input-kyc {
   border-radius: 0.5rem;
-  border: 1px solid var(--Neutral-1, #fff);
-  background: var(--Neutral-1, #fff);
+  border: 1px solid #fff;
+  background: #fff;
   box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
   display: flex;
   padding: 0.625rem 0.875rem;

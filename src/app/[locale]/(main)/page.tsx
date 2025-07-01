@@ -5,7 +5,7 @@ const page = () => {
   return (
     <div className="min-h-screen bg-home">
       <Header />
-      con c
+
       <Footer />
     </div>
   );

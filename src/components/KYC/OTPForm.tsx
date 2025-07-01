@@ -92,7 +92,7 @@ const OTPForm = () => {
             value={digit}
             onChange={e => handleInputChange(index, e.target.value)}
             onKeyDown={e => handleKeyDown(index, e)}
-            className="w-[3.1563rem] h-[4rem] text-center text-2xl font-bold bg-white text-black border-0 rounded-2xl focus:ring-2 focus:ring-blue-400 focus:ring-offset-0"
+            className="w-[3.1563rem] h-[4rem] text-center text-2xl font-bold bg-white text-black rounded-2xl"
           />
         ))}
 

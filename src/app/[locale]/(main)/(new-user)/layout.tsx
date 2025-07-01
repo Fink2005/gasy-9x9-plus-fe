@@ -3,7 +3,7 @@ export default async function Layout(props: {
   params: Promise<{ locale: string }>;
 }) {
   return (
-    <main className="min-h-screen bg-[#000C36] bg-new-user">
+    <main className="bg-new-user min-h-screen">
       {props.children}
     </main>
   );

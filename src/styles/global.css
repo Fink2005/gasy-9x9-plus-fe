@@ -138,12 +138,74 @@
 /*  Header  */
 .header {
   display: flex;
-  height: 3.0625rem;
+  height: 4rem;
   padding: 0.625rem 1rem;
-  justify-content: end;
-  align-items: flex-start;
+  justify-content: space-between;
+  align-items: center;
   flex-shrink: 0;
   background: rgba(0, 12, 54, 0.7);
+}
+
+.dropdown-address {
+  border-radius: 0.625rem;
+  background: radial-gradient(267.72% 139.47% at 0% 2.78%, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border: none !important;
+  backdrop-filter: blur(0.5px);
+  display: flex;
+  width: 8.125rem;
+  flex-direction: column;
+  align-items: flex-start;
+}
+#kyc-header {
+  display: flex;
+}
+
+/* Common  */
+.button-base {
+  display: flex;
+  height: 2.75rem;
+  padding: 0.625rem 1.125rem;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 0 0;
+  border-radius: 0.5rem;
+  border: 1px solid #68daf2;
+  background: linear-gradient(180deg, #68daf2 0%, #1c5bb9 95.1%);
+  /* Shadow/xs */
+  box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+}
+.button-rounded {
+  display: flex;
+  height: 2.75rem;
+  padding: 0.625rem 1.125rem;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 0 0;
+  border-radius: 6.25rem;
+  border: 1px solid #68daf2;
+  background: linear-gradient(180deg, #68daf2 0%, #1c5bb9 95.1%);
+  /* Shadow/xs */
+  box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+}
+
+.text-base {
+  text-shadow: 0px 4px 15px rgba(145, 213, 255, 0.5);
+  box-shadow:
+    0px 20px 24px -4px rgba(16, 24, 40, 0.08),
+    0px 8px 8px -4px rgba(16, 24, 40, 0.03);
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
 }
 
 /* Footer */
@@ -407,3 +469,19 @@
 .animateLand {
   animation: bounceLand 3.5s ease-in-out infinite;
 }
+
+/*  KYC */
+
+.input-kyc {
+  border-radius: 0.5rem;
+  border: 1px solid var(--Neutral-1, #fff);
+  background: var(--Neutral-1, #fff);
+  box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+  display: flex;
+  padding: 0.625rem 0.875rem;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: stretch;
+}
+
+/* verify email */

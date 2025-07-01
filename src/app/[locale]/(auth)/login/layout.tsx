@@ -3,6 +3,6 @@ export default async function AuthLayout(props: {
   params: Promise<{ locale: string }>;
 }) {
   return (
-    <main className="min-h-screen bg-login pt-20">{props.children}</main>
+    <main className="min-h-screen bg-login">{props.children}</main>
   );
 }

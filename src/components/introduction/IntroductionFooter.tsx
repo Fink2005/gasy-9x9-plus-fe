@@ -12,9 +12,9 @@ const IntroductionFooter = () => {
         không bỏ sót - không mất đi.
       </p>
       <p className="footer-subtitle-introduction pb-[0.75rem] pt-[0.62rem]">Bạn đã sẵn sàng chia sẻ cho 9 người bạn của mình chứ?</p>
-      <Link href="/">
-        <Button className="custom-button items-center space-x-0 introduction-button py-[1rem] w-[20.9375rem]">
-          <HandMoney />
+      <Link href="/kyc">
+        <Button className="button-rounded w-[20.9375rem]">
+          <HandMoney className="size-14" />
           <span className="-translate-x-4">
             Mở khóa ngay
           </span>

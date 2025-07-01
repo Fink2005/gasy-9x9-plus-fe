@@ -1,6 +1,7 @@
 import { montserrat } from '@/app/fonts/montserrat';
 import { Button } from '@/components/ui/button';
 import CheckCircle from '@/libs/shared/icons/CheckCircle';
+import Image from 'next/image';
 import Link from 'next/link';
 
 const policyTerms = [
@@ -59,7 +60,8 @@ const policyTerms = [
 ];
 const page = () => {
   return (
-    <div className="pt-20 flex flex-col items-center">
+    <div className="flex flex-col items-center">
+      <Image width="500" height="500" className="w-[200px] h-[130px]" alt="logo" src="/assets/logo-9x9.png" />
       <h1 className={`${montserrat.variable} title-introduction`}>
         ĐIỀU KHOẢN SỬ DỤNG VÀ
         <br />
@@ -82,8 +84,8 @@ const page = () => {
         </ol>
 
         <Link href="/welcome">
-          <Button className="custom-button mt-[1.13rem]">
-            <CheckCircle />
+          <Button className="button-rounded mt-[1.13rem]">
+            <CheckCircle className="size-6" />
             <span
               className={`${montserrat.variable} font-[700] text-[0.875rem]`}
               style={{ textShadow: '0px 4px 15px rgba(145, 213, 255, 0.50)' }}

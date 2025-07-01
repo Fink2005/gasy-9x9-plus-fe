@@ -5,7 +5,7 @@ const WelcomeFooter = () => {
   return (
     <>
       <Link href="/introduction">
-        <Button className="custom-button py-[1rem]">BẮT ĐẦU HÀNH TRÌNH CỦA BẠN NGAY</Button>
+        <Button className="button-rounded py-[1rem]">BẮT ĐẦU HÀNH TRÌNH CỦA BẠN NGAY</Button>
       </Link>
       <div className="footer-layout-welcome ">
         <p className="footer-text-welcome ">

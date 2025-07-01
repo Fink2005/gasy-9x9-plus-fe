@@ -23,6 +23,7 @@ const KYCForm = () => {
   const onSubmit = async (data: KYCFormData) => {
     try {
       // Simulate API call
+      // eslint-disable-next-line no-console
       console.log('Form submitted:', data);
       router.push('/verify-email');
     } catch {

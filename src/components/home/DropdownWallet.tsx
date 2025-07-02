@@ -1,5 +1,5 @@
 'use client';
-import { deleteCookie, getCookie } from '@/actions/cookie';
+import { deleteCookie, getCookie } from '@/app/actions/cookie';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CopyIcon from '@/libs/shared/icons/Copy';
 import { useRouter } from 'next/navigation';
@@ -12,7 +12,9 @@ const DropdownWallet = () => {
   const router = useRouter();
   useEffect(() => {
     (async () => {
-      setAddress(await getCookie('walletAddress'));
+      const authData = await getCookie('authData');
+      const { address } = authData ? JSON.parse(authData) : {};
+      setAddress(address);
     })();
   }, []);
 
@@ -22,7 +24,7 @@ const DropdownWallet = () => {
   };
 
   const handleLogout = async () => {
-    await deleteCookie('walletAddress');
+    await deleteCookie('authData');
     toast.success('Disconnected successfully!');
     router.replace('/');
   };
@@ -44,11 +46,9 @@ const DropdownWallet = () => {
             {addressFormated}
           </span>
           {' '}
-          <CopyIcon
-            className="size-6"
-          />
+          <CopyIcon />
         </DropdownMenuItem>
-        <DropdownMenuItem className="w-full" onClick={handleLogout}>Disconect</DropdownMenuItem>
+        <DropdownMenuItem className="w-full" onClick={handleLogout}>Disconnect</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

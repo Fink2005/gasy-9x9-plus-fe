@@ -1,4 +1,4 @@
-import apiRequest from '@/apis/apiRequest';
+import apiRequest from '@/app/apis/apiRequest';
 
 const connectWalletRequest = {
   async getNonce(value: string): Promise<{ nonce: string } | null> {

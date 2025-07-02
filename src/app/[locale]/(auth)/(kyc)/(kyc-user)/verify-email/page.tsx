@@ -1,8 +1,11 @@
 import OTPForm from '@/components/KYC/OTPForm';
+import { Suspense } from 'react';
 
 const page = () => {
   return (
-    <OTPForm />
+    <Suspense fallback={<div className="flex justify-center items-center h-screen">Loading...</div>}>
+      <OTPForm />
+    </Suspense>
   );
 };
 

@@ -1,7 +1,8 @@
 'use client';
+import userRequests from '@/app/apis/requests/user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -17,6 +18,7 @@ const OTPForm = () => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
+  const email = useSearchParams().get('name');
 
   const handleInputChange = (index: number, value: string) => {
     if (value.length > 1) {
@@ -39,11 +41,12 @@ const OTPForm = () => {
       inputRefs.current[index - 1]?.focus();
     }
   };
-  const handleResend = () => {
+  const handleResend = async () => {
     if (intervalRef.current) {
       return;
     }
-
+    await userRequests.resendOtp();
+    toast.success('Mã OTP đã được gửi lại. Vui lòng kiểm tra email của bạn.');
     intervalRef.current = setInterval(() => {
       setCount((prev) => {
         if (prev.timeLeft <= 1) {
@@ -58,13 +61,18 @@ const OTPForm = () => {
     }, 1000);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    const countFormated = otp.join('');
     if (otp.includes('')) {
       toast.warning('Vui lòng nhập đầy đủ mã OTP.');
       return;
     }
-
-    router.push('verified');
+    try {
+      await userRequests.verifyKyc({ kycOtp: countFormated });
+      router.push('verified');
+    } catch {
+      toast.error('Xác nhận không thành công. Vui lòng thử lại sau.');
+    }
   };
 
   return (
@@ -76,7 +84,7 @@ const OTPForm = () => {
         Mã xác nhận đã được gửi đến email
       </p>
       <p className="text-[#BAE7FF] text-[0.875rem] font-[590] text-center">
-        phans@gmail.com
+        {decodeURIComponent(email ?? '')}
       </p>
       <div className="flex gap-3 my-5 justify-center">
         {otp.map((digit, index) => (

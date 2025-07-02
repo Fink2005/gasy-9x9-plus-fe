@@ -1,52 +1,56 @@
+'use client';
 import ControllerIcon from '@/libs/shared/icons/Controller';
 import HouseIcon from '@/libs/shared/icons/House';
 import HumanIcon from '@/libs/shared/icons/Human';
 import NotesIcon from '@/libs/shared/icons/Notes';
 import QuestionIcon from '@/libs/shared/icons/Question';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const tabBar = [
   {
     icon: HouseIcon,
     title: 'Trang chủ',
-    link: '/',
+    to: '/',
   },
   {
     icon: HumanIcon,
     title: 'Thần số học',
-    link: '#',
+    to: '#',
   },
   {
     icon: ControllerIcon,
     title: 'Đào vàng',
-    link: '#',
+    to: '#',
   },
   {
     icon: NotesIcon,
     title: 'Bảng xếp hạng',
-    link: '#',
+    to: '/ranking',
   },
   {
     icon: QuestionIcon,
     title: 'Nhiệm vụ',
-    link: '#',
+    to: '#',
   },
 ];
 
 export function Footer() {
+  const pathName = usePathname();
   return (
     <footer className="absolute bottom-0 w-full footer">
       {
         tabBar.map((item) => {
           const Icon = item.icon;
           return (
-            <div key={item.title} className="footer-items opacity-50">
+            <Link href={item.to} key={item.title} className={`footer-items ${pathName === item.to ? '' : 'opacity-50'}`}>
               <Icon />
               <span
                 className="text-white font-[500] text-[0.5625rem]"
               >
                 {item.title}
               </span>
-            </div>
+            </Link>
           );
         })
       }

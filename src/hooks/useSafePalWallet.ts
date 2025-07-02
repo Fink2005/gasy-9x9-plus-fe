@@ -1,7 +1,7 @@
 'use client';
-import { createCookie } from '@/actions/cookie';
-import authRequests from '@/apis/requests/auth';
-import connectWalletRequest from '@/apis/requests/connectWallet';
+import { createCookie } from '@/app/actions/cookie';
+import authRequests from '@/app/apis/requests/auth';
+import connectWalletRequest from '@/app/apis/requests/connectWallet';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';

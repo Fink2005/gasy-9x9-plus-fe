@@ -13,11 +13,11 @@ const isAuthPage = (pathname: string): boolean => {
   return pathname.startsWith('/login') || pathname.startsWith('/sign-up');
 };
 
-const isWelcomePage = (pathname: string): boolean => {
-  return pathname.startsWith('/welcome')
-    || pathname.startsWith('/introduction')
-    || pathname.startsWith('/policy-terms');
-};
+// const isWelcomePage = (pathname: string): boolean => {
+//   return pathname.startsWith('/welcome')
+//     || pathname.startsWith('/introduction')
+//     || pathname.startsWith('/policy-terms');
+// };
 
 // Improve security with Arcjet
 const aj = arcjet({
@@ -46,7 +46,7 @@ export default async function middleware(
   requestHeaders.set('x-pathname', pathname);
 
   // Check wallet authentication
-  const isAuthenticated = request.cookies.has('walletAddress');
+  const isAuthenticated = request.cookies.has('authData');
 
   // Create a new request with custom headers
   const requestWithHeaders = new NextRequest(request.url, {
@@ -73,7 +73,7 @@ export default async function middleware(
   }
 
   // Redirect authenticated users away from auth/welcome pages
-  if ((isAuthPage(pathname) || isWelcomePage(pathname)) && isAuthenticated) {
+  if ((isAuthPage(pathname)) && isAuthenticated) {
     const homeUrl = new URL('/', request.url);
     return NextResponse.redirect(homeUrl);
   }

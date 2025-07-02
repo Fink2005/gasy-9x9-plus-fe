@@ -21,7 +21,7 @@ export async function cookieExists(name: string) {
 
 export async function getCookie(name: string) {
   const cookieStore = await cookies();
-  return cookieStore.get(name)?.value || 'cookie not found';
+  return cookieStore.get(name)?.value || undefined;
 }
 
 export async function deleteCookie(name: string) {

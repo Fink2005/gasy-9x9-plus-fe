@@ -1,4 +1,5 @@
 /* eslint-disable regexp/no-super-linear-backtracking */
+
 /* eslint-disable no-throw-literal */
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 

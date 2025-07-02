@@ -1,8 +1,8 @@
 import apiRequest from '@/apis/apiRequest';
 
-const connectWallet = {
-  async getNonce(value: string) {
-    apiRequest(`/auth/nonce/${value}`, 'GET');
+const connectWalletRequest = {
+  async getNonce(value: string): Promise<{ nonce: string } | null> {
+    return await apiRequest<{ nonce: string }>(`/auth/nonce/${value}`, 'GET');
   }
 };
-export default connectWallet;
+export default connectWalletRequest;

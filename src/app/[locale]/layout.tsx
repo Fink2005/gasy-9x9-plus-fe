@@ -55,7 +55,16 @@ export default async function RootLayout(props: {
           <RootTemplate>
             {props.children}
           </RootTemplate>
-          <Toaster position="top-center" />
+          <Toaster
+            position="bottom-center"
+            className="!bottom-20"
+            toastOptions={{
+              style: {
+                color: 'white',
+                background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)',
+              },
+            }}
+          />
         </NextIntlClientProvider>
       </body>
     </html>

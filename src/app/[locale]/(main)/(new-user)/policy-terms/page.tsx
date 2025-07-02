@@ -58,7 +58,7 @@ const policyTerms = [
   }
 
 ];
-const page = () => {
+const page = async () => {
   return (
     <div className="flex flex-col items-center">
       <Image width="500" height="500" className="w-[200px] h-[130px]" alt="logo" src="/assets/logo-9x9.png" />

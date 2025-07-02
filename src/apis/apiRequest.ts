@@ -1,3 +1,4 @@
+/* eslint-disable regexp/no-super-linear-backtracking */
 /* eslint-disable no-throw-literal */
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
@@ -10,11 +11,35 @@ interface ApiRequestConfig {
 interface ApiError extends Error {
   message: string;
 }
+
+export async function getAuthToken(context?: any): Promise<string | null> {
+  const isServer = typeof window === 'undefined';
+  let accessToken = '';
+
+  if (isServer && context?.req) {
+    // Server-side: read authData cookie from req.cookies
+    const authData = context.req.cookies.authData;
+    accessToken = authData ? JSON.parse(authData).accessToken : '';
+  } else if (!isServer) {
+    // Client-side: read authData cookie from document.cookie
+    const authData = document.cookie.replace(/(?:^|.*;\s*)authData\s*=\s*([^;]*).*$|^.*$/, '$1') || '';
+    accessToken = authData ? JSON.parse(authData).accessToken : '';
+  } else {
+    console.warn('No request object provided for server-side cookie reading');
+    return null;
+  }
+
+  if (!accessToken) {
+    return null;
+  }
+
+  return accessToken;
+}
 const apiRequest = async <T>(
   endpoint: string,
   method: HttpMethod = 'GET',
   data: unknown = null,
-  headers: Record<string, string> = {}
+  headers: Record<string, string> = {},
 ): Promise<T | null> => {
   try {
     const config: ApiRequestConfig = {

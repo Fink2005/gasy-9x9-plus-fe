@@ -1,4 +1,5 @@
 'use client';
+import userRequests from '@/apis/requests/user';
 import type { KYCFormData } from '@/app/schema/kyc';
 import { KYCSchema } from '@/app/schema/kyc';
 import { Button } from '@/components/ui/button';
@@ -15,16 +16,14 @@ const KYCForm = () => {
     resolver: zodResolver(KYCSchema),
     defaultValues: {
       email: '',
-      citizenId: '',
     },
   });
   const router = useRouter();
 
   const onSubmit = async (data: KYCFormData) => {
     try {
-      // Simulate API call
-      // eslint-disable-next-line no-console
-      console.log('Form submitted:', data);
+      const response = await userRequests.userKyc(data);
+      toast.success(response?.message || 'Yêu cầu KYC đã được gửi thành công!');
       router.push('/verify-email');
     } catch {
       toast.error('Lỗi khi gửi biểu mẫu. Vui lòng thử lại sau.');
@@ -46,22 +45,6 @@ const KYCForm = () => {
                 </FormLabel>
                 <FormControl>
                   <Input className="input-kyc" placeholder="Nhập email của bạn" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="citizenId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-2 text-white">
-                  CCCD
-                </FormLabel>
-                <FormControl>
-                  <Input type="number" className="input-kyc" placeholder="Nhập căn cước công dân của bạn" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

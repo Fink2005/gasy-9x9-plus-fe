@@ -1,5 +1,7 @@
 'use client';
 import { createCookie } from '@/actions/cookie';
+import authRequests from '@/apis/requests/auth';
+import connectWalletRequest from '@/apis/requests/connectWallet';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -13,7 +15,6 @@ const useSafePalWallet = () => {
     try {
       if (typeof window !== 'undefined') {
         const provider = window.safepalProvider;
-        const message = `Welcome to 9x9 plus! Please sign this message to connect your wallet.`;
         if (!provider) {
           window.open('https://www.csafepal.com/download?product=2');
           throw new Error('SafePal wallet not installed');
@@ -21,26 +22,35 @@ const useSafePalWallet = () => {
         const response = await provider.enable();
 
         if (response[0]) {
-          setAddressWallet(response[0]);
-          // sign message
-          await provider.request({
-            method: 'personal_sign',
-            params: [message, response[0]]
-          });
-          // const a = await connectWallet.getNonce(response[0]);
-          createCookie({
-            name: 'walletAddress',
-            value: response[0],
-          });
+          const responseNonce = await connectWalletRequest.getNonce(response[0]);
+          if (
+            responseNonce
+          ) {
+            const signature = await provider.request({
+              method: 'personal_sign',
+              params: [responseNonce.nonce, response[0]]
+            });
+            const authData = await authRequests.login({ address: response[0], signature, message: responseNonce.nonce });
 
-          toast.success('Wallet connected successfully!');
-
-          router.replace('/policy-terms');
+            if (authData) {
+              setAddressWallet(authData.result.address);
+              createCookie({
+                name: 'authData',
+                value: JSON.stringify({
+                  address: authData.result.address,
+                  accessToken: authData.result.accessToken,
+                }),
+              });
+              toast.success('Wallet connected successfully!');
+              router.replace('/policy-terms');
+            }
+          }
         }
       }
     } catch (error) {
       console.error('Connection error:', error);
       toast.error('Failed to connect wallet. Please try again.');
+      setIsConnecting(false);
     } finally {
       setIsConnecting(false);
     }

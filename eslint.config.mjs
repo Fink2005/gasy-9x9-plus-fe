@@ -72,7 +72,7 @@ export default antfu(
       'style/multiline-ternary': 0, // Allow multiline ternary operators
       'no-lonely-if': 1,
       'prefer-const': 'warn',
-      'operator-linebreak': 'warn',
+      'operator-linebreak': 'off',
       'react-web-api/no-leaked-timeout': 'off',
       'no-unused-vars': 1,
       'perfectionist/sort-imports': 'off',

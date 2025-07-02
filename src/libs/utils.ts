@@ -64,9 +64,7 @@ export const createUrlWithParams = (
   if (params) {
     Object.keys(params).forEach((key) => {
       if (
-        params[key] !== undefined
-        && params[key] !== null
-        && params[key] !== ''
+        params[key] !== undefined && params[key] !== null && params[key] !== ''
       ) {
         url.searchParams.append(key, params[key].toString());
       }

@@ -10,7 +10,6 @@ interface ApiRequestConfig {
 interface ApiError extends Error {
   message: string;
 }
-
 const apiRequest = async <T>(
   endpoint: string,
   method: HttpMethod = 'GET',
@@ -30,7 +29,7 @@ const apiRequest = async <T>(
       config.body = JSON.stringify(data);
     }
 
-    const response = await fetch(`/request${endpoint}`, config);
+    const response = await fetch(`https://backend-9x9.onrender.com/api${endpoint}`, config);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

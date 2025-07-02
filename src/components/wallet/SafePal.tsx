@@ -5,13 +5,13 @@ import useSafePalWallet from '@/hooks/useSafePalWallet';
 import SafePalIcon from '@/libs/shared/icons/SafePal';
 
 export function SafePal() {
-  const { connectWallet, isConnecting, addressWallet } = useSafePalWallet();
+  const { onConnectWallet, isConnecting, addressWallet } = useSafePalWallet();
 
   return (
     <main className="flex-1">
       <Button
         className="btn-login mt-[0.5rem] w-full"
-        onClick={connectWallet}
+        onClick={onConnectWallet}
         disabled={isConnecting}
       >
         Kết nối ví

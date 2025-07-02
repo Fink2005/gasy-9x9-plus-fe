@@ -1,27 +1,23 @@
 import arcjet, { detectBot } from '@arcjet/next';
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import createMiddleware from 'next-intl/middleware';
-import type { NextFetchEvent } from 'next/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { routing } from './libs/i18nRouting';
 
 const handleI18nRouting = createMiddleware(routing);
 
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/'
-]);
+const isProtectedRoute = (pathname: string): boolean => {
+  return pathname.startsWith('/dashboard') || pathname === '/';
+};
 
-const isAuthPage = createRouteMatcher([
-  '/login(.*)',
-  '/sign-up(.*)',
-]);
+const isAuthPage = (pathname: string): boolean => {
+  return pathname.startsWith('/login') || pathname.startsWith('/sign-up');
+};
 
-const isWelcomePage = createRouteMatcher([
-  '/welcome(.*)',
-  '/introduction(.*)',
-  '/policy-terms(.*)',
-]);
+const isWelcomePage = (pathname: string): boolean => {
+  return pathname.startsWith('/welcome')
+    || pathname.startsWith('/introduction')
+    || pathname.startsWith('/policy-terms');
+};
 
 // Improve security with Arcjet
 const aj = arcjet({
@@ -42,11 +38,14 @@ const aj = arcjet({
 
 export default async function middleware(
   request: NextRequest,
-  event: NextFetchEvent,
 ) {
-  // to recoginize the pathname in the headers
+  const pathname = request.nextUrl.pathname;
+
+  // Add pathname to headers for recognition
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-pathname', request.nextUrl.pathname);
+  requestHeaders.set('x-pathname', pathname);
+
+  // Check wallet authentication
   const isAuthenticated = request.cookies.has('walletAddress');
 
   // Create a new request with custom headers
@@ -56,7 +55,6 @@ export default async function middleware(
   });
 
   // Verify the request with Arcjet
-  // Use `process.env` instead of Env to reduce bundle size in middleware
   if (process.env.ARCJET_KEY) {
     const decision = await aj.protect(request);
 
@@ -65,27 +63,22 @@ export default async function middleware(
     }
   }
 
-  // Clerk keyless mode doesn't work with i18n, this is why we need to run the middleware conditionally
-  if (isAuthPage(request) || isProtectedRoute(request)) {
-    return clerkMiddleware(async (auth, req) => {
-      if (isProtectedRoute(req) && !isAuthenticated) {
-        const signInUrl = new URL(`/login`, req.url);
-
-        await auth.protect({
-          unauthenticatedUrl: signInUrl.toString(),
-        });
-      }
-
-      if ((isAuthPage(req) || isWelcomePage(req)) && isAuthenticated) {
-        const root = new URL(`/`, req.url);
-        return NextResponse.redirect(root);
-      }
-
-      return handleI18nRouting(requestWithHeaders);
-    })(request, event);
+  // Handle authentication logic
+  if (isProtectedRoute(pathname)) {
+    if (!isAuthenticated) {
+      // Redirect to login if not authenticated
+      const loginUrl = new URL('/login', request.url);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
-  // For non-auth routes, still need i18n routing
+  // Redirect authenticated users away from auth/welcome pages
+  if ((isAuthPage(pathname) || isWelcomePage(pathname)) && isAuthenticated) {
+    const homeUrl = new URL('/', request.url);
+    return NextResponse.redirect(homeUrl);
+  }
+
+  // Apply i18n routing
   return handleI18nRouting(requestWithHeaders);
 }
 

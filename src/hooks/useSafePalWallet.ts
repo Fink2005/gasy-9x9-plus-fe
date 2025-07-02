@@ -8,7 +8,7 @@ const useSafePalWallet = () => {
   const router = useRouter();
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [addressWallet, setAddressWallet] = useState<string>('');
-  async function connectWallet() {
+  async function onConnectWallet() {
     setIsConnecting(true);
     try {
       if (typeof window !== 'undefined') {
@@ -27,6 +27,7 @@ const useSafePalWallet = () => {
             method: 'personal_sign',
             params: [message, response[0]]
           });
+          // const a = await connectWallet.getNonce(response[0]);
           createCookie({
             name: 'walletAddress',
             value: response[0],
@@ -46,7 +47,7 @@ const useSafePalWallet = () => {
   }
 
   return {
-    connectWallet,
+    onConnectWallet,
     isConnecting,
     addressWallet,
   };

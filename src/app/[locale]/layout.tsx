@@ -6,6 +6,7 @@ import RootTemplate from '@/templates/RootTemplate';
 import type { Metadata } from 'next';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 export const metadata: Metadata = {
@@ -46,6 +47,8 @@ export default async function RootLayout(props: {
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
+  const headersList = await headers();
+  const pathName = headersList.get('x-pathname');
 
   setRequestLocale(locale);
   return (
@@ -57,7 +60,7 @@ export default async function RootLayout(props: {
           </RootTemplate>
           <Toaster
             position="bottom-center"
-            className="!bottom-20"
+            className={`${pathName === 'policy-terms' ? '' : '!bottom - 10'}`}
             toastOptions={{
               style: {
                 color: 'white',

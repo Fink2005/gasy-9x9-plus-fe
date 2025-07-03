@@ -16,7 +16,7 @@ const useSafePalWallet = () => {
       if (typeof window !== 'undefined') {
         const provider = window.safepalProvider;
         if (!provider) {
-          window.open('https://www.csafepal.com/download?product=2');
+          window.open('https://www.safepal.com/en/download?product=2');
           throw new Error('SafePal wallet not installed');
         }
         const response = await provider.enable();

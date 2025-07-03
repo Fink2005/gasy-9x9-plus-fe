@@ -8,12 +8,12 @@ import { toast } from 'sonner';
 
 const DropdownWallet = () => {
   const [address, setAddress] = useState<string>('');
-  const addressFormated = `${address.slice(0, 5)}...${address.slice(-3)}`;
+  const addressFormated = address ? `${address.slice(0, 5)}...${address.slice(-3)}` : '';
   const router = useRouter();
   useEffect(() => {
     (async () => {
       const authData = await getCookie('authData');
-      const { address } = authData ? JSON.parse(authData) : {};
+      const address = authData ? JSON.parse(authData)?.address : undefined;
       setAddress(address);
     })();
   }, []);

@@ -8,13 +8,13 @@ import { toast } from 'sonner';
 
 const DropdownWallet = () => {
   const [address, setAddress] = useState<string>('');
-  const addressFormated = address ? `${address.slice(0, 5)}...${address.slice(-3)}` : '';
   const router = useRouter();
   useEffect(() => {
     (async () => {
       const authData = await getCookie('authData');
       const address = authData ? JSON.parse(authData)?.address : undefined;
-      setAddress(address);
+      const addressFormated = `${address.slice(0, 5)}...${address.slice(-3)}`;
+      setAddress(addressFormated);
     })();
   }, []);
 
@@ -35,7 +35,7 @@ const DropdownWallet = () => {
         className="bg-white rounded-[6.25rem] w-[5.625rem] h-[1.875rem] text-[0.75rem] p-1 text-white gap-[0.25rem]"
         style={{ boxShadow: '0px 20px 50px 0px rgba(54, 114, 233, 0.41)', background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)' }}
       >
-        {addressFormated}
+        {address}
       </DropdownMenuTrigger>
       <DropdownMenuContent className="dropdown-address text-white">
         <DropdownMenuItem
@@ -43,7 +43,7 @@ const DropdownWallet = () => {
           onClick={handleClipboardCopy}
         >
           <span>
-            {addressFormated}
+            {address}
           </span>
           {' '}
           <CopyIcon />

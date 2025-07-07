@@ -1,5 +1,6 @@
 import apiRequest from '@/app/apis/apiRequest';
 import { USER_RANKING_LIMIT } from '@/libs/shared/constants/globals';
+import type { VerifyKycResponse } from '@/types/auth';
 import type { UserRanking } from '@/types/user';
 
 const userRequests = {
@@ -10,8 +11,8 @@ const userRequests = {
       body
     );
   },
-  async verifyKyc(body: { kycOtp: string }): Promise<{ message: string } | null> {
-    return await apiRequest<{ message: string } | null>(
+  async verifyKyc(body: { kycOtp: string }): Promise<VerifyKycResponse | null> {
+    return await apiRequest<VerifyKycResponse | null>(
       '/user/verify-kyc',
       'PATCH',
       body

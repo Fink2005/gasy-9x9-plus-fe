@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import useSafePalWallet from '@/hooks/useSafePalWallet';
 import SafePalIcon from '@/libs/shared/icons/SafePal';
+import { Loader2 } from 'lucide-react';
 
 export default function SafePal() {
   const { onConnectWallet, isConnecting } = useSafePalWallet();
@@ -13,8 +14,14 @@ export default function SafePal() {
         onClick={onConnectWallet}
         disabled={isConnecting}
       >
-        Kết nối ví
-        <SafePalIcon className="ml-2 size-20" />
+        {isConnecting ? <Loader2 className="animate-spin" /> : (
+          <>
+            <span>
+              Kết nối ví
+            </span>
+            <SafePalIcon className="ml-2 size-20" />
+          </>
+        )}
       </Button>
     </main>
   );

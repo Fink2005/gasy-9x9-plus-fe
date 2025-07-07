@@ -1,5 +1,13 @@
-import type { User } from '@sentry/nextjs';
+import type { User } from '@/types/user';
 
 export type LoginPayload = { address: string; signature: string; message: string };
 
-export type LoginResponse = { result: User } | null;
+export type LoginResponse = { result: {
+  user: User;
+  accessToken: string;
+}; } | null;
+
+export type VerifyKycResponse = {
+  user: User;
+  accessToken: string;
+};

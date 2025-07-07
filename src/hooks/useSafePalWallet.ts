@@ -32,7 +32,7 @@ const useSafePalWallet = () => {
             });
             const authData = await authRequests.login({ address: response[0], signature, message: responseNonce.nonce });
             if (authData) {
-              setAddressWallet(authData.result.address);
+              setAddressWallet(authData.result.user.address);
               createCookie({
                 name: 'authData',
                 value: JSON.stringify({

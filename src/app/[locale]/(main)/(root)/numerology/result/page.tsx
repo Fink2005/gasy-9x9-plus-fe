@@ -86,7 +86,7 @@ const page = async ({ searchParams }: { searchParams: Promise<Record<'name' | 'b
     );
   }
   return (
-    <div className="min-h-screen bg-numerology flex flex-col items-center pt-10 relative overflow-x-hidden overflow-y-auto h-[200px]">
+    <div className="min-h-screen bg-numerology flex flex-col items-center pt-10 relative overflow-x-hidden overflow-y-auto h-[200px] ">
       <Link href="/numerology">
         <LeftArrowIcon className="absolute left-4" />
       </Link>
@@ -94,7 +94,7 @@ const page = async ({ searchParams }: { searchParams: Promise<Record<'name' | 'b
       <p className="text-shadow-custom text-small-custom">Hiểu bản thân để sống đúng với bản thân</p>
       <Image width={500} height={500} className="w-[250px] h-[160px]" alt="logo 9x9" src="/assets/logo-9x9.png" />
       <StarChart baseUrl={baseUrl} numerologyResult={numerologyResult} />
-      <p className="text-[#FFD8BF] mt-6 italic text-center text-small-custom text-shadow-[0px_4px_4px_rgba(255,216,191,0.50)] px-4">
+      <p className="text-[#FFD8BF] mt-6 italic text-center text-small-custom text-shadow-[0px_4px_4px_rgba(255,216,191,0.50)] px-4 pb-14">
         Lưu ý: Đây là những chỉ số mang tính chất tham khảo, không đảm bảo về tính chính xác tuyệt đối.
       </p>
     </div>

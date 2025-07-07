@@ -1,4 +1,5 @@
 'use client';
+import { createCookie } from '@/app/actions/cookie';
 import userRequests from '@/app/apis/requests/user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -102,7 +103,14 @@ const OTPForm = () => {
 
     setIsLoading(true);
     try {
-      await userRequests.verifyKyc({ kycOtp: countFormated });
+      const responseKyc = await userRequests.verifyKyc({ kycOtp: countFormated });
+      createCookie({
+        name: 'authData',
+        value: JSON.stringify({
+          user: responseKyc?.user,
+          accessToken: responseKyc?.accessToken,
+        }),
+      });
       router.push('/verified');
     } catch {
       toast.error('Xác nhận không thành công. Vui lòng thử lại sau.');

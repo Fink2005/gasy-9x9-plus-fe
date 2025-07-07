@@ -71,7 +71,7 @@ const ProfileForm = () => {
   };
 
   const onSubmit = async (data: ProfileFormData) => {
-    const formattedDate = format(data.birthDate, 'MM/dd/yyyy');
+    const formattedDate = format(data.birthDate, 'dd/MM/yyyy');
     const searchParams = new URLSearchParams({
       name: data.fullName,
       birth: formattedDate,

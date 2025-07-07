@@ -5,7 +5,7 @@ import connectWalletRequest from '@/app/apis/requests/connectWallet';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
+//
 const useSafePalWallet = () => {
   const router = useRouter();
   const [isConnecting, setIsConnecting] = useState<boolean>(false);

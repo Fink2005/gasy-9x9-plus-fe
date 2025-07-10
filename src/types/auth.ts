@@ -1,0 +1,13 @@
+import type { User } from '@/types/user';
+
+export type LoginPayload = { address: string; signature: string; message: string };
+
+export type LoginResponse = {
+  user: User;
+  accessToken: string;
+} | null;
+
+export type VerifyKycResponse = {
+  user: User;
+  accessToken: string;
+};

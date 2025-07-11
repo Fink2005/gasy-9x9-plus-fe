@@ -278,7 +278,7 @@ body::-webkit-scrollbar {
 /* Login screen */
 
 .bg-login {
-  background-image: url('/assets/login-background.png');
+  background-image: url('/assets/login-background.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -307,7 +307,7 @@ body::-webkit-scrollbar {
 }
 
 .bg-9x9 {
-  background-image: url('/assets/new-user-background.png');
+  background-image: url('/assets/new-user-background.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -469,7 +469,7 @@ body::-webkit-scrollbar {
 
 /* Home screen */
 .bg-home {
-  background-image: url('/assets/home-background.png');
+  background-image: url('/assets/home-background.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -564,14 +564,14 @@ body::-webkit-scrollbar {
   align-self: stretch;
 }
 .bg-numerology {
-  background-image: url('/assets/numerology-background.png');
+  background-image: url('/assets/numerology-background.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
 
 .numerology-aura {
-  background-image: url('/assets/aura-circle.png');
+  background-image: url('/assets/aura-circle.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -585,7 +585,7 @@ body::-webkit-scrollbar {
 }
 
 .bg-meaning {
-  background: url('/assets/meaning-background.png');
+  background: url('/assets/meaning-background.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -593,7 +593,7 @@ body::-webkit-scrollbar {
 
 /* Mining gold */
 .bg-gold-mining {
-  background-image: url('/assets/gold-mining-background.png');
+  background-image: url('/assets/gold-mining-background.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -620,7 +620,7 @@ body::-webkit-scrollbar {
 /* Mining gold playing */
 
 .bg-gold-mining-game {
-  background-image: url('/assets/gold-mining-playing-background.png');
+  background-image: url('/assets/gold-mining-playing-background.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

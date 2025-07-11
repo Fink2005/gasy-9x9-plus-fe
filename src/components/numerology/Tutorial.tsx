@@ -26,12 +26,8 @@ const Tutorial = () => {
     localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(false));
   };
 
-  if (!isVisible) {
-    return null;
-  }
-
   return (
-    <div className="absolute inset-0 z-50 flex h-full flex-col items-center overflow-y-auto bg-[#222B3C]/90 py-2">
+    <div className={`${!isVisible ? 'opacity-0 hidden' : 'opacity-100'} absolute inset-0 z-50 flex h-full flex-col items-center overflow-y-auto bg-[#222B3C]/90 py-2`}>
       <p className="text-shadow-custom text-[1.0625rem] font-[400]">
         Nhấn vào các hình tròn có icon
       </p>
@@ -51,7 +47,7 @@ const Tutorial = () => {
       <div className="relative flex flex-col items-center">
         <Image
           className="h-full w-full max-h-[650px] max-w-[400px]"
-          src="/assets/tutorial-screen.png"
+          src="/assets/tutorial-screen.webp"
           width={500}
           height={500}
           alt="tutorial screen"

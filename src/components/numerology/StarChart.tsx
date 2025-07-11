@@ -9,8 +9,8 @@ type Props = {
 const StarChart = ({ baseUrl, numerologyResult }: Props) => {
   return (
     <div className="relative min-h-[370px] min-w-[440px] max-w-[450px] w-full">
-      <Image width={500} height={500} alt="aura" src="/assets/aura-circle.png" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[49%] z-0" />
-      <Image width={500} height={500} alt="star chart" src="/assets/star-chart.png" className="size-[10rem] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+      <Image width={500} height={500} alt="aura" src="/assets/aura-circle.webp" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[49%] z-0" />
+      <Image width={500} height={500} alt="star chart" src="/assets/star-chart.webp" className="size-[10rem] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
       {/* Destiny */}
 
       <Link href={`${baseUrl}&meaning=destiny`} className="flex flex-col items-center absolute -top-5 left-35">

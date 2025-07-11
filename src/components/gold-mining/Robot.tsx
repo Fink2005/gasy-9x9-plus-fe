@@ -5,7 +5,7 @@ export const Robot = () => {
   return (
     <div className="absolute top-20">
       <Image
-        src="/assets/mining-robot.png"
+        src="/assets/mining-robot.webp"
         width={107}
         height={96}
         alt="robot mining"

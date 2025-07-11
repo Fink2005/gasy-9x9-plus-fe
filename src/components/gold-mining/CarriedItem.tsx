@@ -59,7 +59,7 @@ export const CarriedItem = ({ item, ropeLength, isShrinking }: CarriedItemProps)
               justifyContent: 'center',
             }}
           >
-            <Image width={65} height={65} sizes="size-[65px]" alt="blind box" src="/assets/blind-box.png" />
+            <Image width={65} height={65} sizes="size-[65px]" alt="blind box" src="/assets/blind-box.webp" />
           </div>
         );
       default:

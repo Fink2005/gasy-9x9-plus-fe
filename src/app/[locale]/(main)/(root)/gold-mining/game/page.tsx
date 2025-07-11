@@ -525,7 +525,7 @@ const SpaceshipGame = () => {
       {/* Robot + Hook */}
       <div className="absolute top-20">
         <Image
-          src="/assets/mining-robot.png"
+          src="/assets/mining-robot.webp"
           width={107}
           height={96}
           alt="robot mining"
@@ -699,7 +699,7 @@ const SpaceshipGame = () => {
             }}
           >
             <Image
-              src="/assets/blind-box.png"
+              src="/assets/blind-box.webp"
               width={65}
               height={65}
               alt="blind box"

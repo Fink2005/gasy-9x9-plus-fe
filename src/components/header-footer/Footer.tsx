@@ -39,7 +39,10 @@ export function Footer() {
   const pathName = usePathname();
   return (
     <footer
-      className="absolute bottom-0 w-full footer safe-bottom"
+      className="absolute bottom-0 w-full footer"
+      style={{
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
     >
       {
         tabBar.map((item) => {

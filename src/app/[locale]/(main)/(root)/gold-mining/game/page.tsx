@@ -1,8 +1,8 @@
+/* eslint-disable ts/no-use-before-define */
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { createCookie } from '@/app/actions/cookie';
-import { DebugPanel } from '@/components/gold-mining/debugPanel';
 import useTimeInterval from '@/hooks/useTimeInterval';
 import BlueStarIcon from '@/libs/shared/icons/BlueStar';
 import ClockIcon from '@/libs/shared/icons/Clock';
@@ -12,22 +12,30 @@ import HookBaseIcon from '@/libs/shared/icons/HookBase';
 import SpeakerIcon from '@/libs/shared/icons/Speaker';
 import StarIcon from '@/libs/shared/icons/Star';
 import StoneIcon from '@/libs/shared/icons/Stone';
-
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-interface GameItem {
+type GameItem = {
   id: number;
   x: number;
   y: number;
   size: number;
   type: 'heart' | 'blueStar' | 'star' | 'stone' | 'blindBox';
-}
+};
+
+type ViewportBounds = {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+  containerWidth: number;
+  containerHeight: number;
+};
 
 const SpaceshipGame = () => {
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const hookRef = useRef<HTMLDivElement>(null);
-  const hookTipMarkerRef = useRef<HTMLDivElement>(null); // New ref for hook tip marker
+  const hookTipMarkerRef = useRef<HTMLDivElement>(null);
   const heartItemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const blueStarRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const stoneRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -39,73 +47,170 @@ const SpaceshipGame = () => {
   const [isExtending, setIsExtending] = useState(false);
   const [ropeLength, setRopeLength] = useState(20);
   const [isShrinking, setIsShrinking] = useState(false);
-
-  const [debugMode, setDebugMode] = useState(process.env.NODE_ENV !== 'production'); // Set to true for debugging
-  const [debugInfo, setDebugInfo] = useState<{
-    hookTipRect: DOMRect | null;
-    collisionDetected: GameItem | null;
-    itemRects: Array<{ id: number; rect: DOMRect; type: string }>;
-  }>({
-    hookTipRect: null,
-    collisionDetected: null,
-    itemRects: [],
+  const [viewportBounds, setViewportBounds] = useState<ViewportBounds>({
+    minX: -250,
+    maxX: 150,
+    minY: 300,
+    maxY: 800,
+    containerWidth: 400,
+    containerHeight: 600,
   });
 
-  // Helper function to generate random positions
-  const generateRandomItems = (count: number, type: 'heart' | 'blueStar' | 'stone' | 'blindBox' | 'star') => {
-    const items: GameItem[] = [];
-    const minDistance = 100;
-    const bounds = {
-      minX: -250,
-      maxX: 150,
-      minY: 300,
-      maxY: 800,
-    };
-
-    for (let i = 0; i < count; i++) {
-      let attempts = 0;
-      let validPosition = false;
-      let newItem: GameItem;
-
-      while (!validPosition && attempts < 50) {
-        const x = Math.random() * (bounds.maxX - bounds.minX) + bounds.minX;
-        const y = Math.random() * (bounds.maxY - bounds.minY) + bounds.minY;
-        const size = type === 'heart' ? Math.random() * 15 + 15 : type === 'stone' ? Math.random() * 20 + 30 : type === 'blueStar' ? Math.random() * 15 + 15 : type === 'blindBox' ? 65 : Math.random() * 15 + 15;
-
-        newItem = {
-          id: Date.now() + Math.random() + i,
-          x: Math.round(x),
-          y: Math.round(y),
-          size: Math.round(size),
-          type,
-        };
-
-        const distanceFromCenter = Math.sqrt(newItem.x ** 2 + newItem.y ** 2);
-        const tooCloseToCenter = distanceFromCenter < 100;
-
-        validPosition
-          = !tooCloseToCenter
-            && items.every((existingItem) => {
-              const distance = Math.sqrt((existingItem.x - newItem.x) ** 2 + (existingItem.y - newItem.y) ** 2);
-              return distance >= minDistance;
-            });
-
-        attempts++;
-      }
-
-      if (validPosition) {
-        items.push(newItem!);
-      }
+  // Calculate responsive viewport bounds
+  const calculateViewportBounds = useCallback((): ViewportBounds => {
+    if (!gameContainerRef.current) {
+      return {
+        minX: -250,
+        maxX: 150,
+        minY: 300,
+        maxY: 800,
+        containerWidth: 400,
+        containerHeight: 600,
+      };
     }
 
-    return items;
-  };
+    const container = gameContainerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const containerWidth = containerRect.width;
+    const containerHeight = containerRect.height;
 
-  const [heartItems, setheartItems] = useState<GameItem[]>(() => generateRandomItems(5, 'heart'));
-  const [blueStars, setBlueStars] = useState<GameItem[]>(() => generateRandomItems(3, 'blueStar'));
-  const [stars, setStars] = useState<GameItem[]>(() => generateRandomItems(3, 'star'));
-  const [stones, setStones] = useState<GameItem[]>(() => generateRandomItems(3, 'stone'));
-  const [blindBox, setBlindBox] = useState<GameItem[]>(() => generateRandomItems(3, 'blindBox'));
+    // Calculate safe margins (considering item sizes)
+    const maxItemSize = 65; // Maximum item size
+    const horizontalMargin = maxItemSize;
+    const verticalMargin = maxItemSize;
+
+    // Robot position is roughly at the center top
+    const robotAreaHeight = 200; // Space occupied by robot and UI elements
+
+    // Calculate bounds relative to container center
+    const availableWidth = containerWidth - horizontalMargin * 2;
+
+    return {
+      minX: -(availableWidth / 2),
+      maxX: availableWidth / 2,
+      minY: robotAreaHeight + verticalMargin,
+      maxY: containerHeight - verticalMargin,
+      containerWidth,
+      containerHeight,
+    };
+  }, []);
+
+  // Update viewport bounds on mount and resize
+  useEffect(() => {
+    const updateBounds = () => {
+      const newBounds = calculateViewportBounds();
+      setViewportBounds(newBounds);
+    };
+
+    // Initial calculation
+    updateBounds();
+
+    // Add resize listener
+    const handleResize = () => {
+      updateBounds();
+      // Regenerate items with new bounds
+      regenerateAllItems();
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [calculateViewportBounds]);
+
+  // Helper function to generate random items with responsive bounds
+  const generateRandomItems = useCallback(
+    (count: number, type: 'heart' | 'blueStar' | 'stone' | 'blindBox' | 'star', bounds: ViewportBounds) => {
+      const items: GameItem[] = [];
+      const getRandomDistance = () => {
+        // Random distance between 40px and 120px
+        const minDist = Math.min(70, bounds.containerWidth * 0.08);
+        const maxDist = Math.min(160, bounds.containerWidth * 0.25);
+        return Math.random() * (maxDist - minDist) + minDist;
+      };
+
+      for (let i = 0; i < count; i++) {
+        let attempts = 0;
+        let validPosition = false;
+        let newItem: GameItem;
+
+        while (!validPosition && attempts < 100) {
+          const size
+            = type === 'heart'
+              ? Math.random() * 15 + 15
+              : type === 'stone'
+                ? Math.random() * 20 + 30
+                : type === 'blueStar'
+                  ? Math.random() * 15 + 15
+                  : type === 'blindBox'
+                    ? 65
+                    : Math.random() * 15 + 15;
+
+          // Ensure items don't go outside bounds considering their size
+          const halfSize = size / 2;
+          const safeMinX = bounds.minX + halfSize;
+          const safeMaxX = bounds.maxX - halfSize;
+          const safeMinY = bounds.minY + halfSize;
+          const safeMaxY = bounds.maxY - halfSize;
+
+          const x = Math.random() * (safeMaxX - safeMinX) + safeMinX;
+          const y = Math.random() * (safeMaxY - safeMinY) + safeMinY;
+
+          newItem = {
+            id: Date.now() + Math.random() + i,
+            x: Math.round(x),
+            y: Math.round(y),
+            size: Math.round(size),
+            type,
+          };
+
+          // Check distance from center (robot area)
+          const distanceFromCenter = Math.sqrt(newItem.x ** 2 + (newItem.y - 150) ** 2);
+          const tooCloseToCenter = distanceFromCenter < Math.min(120, bounds.containerWidth * 0.2);
+
+          // Check distance from other items with random minimum distances
+          const tooCloseToOthers = items.some((existingItem) => {
+            const distance = Math.sqrt((existingItem.x - newItem.x) ** 2 + (existingItem.y - newItem.y) ** 2);
+            const randomMinDistance = getRandomDistance();
+            return distance < randomMinDistance;
+          });
+
+          validPosition = !tooCloseToCenter && !tooCloseToOthers;
+          attempts++;
+        }
+
+        if (validPosition) {
+          items.push(newItem!);
+        }
+      }
+
+      return items;
+    },
+    [],
+  );
+
+  // Initialize items with default empty arrays
+  const [heartItems, setHeartItems] = useState<GameItem[]>([]);
+  const [blueStars, setBlueStars] = useState<GameItem[]>([]);
+  const [stars, setStars] = useState<GameItem[]>([]);
+  const [stones, setStones] = useState<GameItem[]>([]);
+  const [blindBox, setBlindBox] = useState<GameItem[]>([]);
+
+  // Regenerate all items when bounds change
+  const regenerateAllItems = useCallback(() => {
+    const bounds = calculateViewportBounds();
+    setHeartItems(generateRandomItems(5, 'heart', bounds));
+    setBlueStars(generateRandomItems(3, 'blueStar', bounds));
+    setStars(generateRandomItems(3, 'star', bounds));
+    setStones(generateRandomItems(3, 'stone', bounds));
+    setBlindBox(generateRandomItems(3, 'blindBox', bounds));
+  }, [generateRandomItems, calculateViewportBounds]);
+
+  // Initialize items when component mounts and bounds are available
+  useEffect(() => {
+    if (gameContainerRef.current && viewportBounds.containerWidth > 0) {
+      regenerateAllItems();
+    }
+  }, [regenerateAllItems, viewportBounds.containerWidth]);
+
   const [carriedItem, setCarriedItem] = useState<GameItem | null>(null);
   const [score, setScore] = useState<{
     original: number;
@@ -116,8 +221,7 @@ const SpaceshipGame = () => {
   });
 
   const { handleTimeInterval, isCounting, timeLeft } = useTimeInterval();
-
-  const [isUpScrore, setIsUpScrore] = useState<boolean>(false);
+  const [isUpScore, setIsUpScore] = useState<boolean>(false);
 
   // Helper function to check if two rectangles overlap
   const checkRectOverlap = (rect1: DOMRect, rect2: DOMRect, tolerance = 0) => {
@@ -135,16 +239,10 @@ const SpaceshipGame = () => {
       return null;
     }
 
-    // Get the position of the hook tip marker element
     const markerRect = hookTipMarkerRef.current.getBoundingClientRect();
-
-    // The marker is positioned exactly at the hook tip
     const hookTipX = markerRect.left + markerRect.width / 2;
     const hookTipY = markerRect.top + markerRect.height / 2;
-
-    // Create a small rectangle representing the hook tip
     const tipRect = new DOMRect(hookTipX - 15, hookTipY - 15, 30, 30);
-
     return tipRect;
   }, [angle, ropeLength]);
 
@@ -155,22 +253,14 @@ const SpaceshipGame = () => {
       return null;
     }
 
-    const itemRects: Array<{ id: number; rect: DOMRect; type: string }> = [];
-    let collisionDetected: GameItem | null = null;
-
     // Check heart items
     for (const [id, element] of heartItemRefs.current.entries()) {
       if (element) {
         const itemRect = element.getBoundingClientRect();
-        itemRects.push({ id, rect: itemRect, type: 'heart' });
-
         const isColliding = checkRectOverlap(hookTipRect, itemRect, 15);
-
         if (isColliding) {
           const item = heartItems.find(g => g.id === id);
           if (item) {
-            collisionDetected = item;
-
             return item;
           }
         }
@@ -181,32 +271,24 @@ const SpaceshipGame = () => {
     for (const [id, element] of blueStarRefs.current.entries()) {
       if (element) {
         const itemRect = element.getBoundingClientRect();
-        itemRects.push({ id, rect: itemRect, type: 'blueStar' });
-
         const isColliding = checkRectOverlap(hookTipRect, itemRect, 15);
-
         if (isColliding) {
           const item = blueStars.find(s => s.id === id);
           if (item) {
-            collisionDetected = item;
             return item;
           }
         }
       }
     }
-    // check star
+
+    // Check stars
     for (const [id, element] of starRefs.current.entries()) {
       if (element) {
         const itemRect = element.getBoundingClientRect();
-        itemRects.push({ id, rect: itemRect, type: 'blueStar' });
-
         const isColliding = checkRectOverlap(hookTipRect, itemRect, 15);
-
         if (isColliding) {
           const item = stars.find(s => s.id === id);
           if (item) {
-            collisionDetected = item;
-
             return item;
           }
         }
@@ -217,50 +299,32 @@ const SpaceshipGame = () => {
     for (const [id, element] of stoneRefs.current.entries()) {
       if (element) {
         const itemRect = element.getBoundingClientRect();
-        itemRects.push({ id, rect: itemRect, type: 'stone' });
-
         const isColliding = checkRectOverlap(hookTipRect, itemRect, 15);
-
         if (isColliding) {
           const item = stones.find(s => s.id === id);
           if (item) {
-            collisionDetected = item;
-
             return item;
           }
         }
       }
     }
+
     // Check blind boxes
     for (const [id, element] of blindBoxRefs.current.entries()) {
       if (element) {
         const itemRect = element.getBoundingClientRect();
-        itemRects.push({ id, rect: itemRect, type: 'stone' });
-
         const isColliding = checkRectOverlap(hookTipRect, itemRect, 15);
-
         if (isColliding) {
           const item = blindBox.find(s => s.id === id);
           if (item) {
-            collisionDetected = item;
-
             return item;
           }
         }
       }
     }
 
-    // Update debug info
-    if (debugMode) {
-      setDebugInfo({
-        hookTipRect,
-        collisionDetected,
-        itemRects,
-      });
-    }
-
     return null;
-  }, [heartItems, blueStars, stars, stones, blindBox, getHookTipPosition, debugMode]);
+  }, [heartItems, blueStars, stars, stones, blindBox, getHookTipPosition]);
 
   // Swinging logic
   useEffect(() => {
@@ -278,28 +342,8 @@ const SpaceshipGame = () => {
         return prev + direction * 2;
       });
     }, 16);
-
     return () => clearInterval(interval);
   }, [isSwinging]);
-
-  // Real-time hook tip position tracking for debug
-  useEffect(() => {
-    if (!debugMode) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      const hookTipRect = getHookTipPosition();
-      if (hookTipRect) {
-        setDebugInfo(prev => ({
-          ...prev,
-          hookTipRect,
-        }));
-      }
-    }, 16); // 60fps update rate
-
-    return () => clearInterval(interval);
-  }, [debugMode, getHookTipPosition]);
 
   const handleClick = useCallback(() => {
     if (isExtending) {
@@ -310,18 +354,16 @@ const SpaceshipGame = () => {
     setIsExtending(true);
     setIsShrinking(false);
 
-    const maxLength = 600;
+    const maxLength = Math.min(600, viewportBounds.containerHeight * 0.8);
     let extendLength = 20;
     let currentCarriedItem: GameItem | null = null;
 
     const extendInterval = setInterval(() => {
-      extendLength += 2; // Tăng tốc độ lên 10
+      extendLength += 2;
       setRopeLength(extendLength);
 
-      // Check for collision using getBoundingClientRect
       const hitItem = checkCollisionWithBoundingRect();
 
-      // Stop extending when hitting item or reaching max length
       if (hitItem || extendLength >= maxLength) {
         clearInterval(extendInterval);
 
@@ -331,7 +373,7 @@ const SpaceshipGame = () => {
 
           // Remove item from game field immediately when caught
           if (hitItem.type === 'heart') {
-            setheartItems(prev => prev.filter(g => g.id !== hitItem.id));
+            setHeartItems(prev => prev.filter(g => g.id !== hitItem.id));
             heartItemRefs.current.delete(hitItem.id);
           } else if (hitItem.type === 'blueStar') {
             setBlueStars(prev => prev.filter(s => s.id !== hitItem.id));
@@ -341,7 +383,7 @@ const SpaceshipGame = () => {
             stoneRefs.current.delete(hitItem.id);
           } else if (hitItem.type === 'blindBox') {
             setBlindBox(prev => prev.filter(s => s.id !== hitItem.id));
-            stoneRefs.current.delete(hitItem.id);
+            blindBoxRefs.current.delete(hitItem.id);
           } else if (hitItem.type === 'star') {
             setStars(prev => prev.filter(s => s.id !== hitItem.id));
             starRefs.current.delete(hitItem.id);
@@ -351,7 +393,6 @@ const SpaceshipGame = () => {
         // Start retracting
         setIsShrinking(true);
         let retract = extendLength;
-
         const retractInterval = setInterval(
           () => {
             retract -= 8;
@@ -366,67 +407,50 @@ const SpaceshipGame = () => {
               // Add score when item reaches the top
               if (currentCarriedItem) {
                 if (currentCarriedItem.type === 'heart') {
-                  setScore(prev => ({
-                    original: prev.original + 10,
-                    newScore: 10
-                  }));
+                  setScore(prev => ({ original: prev.original + 10, newScore: 10 }));
                 } else if (currentCarriedItem.type === 'blueStar') {
-                  setScore(prev => ({
-                    original: prev.original + 40,
-                    newScore: 40
-                  }));
+                  setScore(prev => ({ original: prev.original + 40, newScore: 40 }));
                 } else if (currentCarriedItem.type === 'stone') {
-                  setScore(prev => ({
-                    original: prev.original - 10,
-                    newScore: -10,
-                  }));
+                  setScore(prev => ({ original: prev.original - 10, newScore: -10 }));
                 } else if (currentCarriedItem.type === 'blindBox') {
-                  setScore(prev => ({
-                    original: prev.original + 100,
-                    newScore: 100,
-                  }));
+                  setScore(prev => ({ original: prev.original + 100, newScore: 100 }));
                 } else if (currentCarriedItem.type === 'star') {
-                  setScore(prev => ({
-                    original: prev.original + 50,
-                    newScore: 50,
-                  }));
+                  setScore(prev => ({ original: prev.original + 50, newScore: 50 }));
                 }
                 setCarriedItem(null);
-                setIsUpScrore(true);
+                setIsUpScore(true);
               }
             }
           },
           currentCarriedItem ? 40 : 8,
         );
       }
-    }, 4); // Giảm interval xuống 4ms
-  }, [isExtending, checkCollisionWithBoundingRect]);
+    }, 4);
+  }, [isExtending, checkCollisionWithBoundingRect, viewportBounds.containerHeight]);
 
   useEffect(() => {
-    if (isUpScrore) {
+    if (isUpScore) {
       setTimeout(() => {
-        setIsUpScrore(false);
+        setIsUpScore(false);
       }, 800);
     }
-  }, [isUpScrore]);
+  }, [isUpScore]);
 
   useEffect(() => {
     handleTimeInterval(99, true, '/gold-mining/result');
   }, []);
 
   useEffect(() => {
-    if (score) {
-      createCookie(
-        {
-          name: 'goldMiningScore',
-          value: JSON.stringify(score.original),
-        },
-      );
+    if (score && timeLeft >= 0) {
+      createCookie({
+        name: 'goldMiningScore',
+        value: JSON.stringify(score.original),
+      });
     }
   }, [score]);
 
-  // Ref callback for heart items
-  const setheartItemRef = useCallback(
+  // Ref callbacks
+  const setHeartItemRef = useCallback(
     (id: number) => (element: HTMLDivElement | null) => {
       if (element) {
         heartItemRefs.current.set(id, element);
@@ -437,7 +461,6 @@ const SpaceshipGame = () => {
     [],
   );
 
-  // Ref callback for blue stars
   const setBlueStarRef = useCallback(
     (id: number) => (element: HTMLDivElement | null) => {
       if (element) {
@@ -448,7 +471,7 @@ const SpaceshipGame = () => {
     },
     [],
   );
-  //  Ref callback for stars
+
   const setStarRef = useCallback(
     (id: number) => (element: HTMLDivElement | null) => {
       if (element) {
@@ -460,7 +483,6 @@ const SpaceshipGame = () => {
     [],
   );
 
-  // Ref callback for stones
   const setStoneRef = useCallback(
     (id: number) => (element: HTMLDivElement | null) => {
       if (element) {
@@ -471,6 +493,7 @@ const SpaceshipGame = () => {
     },
     [],
   );
+
   const setBlindBoxRef = useCallback(
     (id: number) => (element: HTMLDivElement | null) => {
       if (element) {
@@ -485,7 +508,7 @@ const SpaceshipGame = () => {
   return (
     <div
       ref={gameContainerRef}
-      className="flex flex-col items-center min-h-screen bg-gold-mining-game pt-10 relative"
+      className="flex flex-col items-center min-h-screen bg-gold-mining-game pt-10 relative overflow-hidden"
       role="button"
       tabIndex={0}
       onClick={handleClick}
@@ -495,30 +518,36 @@ const SpaceshipGame = () => {
         }
       }}
     >
-      {/* Speaker  */}
+      {/* Speaker */}
       <div className="absolute top-14 left-5">
         <SpeakerIcon />
       </div>
 
-      {/* clock */}
+      {/* Clock */}
       <div className="clock-card w-[120px] h-[40px] absolute right-0 flex items-center">
         <ClockIcon className="translate-y-1" />
-        <p className="text-shadow-custom text-[1rem] font-[590]">{isCounting && timeLeft}</p>
+        <p className="text-shadow-custom text-[1rem] font-[590]">{isCounting ? timeLeft : 0}</p>
       </div>
+
       {/* Score */}
       <div className="clock-card w-[120px] h-[40px] absolute right-0 top-22 flex items-center space-x-3">
-        <Image className="w-[1.5rem] h-[1.75rem] ms-3" src="/assets/badge-medal.png" width={100} height={100} alt="badge medal" />
-        <p className="text-shadow-custom text-[1rem] font-[590]">
-          {' '}
-          {score.original}
-        </p>
+        <Image
+          className="w-[1.5rem] h-[1.75rem] ms-3"
+          src="/assets/badge-medal.png"
+          width={100}
+          height={100}
+          alt="badge medal"
+        />
+        <p className="text-shadow-custom text-[1rem] font-[590]">{score.original}</p>
       </div>
 
-      {/* Score 2 */}
-
-      <p className={`${isUpScrore ? '-translate-y-10 opacity-100' : ''} text-shadow-custom transition-all duration-300 opacity-0 absolute top-56 -translate-x-10`}>
+      {/* Score Animation */}
+      <p
+        className={`${
+          isUpScore ? '-translate-y-10 opacity-100' : ''
+        } text-shadow-custom transition-all duration-300 opacity-0 absolute top-56 -translate-x-10`}
+      >
         {score.newScore === -10 ? '' : '+'}
-        {' '}
         {score.newScore}
       </p>
 
@@ -552,14 +581,14 @@ const SpaceshipGame = () => {
               }}
             />
 
-            {/* Hook Tip Marker - Invisible element positioned exactly at hook tip */}
+            {/* Hook Tip Marker */}
             <div
               ref={hookTipMarkerRef}
               className="absolute w-2 h-2 pointer-events-none"
               style={{
-                left: '-1px', // Center the 2px marker
-                top: `${ropeLength + 36}px`, // Position at hook tip
-                backgroundColor: debugMode ? 'rgba(255, 0, 0, 0.5)' : 'transparent', // Visible in debug mode
+                left: '-1px',
+                top: `${ropeLength + 36}px`,
+                backgroundColor: 'transparent',
                 borderRadius: '50%',
                 zIndex: 100,
               }}
@@ -571,7 +600,7 @@ const SpaceshipGame = () => {
                 className="absolute"
                 style={{
                   left: `${-carriedItem.size / 2}px`,
-                  top: `${ropeLength + 36}px`, // Match với hook tip position
+                  top: `${ropeLength + ((carriedItem.type === 'star' || carriedItem.type === 'blueStar') ? 20 : 34)}px`,
                   width: carriedItem.size,
                   height: carriedItem.size,
                   transition: isShrinking ? 'transform 0.05s linear' : 'none',
@@ -579,48 +608,23 @@ const SpaceshipGame = () => {
                 }}
               >
                 {carriedItem.type === 'heart' ? (
-                  <div
-                    style={{
-                      width: 65,
-                      height: 65,
-                    }}
-                  >
+                  <div style={{ width: 65, height: 65 }}>
                     <HeartIcon />
                   </div>
                 ) : carriedItem.type === 'stone' ? (
-                  <div
-                    style={{
-                      width: 65,
-                      height: 65,
-                    }}
-                  >
+                  <div style={{ width: 65, height: 65 }}>
                     <StoneIcon />
                   </div>
                 ) : carriedItem.type === 'blueStar' ? (
-                  <div
-                    style={{
-                      width: 65,
-                      height: 65,
-                    }}
-                  >
+                  <div style={{ width: 65, height: 65 }}>
                     <BlueStarIcon />
                   </div>
                 ) : carriedItem.type === 'blindBox' ? (
-                  <div
-                    style={{
-                      width: 65,
-                      height: 65,
-                    }}
-                  >
+                  <div style={{ width: 65, height: 65 }}>
                     <Image width={65} height={65} sizes="size-[65px]" alt="blind box" src="/assets/blind-box.webp" />
                   </div>
                 ) : (
-                  <div
-                    style={{
-                      width: 65,
-                      height: 65,
-                    }}
-                  >
+                  <div style={{ width: 65, height: 65 }}>
                     <StarIcon />
                   </div>
                 )}
@@ -630,12 +634,13 @@ const SpaceshipGame = () => {
         </div>
       </div>
 
+      {/* Game Items */}
       <>
-        {/* heart Items */}
+        {/* Heart Items */}
         {heartItems.map(item => (
           <div
             key={item.id}
-            ref={setheartItemRef(item.id)}
+            ref={setHeartItemRef(item.id)}
             className="absolute shadow-lg"
             style={{
               width: 65,
@@ -685,9 +690,8 @@ const SpaceshipGame = () => {
           </div>
         ))}
 
-        {/* Blind box */}
-
-        { blindBox.map(box => (
+        {/* Blind Boxes */}
+        {blindBox.map(box => (
           <div
             key={box.id}
             ref={setBlindBoxRef(box.id)}
@@ -698,15 +702,11 @@ const SpaceshipGame = () => {
               transform: 'translate(-50%, -50%)',
             }}
           >
-            <Image
-              src="/assets/blind-box.webp"
-              width={65}
-              height={65}
-              alt="blind box"
-            />
+            <Image src="/assets/blind-box.webp" width={65} height={65} alt="blind box" />
           </div>
         ))}
-        {/* Star */}
+
+        {/* Stars */}
         {stars.map(star => (
           <div
             key={star.id}
@@ -721,13 +721,6 @@ const SpaceshipGame = () => {
             <StarIcon />
           </div>
         ))}
-
-        {/* Debug Visualization */}
-        {process.env.NODE_ENV !== 'production' && debugMode && (
-          <>
-            <DebugPanel angle={angle} debugInfo={debugInfo} debugMode={debugMode} gameContainerRef={gameContainerRef} isExtending={isExtending} ropeLength={ropeLength} setDebugMode={setDebugMode} />
-          </>
-        )}
       </>
     </div>
   );

@@ -16,7 +16,7 @@ const GoldMining = ({ address }: Props) => {
   const router = useRouter();
   return (
     <>
-      <div className="flex space-x-2">
+      <div className="flex space-x-2 z-10">
         <Button className="button-base" onClick={() => router.push('/gold-mining/game')}>
           <GamePad2 />
           <span className="-translate-x-2">
@@ -28,7 +28,7 @@ const GoldMining = ({ address }: Props) => {
         </Button>
       </div>
       {isDisplayQuestion && (
-        <div className="question-card max-w-[21.4375rem] w-full mt-[1rem]">
+        <div className="question-card max-w-[21.4375rem] w-full mt-[1rem] z-10">
           <div>
             <QuestionCircleIcon />
           </div>
@@ -36,7 +36,7 @@ const GoldMining = ({ address }: Props) => {
         </div>
       )}
 
-      <div className="user-card flex justify-around items-center size-full max-w-[21.4375rem] w-full mt-[1rem]">
+      <div className="user-card flex justify-around items-center size-full max-w-[21.4375rem] w-full mt-[1rem] z-10">
         <div className="flex items-center">
           <span className="text-shadow-custom font-[500] text-[1rem]">
             4

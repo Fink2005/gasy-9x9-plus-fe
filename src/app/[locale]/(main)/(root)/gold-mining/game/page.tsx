@@ -612,7 +612,7 @@ const SpaceshipGame = () => {
                       height: 65,
                     }}
                   >
-                    <Image width={65} height={65} sizes="size-[65px]" alt="blind box" src="/assets/blind-box.png" />
+                    <Image width={65} height={65} sizes="size-[65px]" alt="blind box" src="/assets/blind-box.webp" />
                   </div>
                 ) : (
                   <div

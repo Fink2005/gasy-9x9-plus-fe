@@ -1,26 +1,42 @@
-import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
-const baseConfig: NextConfig = {
+const withNextIntl = createNextIntlPlugin('./src/libs/i18n.ts');
+
+const baseConfig = {
   eslint: {
     dirs: ['.'],
   },
   poweredByHeader: false,
   reactStrictMode: true,
-  serverExternalPackages: ['@electric-sql/pglite'],
-
-  // ✅ Add your proxy rewrites here
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: '/api/:path*',
-  //       destination: 'https://backend-9x9.onrender.com/api/:path*', // 👈 Change this to your backend URL
-  //     },
-  //   ];
-  // },
 };
 
-const config = createNextIntlPlugin('./src/libs/i18n.ts')(baseConfig);
+const config = withNextIntl(baseConfig);
 
-// ✅ Final export
-export default config;
+// ✅ Attach rewrites AFTER plugin
+const finalConfig = {
+  ...config,
+  async rewrites() {
+    console.log('✅ Rewrites function called'); // <--- Add this!
+    return [
+      {
+        source: '/request/:path*',
+        destination: 'https://backend-9x9.onrender.com/api/:path*',
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*', // Áp dụng cho tất cả các route
+        headers: [
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+        ],
+      },
+    ];
+  },
+};
+
+export default finalConfig;

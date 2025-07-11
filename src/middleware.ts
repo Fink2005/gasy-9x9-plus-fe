@@ -21,7 +21,7 @@ const isWelcomePage = (pathname: string): boolean => {
 
 // Improve security with Arcjet
 const aj = arcjet({
-  key: process.env.ARCJET_KEY!, // Use environment variable directly
+  key: process.env.NEXT_PUBLIC_ARCJET_KEY!, // Use environment variable directly
   rules: [
     detectBot({
       mode: 'LIVE',
@@ -54,6 +54,10 @@ export default async function middleware(
     ...request,
     headers: requestHeaders,
   });
+
+  if (pathname.startsWith('/request')) {
+    return NextResponse.next();
+  }
 
   // Verify the request with Arcjet
   if (process.env.ARCJET_KEY) {

@@ -35,8 +35,11 @@ const apiRequest = async <T>(
     if (data && method !== 'GET') {
       config.body = JSON.stringify(data);
     }
+    const baseURL = typeof window === 'undefined'
+      ? process.env.API_BASE_SERVER // server-side
+      : process.env.NEXT_PUBLIC_API_BASE_CLIENT; // client-side (rewrite hoạt động)
 
-    const response = await fetch(`https://backend-9x9.onrender.com/api${endpoint}`, config);
+    const response = await fetch(`${baseURL}${endpoint}`, config);
 
     if (!response.ok) {
       let errorMessage = `HTTP error! status: ${response.status}`;

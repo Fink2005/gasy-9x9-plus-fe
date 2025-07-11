@@ -5,16 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import useTimeInterval from '@/hooks/useTimeInterval';
 import { Loader2 } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-const OTPForm = () => {
+type Props = {
+  email: string;
+};
+
+const OTPForm = ({ email }: Props) => {
   const [otp, setOtp] = useState<string[]>(Array.from({ length: 6 }).fill('') as string[]);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const router = useRouter();
-  const email = useSearchParams().get('name');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { handleTimeInterval, isCounting, timeLeft } = useTimeInterval();
   const handleInputChange = (index: number, value: string) => {
@@ -91,7 +93,7 @@ const OTPForm = () => {
           accessToken: responseKyc?.accessToken,
         }),
       });
-      router.push('/verified');
+      redirect('/verified');
     } catch {
       toast.error('Xác nhận không thành công. Vui lòng thử lại sau.');
       setIsLoading(false);

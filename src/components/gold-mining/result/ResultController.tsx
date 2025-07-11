@@ -20,10 +20,10 @@ const ResultController = () => {
           Chơi lại (còn 8/9)
         </span>
       </Button>
-      <Button className="button-base-2 items-center max-w-[21.4375rem] w-full">
+      <Button className="button-base-2 items-center max-w-[21.4375rem] w-full mb-8">
         <CopyIcon className="translate-y-[6px] size-14" />
         <span>
-          Chia sẽ với bạn bè
+          Chia sẻ với bạn bè
         </span>
       </Button>
     </div>

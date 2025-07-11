@@ -101,7 +101,7 @@ const OTPForm = () => {
   };
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center min-h-screen">
       <p
         className="text-[0.875rem] text-center font-[274] text-[#FAFAFA] mt-4"
         style={{ textShadow: '0px 4px 15px rgba(145, 213, 255, 0.50)' }}
@@ -148,12 +148,14 @@ const OTPForm = () => {
           </button>
         )}
       </div>
-      <Button className="button-base w-[21.4375rem] mt-3" onClick={handleSubmit}>
-        {' '}
-        { isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {' '}
-        Xác nhận
-      </Button>
+      <div>
+        <Button className="button-base w-[21.4375rem] mt-3" onClick={handleSubmit}>
+          {' '}
+          { isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {' '}
+          Xác nhận
+        </Button>
+      </div>
     </div>
   );
 };

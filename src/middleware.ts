@@ -10,7 +10,10 @@ const isProtectedRoute = (pathname: string): boolean => {
 };
 
 const isAuthPage = (pathname: string): boolean => {
-  return pathname.startsWith('/login') || pathname.startsWith('/verify-email') || pathname.startsWith('/verified') || pathname.startsWith('/kyc');
+  return pathname.startsWith('/login')
+    || pathname.startsWith('/verify-email')
+    || pathname.startsWith('/verified')
+    || pathname.startsWith('/kyc');
 };
 
 const isWelcomePage = (pathname: string): boolean => {
@@ -19,66 +22,74 @@ const isWelcomePage = (pathname: string): boolean => {
     || pathname.startsWith('/policy-terms');
 };
 
-// Improve security with Arcjet
+// Arcjet security setup
 const aj = arcjet({
-  key: process.env.NEXT_PUBLIC_ARCJET_KEY!, // Use environment variable directly
+  key: process.env.NEXT_PUBLIC_ARCJET_KEY!, // Make sure this is defined in Vercel
   rules: [
     detectBot({
       mode: 'LIVE',
-      // Block all bots except the following
       allow: [
-        // See https://docs.arcjet.com/bot-protection/identifying-bots
-        'CATEGORY:SEARCH_ENGINE', // Allow search engines
-        'CATEGORY:PREVIEW', // Allow preview links to show OG images
-        'CATEGORY:MONITOR', // Allow uptime monitoring services
+        'CATEGORY:SEARCH_ENGINE',
+        'CATEGORY:PREVIEW',
+        'CATEGORY:MONITOR',
       ],
     }),
   ],
 });
 
-export default async function middleware(
-  request: NextRequest,
-) {
+export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Add pathname to headers for recognition
+  // Set custom header with pathname
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
 
-  // Check wallet authentication
+  // Safely parse authData cookie
+  let isAuthenticated: boolean | undefined;
   const authDataCookie = request.cookies.get('authData');
-  const isAuthenticated = authDataCookie ? JSON.parse(authDataCookie.value)?.user.isKyc : undefined;
 
-  // Create a new request with custom headers
+  if (authDataCookie) {
+    try {
+      const parsed = JSON.parse(authDataCookie.value);
+      isAuthenticated = parsed?.user?.isKyc;
+    } catch (error) {
+      console.error('❌ Failed to parse authData cookie in middleware:', error);
+    }
+  }
+
   const requestWithHeaders = new NextRequest(request.url, {
     ...request,
     headers: requestHeaders,
   });
 
+  // Skip middleware for specific paths
   if (pathname.startsWith('/request')) {
     return NextResponse.next();
   }
 
-  // Verify the request with Arcjet
-  if (process.env.ARCJET_KEY) {
-    const decision = await aj.protect(request);
-
-    if (decision.isDenied()) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  // Arcjet protection
+  if (process.env.NEXT_PUBLIC_ARCJET_KEY) {
+    try {
+      const decision = await aj.protect(request);
+      if (decision.isDenied()) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    } catch (error) {
+      console.error('❌ Arcjet error:', error);
+      return NextResponse.json({ error: 'Internal Error (Arcjet)' }, { status: 500 });
     }
   }
 
-  // Handle authentication logic
+  // Redirect unauthenticated users from protected routes
   if (isProtectedRoute(pathname)) {
     if (!isAuthenticated) {
-      // Redirect to login if not authenticated
       const loginUrl = new URL('/login', request.url);
       return NextResponse.redirect(loginUrl);
     }
   }
 
-  // Redirect authenticated users away from auth/welcome pages
-  if (((isAuthPage(pathname)) && isAuthenticated) || (isWelcomePage(pathname) && isAuthenticated)) {
+  // Redirect authenticated users away from login/welcome pages
+  if ((isAuthPage(pathname) && isAuthenticated) || (isWelcomePage(pathname) && isAuthenticated)) {
     const homeUrl = new URL('/', request.url);
     return NextResponse.redirect(homeUrl);
   }
@@ -87,9 +98,7 @@ export default async function middleware(
   return handleI18nRouting(requestWithHeaders);
 }
 
+// Middleware matcher
 export const config = {
-  // Match all pathnames except for
-  // - … if they start with `/api`, `/trpc`, `/_next` or `/_vercel`
-  // - … the ones containing a dot (e.g. `favicon.ico`)
   matcher: '/((?!_next|_vercel|monitoring|.*\\..*).*)',
 };

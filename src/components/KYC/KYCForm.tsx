@@ -1,4 +1,5 @@
 'use client';
+import { ApiException } from '@/app/apis/apiRequest';
 import userRequests from '@/app/apis/requests/user';
 import type { KYCFormData } from '@/app/schema/kyc';
 import { KYCSchema } from '@/app/schema/kyc';
@@ -26,8 +27,12 @@ const KYCForm = () => {
       const response = await userRequests.userKyc(data);
       toast.success(response?.message || 'Yêu cầu KYC đã được gửi thành công!');
       router.push(`/verify-email?name=${encodeURIComponent(data.email)}`);
-    } catch {
-      toast.error('Lỗi khi gửi biểu mẫu. Vui lòng thử lại sau.');
+    } catch (err: unknown) {
+      if (err instanceof ApiException) {
+        toast.error(err.message);
+      } else {
+        toast.error('Đã xảy ra lỗi khi gửi yêu cầu KYC. Vui lòng thử lại sau.');
+      }
     }
     form.reset();
   };

@@ -1,5 +1,5 @@
 'use client';
-import { deleteCookie } from '@/app/actions/cookie';
+import authRequests from '@/app/apis/requests/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CopyIcon from '@/libs/shared/icons/Copy';
 import { useRouter } from 'next/navigation';
@@ -17,9 +17,14 @@ const DropdownWallet = ({ address }: Props) => {
   };
 
   const handleLogout = async () => {
-    await deleteCookie('authData');
-    toast.success('Ngắt kết nối ví thành công');
-    router.replace('/login');
+    try {
+      await authRequests.logout();
+      toast.success('Ngắt kết nối ví thành công');
+      router.replace('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      toast.error('Có lỗi xảy ra khi ngắt kết nối ví');
+    }
   };
 
   return (

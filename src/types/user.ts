@@ -15,3 +15,11 @@ export type UserRanking = {
     name: string;
   }[];
 };
+
+export type UserScore = {
+  users: {
+    address: string;
+    score: string;
+    email: string;
+  };
+};

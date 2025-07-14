@@ -70,14 +70,14 @@ const ProfileForm = () => {
     }
   };
 
-  const onSubmit = async (data: ProfileFormData) => {
+  const onSubmit = (data: ProfileFormData) => {
     const formattedDate = format(data.birthDate, 'dd/MM/yyyy');
     const searchParams = new URLSearchParams({
       name: data.fullName,
       birth: formattedDate,
     });
-    router.push(`/numerology/result?${searchParams.toString()}`);
     reset();
+    router.push(`/numerology/result?${searchParams.toString()}`);
   };
 
   return (

@@ -34,10 +34,11 @@ const useSafePalWallet = () => {
             if (authData) {
               createCookie({
                 name: 'authData',
-                value: JSON.stringify({
-                  user: authData.user,
-                  accessToken: authData.accessToken,
-                }),
+                value: JSON.stringify(authData.user),
+              });
+              createCookie({
+                name: 'accessToken9x9',
+                value: authData.accessToken
               });
               toast.success('Kết nối ví thành công!', {
                 duration: 1000,

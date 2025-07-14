@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import useTimeInterval from '@/hooks/useTimeInterval';
 import { Loader2 } from 'lucide-react';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -15,7 +15,7 @@ type Props = {
 
 const OTPForm = ({ email }: Props) => {
   const [otp, setOtp] = useState<string[]>(Array.from({ length: 6 }).fill('') as string[]);
-
+  const router = useRouter();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { handleTimeInterval, isCounting, timeLeft } = useTimeInterval();
@@ -93,9 +93,14 @@ const OTPForm = ({ email }: Props) => {
           accessToken: responseKyc?.accessToken,
         }),
       });
-      redirect('/verified');
-    } catch {
-      toast.error('Xác nhận không thành công. Vui lòng thử lại sau.');
+      router.push('/verified');
+      // redirect('/verified');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('Xác nhận không thành công. Vui lòng thử lại sau.');
+      }
       setIsLoading(false);
     } finally {
       setIsLoading(false);

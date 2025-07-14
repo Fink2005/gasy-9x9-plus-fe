@@ -11,3 +11,7 @@ export type VerifyKycResponse = {
   user: User;
   accessToken: string;
 };
+
+export type refreshTokenResponse = {
+  accessToken: string;
+};

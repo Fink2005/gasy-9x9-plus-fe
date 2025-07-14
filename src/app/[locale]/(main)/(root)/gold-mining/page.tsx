@@ -4,7 +4,8 @@ import Image from 'next/image';
 
 const page = async () => {
   const authData = await getCookie('authData');
-  const address = authData ? JSON.parse(authData)?.user.address : undefined;
+  const address = authData ? JSON.parse(authData)?.address : undefined;
+
   return (
     <div className="pt-10 bg-gold-mining min-h-screen flex flex-col items-center">
       <div className="z-0">

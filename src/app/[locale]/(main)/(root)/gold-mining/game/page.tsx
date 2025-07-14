@@ -3,15 +3,12 @@
 'use client';
 
 import { createCookie } from '@/app/actions/cookie';
+import GameItems from '@/components/gold-mining/GameItems';
+import RandomBlindBox from '@/components/gold-mining/RandomBlindBox';
+import RobotHook from '@/components/gold-mining/RobotHook';
 import useTimeInterval from '@/hooks/useTimeInterval';
-import BlueStarIcon from '@/libs/shared/icons/BlueStar';
 import ClockIcon from '@/libs/shared/icons/Clock';
-import HeartIcon from '@/libs/shared/icons/Heart';
-import { HookIcon } from '@/libs/shared/icons/Hook';
-import HookBaseIcon from '@/libs/shared/icons/HookBase';
 import SpeakerIcon from '@/libs/shared/icons/Speaker';
-import StarIcon from '@/libs/shared/icons/Star';
-import StoneIcon from '@/libs/shared/icons/Stone';
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -21,6 +18,7 @@ type GameItem = {
   y: number;
   size: number;
   type: 'heart' | 'blueStar' | 'star' | 'stone' | 'blindBox';
+  randomBlindBoxNumber?: number; // Only for blind boxes
 };
 
 type ViewportBounds = {
@@ -49,7 +47,7 @@ const SpaceshipGame = () => {
   const [isShrinking, setIsShrinking] = useState(false);
   const [viewportBounds, setViewportBounds] = useState<ViewportBounds>({
     minX: -250,
-    maxX: 150,
+    maxX: 180,
     minY: 300,
     maxY: 800,
     containerWidth: 400,
@@ -154,12 +152,14 @@ const SpaceshipGame = () => {
           const x = Math.random() * (safeMaxX - safeMinX) + safeMinX;
           const y = Math.random() * (safeMaxY - safeMinY) + safeMinY;
 
+          const randomBlindBoxNumber = type === 'blindBox' ? Math.floor(Math.random() * 9) + 1 : undefined;
           newItem = {
             id: Date.now() + Math.random() + i,
             x: Math.round(x),
             y: Math.round(y),
             size: Math.round(size),
             type,
+            randomBlindBoxNumber
           };
 
           // Check distance from center (robot area)
@@ -193,7 +193,6 @@ const SpaceshipGame = () => {
   const [stars, setStars] = useState<GameItem[]>([]);
   const [stones, setStones] = useState<GameItem[]>([]);
   const [blindBox, setBlindBox] = useState<GameItem[]>([]);
-
   // Regenerate all items when bounds change
   const regenerateAllItems = useCallback(() => {
     const bounds = calculateViewportBounds();
@@ -203,6 +202,14 @@ const SpaceshipGame = () => {
     setStones(generateRandomItems(3, 'stone', bounds));
     setBlindBox(generateRandomItems(3, 'blindBox', bounds));
   }, [generateRandomItems, calculateViewportBounds]);
+
+  const [displayRandomBlindBox, setDisplayRandomBlindBox] = useState<{
+    isDisplay: boolean;
+    secretNumber: number;
+  }>({
+    isDisplay: false,
+    secretNumber: 0,
+  });
 
   // Initialize items when component mounts and bounds are available
   useEffect(() => {
@@ -326,34 +333,13 @@ const SpaceshipGame = () => {
     return null;
   }, [heartItems, blueStars, stars, stones, blindBox, getHookTipPosition]);
 
-  // Swinging logic
-  useEffect(() => {
-    if (!isSwinging) {
-      return;
-    }
-
-    let direction = 1;
-    const interval = setInterval(() => {
-      setAngle((prev) => {
-        const next = prev + direction * 2;
-        if (next > 90 || next < -90) {
-          direction *= -1;
-        }
-        return prev + direction * 2;
-      });
-    }, 16);
-    return () => clearInterval(interval);
-  }, [isSwinging]);
-
   const handleClick = useCallback(() => {
     if (isExtending) {
       return;
     }
-
     setIsSwinging(false);
     setIsExtending(true);
     setIsShrinking(false);
-
     const maxLength = Math.min(600, viewportBounds.containerHeight * 0.8);
     let extendLength = 20;
     let currentCarriedItem: GameItem | null = null;
@@ -370,7 +356,6 @@ const SpaceshipGame = () => {
         if (hitItem) {
           currentCarriedItem = hitItem;
           setCarriedItem(hitItem);
-
           // Remove item from game field immediately when caught
           if (hitItem.type === 'heart') {
             setHeartItems(prev => prev.filter(g => g.id !== hitItem.id));
@@ -405,6 +390,7 @@ const SpaceshipGame = () => {
               setIsSwinging(true);
 
               // Add score when item reaches the top
+
               if (currentCarriedItem) {
                 if (currentCarriedItem.type === 'heart') {
                   setScore(prev => ({ original: prev.original + 10, newScore: 10 }));
@@ -414,6 +400,10 @@ const SpaceshipGame = () => {
                   setScore(prev => ({ original: prev.original - 10, newScore: -10 }));
                 } else if (currentCarriedItem.type === 'blindBox') {
                   setScore(prev => ({ original: prev.original + 100, newScore: 100 }));
+                  setDisplayRandomBlindBox({
+                    isDisplay: true,
+                    secretNumber: hitItem?.randomBlindBoxNumber || 0,
+                  });
                 } else if (currentCarriedItem.type === 'star') {
                   setScore(prev => ({ original: prev.original + 50, newScore: 50 }));
                 }
@@ -427,6 +417,24 @@ const SpaceshipGame = () => {
       }
     }, 4);
   }, [isExtending, checkCollisionWithBoundingRect, viewportBounds.containerHeight]);
+  // Swinging logic
+  useEffect(() => {
+    if (!isSwinging) {
+      return;
+    }
+
+    let direction = 1;
+    const interval = setInterval(() => {
+      setAngle((prev) => {
+        const next = prev + direction * 2;
+        if (next > 90 || next < -90) {
+          direction *= -1;
+        }
+        return prev + direction * 2;
+      });
+    }, 16);
+    return () => clearInterval(interval);
+  }, [isSwinging]);
 
   useEffect(() => {
     if (isUpScore) {
@@ -437,7 +445,7 @@ const SpaceshipGame = () => {
   }, [isUpScore]);
 
   useEffect(() => {
-    handleTimeInterval(99, true, '/gold-mining/result');
+    handleTimeInterval(30, true, '/gold-mining/result');
   }, []);
 
   useEffect(() => {
@@ -541,6 +549,12 @@ const SpaceshipGame = () => {
         <p className="text-shadow-custom text-[1rem] font-[590]">{score.original}</p>
       </div>
 
+      {/*  Blind box */}
+
+      {
+        displayRandomBlindBox.isDisplay && <RandomBlindBox secretNumber={displayRandomBlindBox.secretNumber} setDisplayRandomBlindBox={setDisplayRandomBlindBox} />
+      }
+
       {/* Score Animation */}
       <p
         className={`${
@@ -552,176 +566,11 @@ const SpaceshipGame = () => {
       </p>
 
       {/* Robot + Hook */}
-      <div className="absolute top-20">
-        <Image
-          src="/assets/mining-robot.webp"
-          width={107}
-          height={96}
-          alt="robot mining"
-          className="w-[6.6875rem] h-[6rem]"
-        />
-        <div className="absolute left-1/2 -translate-x-1/2 top-20">
-          <HookBaseIcon />
-        </div>
-        <div className="absolute left-1/2 -translate-x-1/2">
-          <div
-            ref={hookRef}
-            className="origin-top -translate-y-[9px]"
-            style={{
-              transform: `rotate(${angle}deg)`,
-              transition: isSwinging ? 'transform 0.05s linear' : 'none',
-            }}
-          >
-            <HookIcon
-              ropeLength={ropeLength}
-              isShrinking={isShrinking}
-              className={isExtending ? 'transition-none' : ''}
-              style={{
-                transition: isExtending ? 'none !important' : undefined,
-              }}
-            />
-
-            {/* Hook Tip Marker */}
-            <div
-              ref={hookTipMarkerRef}
-              className="absolute w-2 h-2 pointer-events-none"
-              style={{
-                left: '-1px',
-                top: `${ropeLength + 36}px`,
-                backgroundColor: 'transparent',
-                borderRadius: '50%',
-                zIndex: 100,
-              }}
-            />
-
-            {/* Display carried item */}
-            {carriedItem && (
-              <div
-                className="absolute"
-                style={{
-                  left: `${-carriedItem.size / 2}px`,
-                  top: `${ropeLength + ((carriedItem.type === 'star' || carriedItem.type === 'blueStar') ? 20 : 34)}px`,
-                  width: carriedItem.size,
-                  height: carriedItem.size,
-                  transition: isShrinking ? 'transform 0.05s linear' : 'none',
-                  zIndex: 10,
-                }}
-              >
-                {carriedItem.type === 'heart' ? (
-                  <div style={{ width: 65, height: 65 }}>
-                    <HeartIcon />
-                  </div>
-                ) : carriedItem.type === 'stone' ? (
-                  <div style={{ width: 65, height: 65 }}>
-                    <StoneIcon />
-                  </div>
-                ) : carriedItem.type === 'blueStar' ? (
-                  <div style={{ width: 65, height: 65 }}>
-                    <BlueStarIcon />
-                  </div>
-                ) : carriedItem.type === 'blindBox' ? (
-                  <div style={{ width: 65, height: 65 }}>
-                    <Image width={65} height={65} sizes="size-[65px]" alt="blind box" src="/assets/blind-box.webp" />
-                  </div>
-                ) : (
-                  <div style={{ width: 65, height: 65 }}>
-                    <StarIcon />
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <RobotHook angle={angle} carriedItem={carriedItem} hookRef={hookRef} hookTipMarkerRef={hookTipMarkerRef} isExtending={isExtending} isShrinking={isShrinking} isSwinging={isSwinging} ropeLength={ropeLength} />
 
       {/* Game Items */}
-      <>
-        {/* Heart Items */}
-        {heartItems.map(item => (
-          <div
-            key={item.id}
-            ref={setHeartItemRef(item.id)}
-            className="absolute shadow-lg"
-            style={{
-              width: 65,
-              height: 65,
-              left: `calc(50% + ${item.x}px)`,
-              top: `${item.y}px`,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            <HeartIcon />
-          </div>
-        ))}
+      <GameItems blindBox={blindBox} blueStars={blueStars} heartItems={heartItems} stars={stars} stones={stones} setStoneRef={setStoneRef} setBlindBoxRef={setBlindBoxRef} setBlueStarRef={setBlueStarRef} setHeartItemRef={setHeartItemRef} setStarRef={setStarRef} />
 
-        {/* Blue Stars */}
-        {blueStars.map(star => (
-          <div
-            key={star.id}
-            ref={setBlueStarRef(star.id)}
-            className="absolute"
-            style={{
-              width: 65,
-              height: 65,
-              left: `calc(50% + ${star.x}px)`,
-              top: `${star.y}px`,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            <BlueStarIcon />
-          </div>
-        ))}
-
-        {/* Stones */}
-        {stones.map(stone => (
-          <div
-            key={stone.id}
-            ref={setStoneRef(stone.id)}
-            className="absolute"
-            style={{
-              width: stone.size,
-              height: stone.size,
-              left: `calc(50% + ${stone.x}px)`,
-              top: `${stone.y}px`,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            <StoneIcon />
-          </div>
-        ))}
-
-        {/* Blind Boxes */}
-        {blindBox.map(box => (
-          <div
-            key={box.id}
-            ref={setBlindBoxRef(box.id)}
-            className="size-[65px] absolute"
-            style={{
-              left: `calc(50% + ${box.x}px)`,
-              top: `${box.y}px`,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            <Image src="/assets/blind-box.webp" width={65} height={65} alt="blind box" />
-          </div>
-        ))}
-
-        {/* Stars */}
-        {stars.map(star => (
-          <div
-            key={star.id}
-            ref={setStarRef(star.id)}
-            className="absolute size-[65px]"
-            style={{
-              left: `calc(50% + ${star.x}px)`,
-              top: `${star.y}px`,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            <StarIcon />
-          </div>
-        ))}
-      </>
     </div>
   );
 };

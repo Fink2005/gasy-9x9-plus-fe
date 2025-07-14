@@ -635,3 +635,10 @@ body::-webkit-scrollbar {
     radial-gradient(267.72% 139.47% at 0% 2.78%, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%)
   );
 }
+
+.bg-blind-box-aura {
+  background-image: url('/assets/blind-box-aura.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

@@ -51,7 +51,7 @@ export default async function middleware(request: NextRequest) {
   if (authDataCookie) {
     try {
       const parsed = JSON.parse(authDataCookie.value);
-      isAuthenticated = parsed?.user?.isKyc;
+      isAuthenticated = parsed?.isKyc;
     } catch (error) {
       console.error('❌ Failed to parse authData cookie in middleware:', error);
     }

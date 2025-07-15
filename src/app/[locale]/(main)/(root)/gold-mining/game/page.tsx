@@ -342,12 +342,15 @@ const SpaceshipGameOptimized = () => {
   // Updated regenerateAllItems to pass existing items for distance checking
   const regenerateAllItems = useCallback(() => {
     const bounds = calculateViewportBounds();
-
+    // random stone number
+    const stoneNumber = Math.floor(Math.random() * 5) + 1;
+    // random 3 to 5
+    const starNumber = Math.floor(Math.random() * 3) + 2;
     // Generate larger items first to ensure they get placed
     const blindBox = generateRandomItems(1, 'blindBox', bounds, []);
-    const stones = generateRandomItems(3, 'stone', bounds, blindBox);
-    const blueStars = generateRandomItems(3, 'blueStar', bounds, [...blindBox, ...stones]);
-    const stars = generateRandomItems(3, 'star', bounds, [...blindBox, ...stones, ...blueStars]);
+    const stones = generateRandomItems(stoneNumber, 'stone', bounds, blindBox);
+    const blueStars = generateRandomItems(4, 'blueStar', bounds, [...blindBox, ...stones]);
+    const stars = generateRandomItems(starNumber, 'star', bounds, [...blindBox, ...stones, ...blueStars]);
 
     dispatch({
       type: 'REGENERATE_ALL_ITEMS',
@@ -592,7 +595,7 @@ const SpaceshipGameOptimized = () => {
           return prevAngle + direction * 2;
         },
       });
-    }, 16);
+    }, 20);
 
     return () => {
       if (swingAnimationRef.current) {

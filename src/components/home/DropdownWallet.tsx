@@ -19,6 +19,7 @@ const DropdownWallet = ({ address }: Props) => {
   const handleLogout = async () => {
     try {
       await authRequests.logout();
+      typeof window !== 'undefined' && window.localStorage.removeItem('isDisplayTutorial');
       toast.success('Ngắt kết nối ví thành công');
       router.replace('/login');
     } catch (error) {

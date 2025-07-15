@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+'use client';
 import React, { useState } from 'react';
 
 const useTimeInterval = () => {
@@ -9,9 +9,10 @@ const useTimeInterval = () => {
     isCounting: false,
     timeLeft: 0,
   });
+  const [isCompleted, setCompleted] = useState<boolean>(false);
   const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const handleTimeInterval = (timeLeft: number, isCounting: boolean, routeRedirect?: string) => {
+  const handleTimeInterval = (timeLeft: number, isCounting: boolean) => {
     setCount({ isCounting, timeLeft });
     if (intervalRef.current) {
       return;
@@ -22,7 +23,7 @@ const useTimeInterval = () => {
           if (intervalRef.current) {
             clearInterval(intervalRef.current);
             intervalRef.current = null;
-            routeRedirect && redirect(routeRedirect);
+            setCompleted(true);
           }
           return { isCounting: false, timeLeft };
         }
@@ -31,7 +32,7 @@ const useTimeInterval = () => {
     }, 1000);
   };
 
-  return { handleTimeInterval, isCounting: count.isCounting, timeLeft: count.timeLeft, };
+  return { handleTimeInterval, isCounting: count.isCounting, timeLeft: count.timeLeft, isCompleted };
 };
 
 export default useTimeInterval;

@@ -1,24 +1,25 @@
-/* eslint-disable ts/no-use-before-define */
+/* eslint-disable no-case-declarations */
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
+import type React from 'react';
+
 import { createCookie } from '@/app/actions/cookie';
 import GameItems from '@/components/gold-mining/GameItems';
-import RandomBlindBox from '@/components/gold-mining/RandomBlindBox';
 import RobotHook from '@/components/gold-mining/RobotHook';
 import useTimeInterval from '@/hooks/useTimeInterval';
 import ClockIcon from '@/libs/shared/icons/Clock';
 import SpeakerIcon from '@/libs/shared/icons/Speaker';
 import Image from 'next/image';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { redirect } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 
 type GameItem = {
   id: number;
   x: number;
   y: number;
   size: number;
-  type: 'heart' | 'blueStar' | 'star' | 'stone' | 'blindBox';
-  randomBlindBoxNumber?: number; // Only for blind boxes
+  type: | 'blueStar' | 'star' | 'stone' | 'blindBox';
 };
 
 type ViewportBounds = {
@@ -30,100 +31,251 @@ type ViewportBounds = {
   containerHeight: number;
 };
 
-const SpaceshipGame = () => {
-  const gameContainerRef = useRef<HTMLDivElement>(null);
-  const hookRef = useRef<HTMLDivElement>(null);
-  const hookTipMarkerRef = useRef<HTMLDivElement>(null);
-  const heartItemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  const blueStarRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  const stoneRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  const blindBoxRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  const starRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+type DistanceConfig = {
+  minDistance: number;
+  maxDistance: number;
+  centerDistance: number;
+};
 
-  const [angle, setAngle] = useState(-90);
-  const [isSwinging, setIsSwinging] = useState(true);
-  const [isExtending, setIsExtending] = useState(false);
-  const [ropeLength, setRopeLength] = useState(20);
-  const [isShrinking, setIsShrinking] = useState(false);
-  const [viewportBounds, setViewportBounds] = useState<ViewportBounds>({
+type ItemDistanceSettings = {
+  blueStar: DistanceConfig;
+  star: DistanceConfig;
+  stone: DistanceConfig;
+  blindBox: DistanceConfig;
+  global: DistanceConfig;
+};
+
+// Consolidated game state
+type GameState = {
+  // Hook state
+  angle: number;
+  isSwinging: boolean;
+  isExtending: boolean;
+  ropeLength: number;
+  isShrinking: boolean;
+
+  // Items
+  blueStars: GameItem[];
+  stars: GameItem[];
+  stones: GameItem[];
+  blindBox: GameItem[];
+
+  // Game state
+  carriedItem: GameItem | null;
+  score: { original: number; newScore: number };
+  isUpScore: boolean;
+
+  // UI state
+  viewportBounds: ViewportBounds;
+};
+
+type GameAction
+  = | { type: 'SET_ANGLE'; payload: number | ((prevAngle: number) => number) }
+    | { type: 'SET_SWINGING'; payload: boolean }
+    | { type: 'SET_EXTENDING'; payload: boolean }
+    | { type: 'SET_ROPE_LENGTH'; payload: number }
+    | { type: 'SET_SHRINKING'; payload: boolean }
+    | {
+      type: 'SET_ITEMS';
+      payload: {
+        type: keyof Pick<GameState, 'blueStars' | 'stars' | 'stones' | 'blindBox'>;
+        items: GameItem[];
+      };
+    }
+    | { type: 'REMOVE_ITEM'; payload: { type: GameItem['type']; id: number } }
+    | { type: 'SET_CARRIED_ITEM'; payload: GameItem | null }
+    | { type: 'UPDATE_SCORE'; payload: { original: number; newScore: number } }
+    | { type: 'SET_UP_SCORE'; payload: boolean }
+    | { type: 'SET_RANDOM_BLIND_BOX'; payload: { isDisplay: boolean } }
+    | { type: 'SET_VIEWPORT_BOUNDS'; payload: ViewportBounds }
+    | {
+      type: 'REGENERATE_ALL_ITEMS';
+      payload: {
+        blueStars: GameItem[];
+        stars: GameItem[];
+        stones: GameItem[];
+        blindBox: GameItem[];
+      };
+    };
+
+const initialState: GameState = {
+  angle: -90,
+  isSwinging: true,
+  isExtending: false,
+  ropeLength: 20,
+  isShrinking: false,
+  blueStars: [],
+  stars: [],
+  stones: [],
+  blindBox: [],
+  carriedItem: null,
+  score: { original: 0, newScore: 0 },
+  isUpScore: false,
+  viewportBounds: {
     minX: -250,
     maxX: 180,
     minY: 300,
     maxY: 800,
     containerWidth: 400,
     containerHeight: 600,
+  },
+};
+
+function gameReducer(state: GameState, action: GameAction): GameState {
+  switch (action.type) {
+    case 'SET_ANGLE':
+      return {
+        ...state,
+        angle: typeof action.payload === 'function' ? action.payload(state.angle) : action.payload,
+      };
+    case 'SET_SWINGING':
+      return { ...state, isSwinging: action.payload };
+    case 'SET_EXTENDING':
+      return { ...state, isExtending: action.payload };
+    case 'SET_ROPE_LENGTH':
+      return { ...state, ropeLength: action.payload };
+    case 'SET_SHRINKING':
+      return { ...state, isShrinking: action.payload };
+    case 'SET_ITEMS':
+      return { ...state, [action.payload.type]: action.payload.items };
+    case 'REMOVE_ITEM':
+      const itemType
+        = action.payload.type === 'blueStar'
+          ? 'blueStars'
+          : action.payload.type === 'star'
+            ? 'stars'
+            : action.payload.type === 'stone'
+              ? 'stones'
+              : 'blindBox';
+      return {
+        ...state,
+        [itemType]: state[itemType].filter(item => item.id !== action.payload.id),
+      };
+    case 'SET_CARRIED_ITEM':
+      return { ...state, carriedItem: action.payload };
+    case 'UPDATE_SCORE':
+      return { ...state, score: action.payload };
+    case 'SET_UP_SCORE':
+      return { ...state, isUpScore: action.payload };
+    case 'SET_VIEWPORT_BOUNDS':
+      return { ...state, viewportBounds: action.payload };
+    case 'REGENERATE_ALL_ITEMS':
+      return {
+        ...state,
+        blueStars: action.payload.blueStars,
+        stars: action.payload.stars,
+        stones: action.payload.stones,
+        blindBox: action.payload.blindBox,
+      };
+    default:
+      return state;
+  }
+}
+
+const SpaceshipGameOptimized = () => {
+  const [state, dispatch] = useReducer(gameReducer, initialState);
+
+  // Refs for DOM elements and intervals
+  const gameContainerRef = useRef<HTMLDivElement>(null);
+  const hookRef = useRef<HTMLDivElement>(null);
+  const hookTipMarkerRef = useRef<HTMLDivElement>(null);
+  const swingAnimationRef = useRef<NodeJS.Timeout | null>(null);
+  const extendIntervalRef = useRef<NodeJS.Timeout>(null);
+  const retractIntervalRef = useRef<NodeJS.Timeout>(null);
+  const upScoreTimeoutRef = useRef<NodeJS.Timeout>(null);
+
+  // Item refs
+
+  const blueStarRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const stoneRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const blindBoxRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const starRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+
+  // Distance settings - using ref to avoid re-renders
+  const distanceSettingsRef = useRef<ItemDistanceSettings>({
+    blueStar: { minDistance: 50, maxDistance: 80, centerDistance: 110 },
+    star: { minDistance: 45, maxDistance: 75, centerDistance: 105 },
+    stone: { minDistance: 55, maxDistance: 85, centerDistance: 115 },
+    blindBox: { minDistance: 60, maxDistance: 90, centerDistance: 120 },
+    global: { minDistance: 50, maxDistance: 80, centerDistance: 100 },
   });
 
-  // Calculate responsive viewport bounds
-  const calculateViewportBounds = useCallback((): ViewportBounds => {
-    if (!gameContainerRef.current) {
+  const { handleTimeInterval, isCounting, timeLeft, isCompleted } = useTimeInterval();
+
+  // Memoized viewport bounds calculation
+  const calculateViewportBounds = useMemo(() => {
+    return (): ViewportBounds => {
+      if (!gameContainerRef.current) {
+        return state.viewportBounds;
+      }
+
+      const container = gameContainerRef.current;
+      const containerRect = container.getBoundingClientRect();
+      const containerWidth = containerRect.width;
+      const containerHeight = containerRect.height;
+
+      const maxItemSize = 65;
+      const horizontalMargin = maxItemSize;
+      const verticalMargin = maxItemSize;
+      const robotAreaHeight = 200;
+      const availableWidth = containerWidth - horizontalMargin * 2;
+
       return {
-        minX: -250,
-        maxX: 150,
-        minY: 300,
-        maxY: 800,
-        containerWidth: 400,
-        containerHeight: 600,
+        minX: -(availableWidth / 2),
+        maxX: availableWidth / 2,
+        minY: robotAreaHeight + verticalMargin,
+        maxY: containerHeight - verticalMargin,
+        containerWidth,
+        containerHeight,
       };
-    }
-
-    const container = gameContainerRef.current;
-    const containerRect = container.getBoundingClientRect();
-    const containerWidth = containerRect.width;
-    const containerHeight = containerRect.height;
-
-    // Calculate safe margins (considering item sizes)
-    const maxItemSize = 65; // Maximum item size
-    const horizontalMargin = maxItemSize;
-    const verticalMargin = maxItemSize;
-
-    // Robot position is roughly at the center top
-    const robotAreaHeight = 200; // Space occupied by robot and UI elements
-
-    // Calculate bounds relative to container center
-    const availableWidth = containerWidth - horizontalMargin * 2;
-
-    return {
-      minX: -(availableWidth / 2),
-      maxX: availableWidth / 2,
-      minY: robotAreaHeight + verticalMargin,
-      maxY: containerHeight - verticalMargin,
-      containerWidth,
-      containerHeight,
     };
+  }, [state.viewportBounds]);
+
+  // Memoized distance functions
+  const getDistanceConfig = useCallback((itemType: GameItem['type']): DistanceConfig => {
+    return distanceSettingsRef.current[itemType] || distanceSettingsRef.current.global;
   }, []);
 
-  // Update viewport bounds on mount and resize
-  useEffect(() => {
-    const updateBounds = () => {
-      const newBounds = calculateViewportBounds();
-      setViewportBounds(newBounds);
-    };
+  const getRandomDistance = useCallback(
+    (itemType: GameItem['type'], bounds: ViewportBounds) => {
+      const config = getDistanceConfig(itemType);
+      const scale = Math.min(bounds.containerWidth / 400, bounds.containerHeight / 600);
+      const scaledMin = config.minDistance * scale;
+      const scaledMax = config.maxDistance * scale;
+      return Math.random() * (scaledMax - scaledMin) + scaledMin;
+    },
+    [getDistanceConfig],
+  );
 
-    // Initial calculation
-    updateBounds();
+  const getCenterDistance = useCallback(
+    (itemType: GameItem['type'], bounds: ViewportBounds) => {
+      const config = getDistanceConfig(itemType);
+      const scale = Math.min(bounds.containerWidth / 400, bounds.containerHeight / 600);
+      return config.centerDistance * scale;
+    },
+    [getDistanceConfig],
+  );
 
-    // Add resize listener
-    const handleResize = () => {
-      updateBounds();
-      // Regenerate items with new bounds
-      regenerateAllItems();
-    };
+  // Helper function to get distance between two different item types
+  const getCrossItemDistance = useCallback(
+    (itemType1: GameItem['type'], itemType2: GameItem['type'], bounds: ViewportBounds) => {
+      const config1 = getDistanceConfig(itemType1);
+      const config2 = getDistanceConfig(itemType2);
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [calculateViewportBounds]);
+      // Use the larger distance requirement between the two item types
+      const scale = Math.min(bounds.containerWidth / 400, bounds.containerHeight / 600);
+      const distance1 = ((config1.minDistance + config1.maxDistance) / 2) * scale;
+      const distance2 = ((config2.minDistance + config2.maxDistance) / 2) * scale;
 
-  // Helper function to generate random items with responsive bounds
+      return Math.max(distance1, distance2);
+    },
+    [getDistanceConfig],
+  );
+
+  // Optimized item generation - Fixed to check distances between ALL item types
   const generateRandomItems = useCallback(
-    (count: number, type: 'heart' | 'blueStar' | 'stone' | 'blindBox' | 'star', bounds: ViewportBounds) => {
+    (count: number, type: GameItem['type'], bounds: ViewportBounds, existingItems: GameItem[] = []): GameItem[] => {
       const items: GameItem[] = [];
-      const getRandomDistance = () => {
-        // Random distance between 40px and 120px
-        const minDist = Math.min(70, bounds.containerWidth * 0.08);
-        const maxDist = Math.min(160, bounds.containerWidth * 0.25);
-        return Math.random() * (maxDist - minDist) + minDist;
-      };
 
       for (let i = 0; i < count; i++) {
         let attempts = 0;
@@ -132,17 +284,14 @@ const SpaceshipGame = () => {
 
         while (!validPosition && attempts < 100) {
           const size
-            = type === 'heart'
-              ? Math.random() * 15 + 15
-              : type === 'stone'
-                ? Math.random() * 20 + 30
-                : type === 'blueStar'
-                  ? Math.random() * 15 + 15
-                  : type === 'blindBox'
-                    ? 65
-                    : Math.random() * 15 + 15;
+            = type === 'stone'
+              ? Math.random() * 20 + 30
+              : type === 'blueStar'
+                ? Math.random() * 15 + 15
+                : type === 'blindBox'
+                  ? 65
+                  : Math.random() * 15 + 15;
 
-          // Ensure items don't go outside bounds considering their size
           const halfSize = size / 2;
           const safeMinX = bounds.minX + halfSize;
           const safeMaxX = bounds.maxX - halfSize;
@@ -152,25 +301,28 @@ const SpaceshipGame = () => {
           const x = Math.random() * (safeMaxX - safeMinX) + safeMinX;
           const y = Math.random() * (safeMaxY - safeMinY) + safeMinY;
 
-          const randomBlindBoxNumber = type === 'blindBox' ? Math.floor(Math.random() * 9) + 1 : undefined;
           newItem = {
             id: Date.now() + Math.random() + i,
             x: Math.round(x),
             y: Math.round(y),
             size: Math.round(size),
             type,
-            randomBlindBoxNumber
           };
 
-          // Check distance from center (robot area)
+          // Check distance from center (robot area) using item-specific distance
           const distanceFromCenter = Math.sqrt(newItem.x ** 2 + (newItem.y - 150) ** 2);
-          const tooCloseToCenter = distanceFromCenter < Math.min(120, bounds.containerWidth * 0.2);
+          const centerDistance = getCenterDistance(type, bounds);
+          const tooCloseToCenter = distanceFromCenter < centerDistance;
 
-          // Check distance from other items with random minimum distances
-          const tooCloseToOthers = items.some((existingItem) => {
+          // Check distance from ALL existing items (both same type and different types)
+          const allExistingItems = [...existingItems, ...items];
+          const tooCloseToOthers = allExistingItems.some((existingItem) => {
             const distance = Math.sqrt((existingItem.x - newItem.x) ** 2 + (existingItem.y - newItem.y) ** 2);
-            const randomMinDistance = getRandomDistance();
-            return distance < randomMinDistance;
+
+            // Get cross-item distance requirement
+            const minRequiredDistance = getCrossItemDistance(type, existingItem.type, bounds);
+
+            return distance < minRequiredDistance;
           });
 
           validPosition = !tooCloseToCenter && !tooCloseToOthers;
@@ -184,67 +336,32 @@ const SpaceshipGame = () => {
 
       return items;
     },
-    [],
+    [getRandomDistance, getCenterDistance],
   );
 
-  // Initialize items with default empty arrays
-  const [heartItems, setHeartItems] = useState<GameItem[]>([]);
-  const [blueStars, setBlueStars] = useState<GameItem[]>([]);
-  const [stars, setStars] = useState<GameItem[]>([]);
-  const [stones, setStones] = useState<GameItem[]>([]);
-  const [blindBox, setBlindBox] = useState<GameItem[]>([]);
-  // Regenerate all items when bounds change
-
-  const randomBlindBoxSize = Math.floor(Math.random() * 3) + 1;
-
+  // Updated regenerateAllItems to pass existing items for distance checking
   const regenerateAllItems = useCallback(() => {
     const bounds = calculateViewportBounds();
-    setHeartItems(generateRandomItems(5, 'heart', bounds));
-    setBlueStars(generateRandomItems(3, 'blueStar', bounds));
-    setStars(generateRandomItems(3, 'star', bounds));
-    setStones(generateRandomItems(3, 'stone', bounds));
-    setBlindBox(generateRandomItems(randomBlindBoxSize, 'blindBox', bounds));
+
+    // Generate larger items first to ensure they get placed
+    const blindBox = generateRandomItems(1, 'blindBox', bounds, []);
+    const stones = generateRandomItems(3, 'stone', bounds, blindBox);
+    const blueStars = generateRandomItems(3, 'blueStar', bounds, [...blindBox, ...stones]);
+    const stars = generateRandomItems(3, 'star', bounds, [...blindBox, ...stones, ...blueStars]);
+
+    dispatch({
+      type: 'REGENERATE_ALL_ITEMS',
+      payload: {
+        blueStars,
+        stars,
+        stones,
+        blindBox,
+      },
+    });
   }, [generateRandomItems, calculateViewportBounds]);
 
-  const [displayRandomBlindBox, setDisplayRandomBlindBox] = useState<{
-    isDisplay: boolean;
-    secretNumber: number;
-  }>({
-    isDisplay: false,
-    secretNumber: 0,
-  });
-
-  // Initialize items when component mounts and bounds are available
-  useEffect(() => {
-    if (gameContainerRef.current && viewportBounds.containerWidth > 0) {
-      regenerateAllItems();
-    }
-  }, [regenerateAllItems, viewportBounds.containerWidth]);
-
-  const [carriedItem, setCarriedItem] = useState<GameItem | null>(null);
-  const [score, setScore] = useState<{
-    original: number;
-    newScore: number;
-  }>({
-    original: 0,
-    newScore: 0,
-  });
-
-  const { handleTimeInterval, isCounting, timeLeft } = useTimeInterval();
-  const [isUpScore, setIsUpScore] = useState<boolean>(false);
-
-  // Helper function to check if two rectangles overlap
-  const checkRectOverlap = (rect1: DOMRect, rect2: DOMRect, tolerance = 0) => {
-    return !(
-      rect1.right < rect2.left - tolerance
-      || rect1.left > rect2.right + tolerance
-      || rect1.bottom < rect2.top - tolerance
-      || rect1.top > rect2.bottom + tolerance
-    );
-  };
-
-  // Get hook tip position using the marker element
-  const getHookTipPosition = useCallback(() => {
+  // Optimized collision detection
+  const checkCollisionWithBoundingRect = useCallback(() => {
     if (!hookTipMarkerRef.current || !gameContainerRef.current) {
       return null;
     }
@@ -253,165 +370,146 @@ const SpaceshipGame = () => {
     const hookTipX = markerRect.left + markerRect.width / 2;
     const hookTipY = markerRect.top + markerRect.height / 2;
     const tipRect = new DOMRect(hookTipX - 15, hookTipY - 15, 30, 30);
-    return tipRect;
-  }, [angle, ropeLength]);
 
-  // Check collision using getBoundingClientRect
-  const checkCollisionWithBoundingRect = useCallback(() => {
-    const hookTipRect = getHookTipPosition();
-    if (!hookTipRect) {
-      return null;
-    }
+    const checkRectOverlap = (rect1: DOMRect, rect2: DOMRect, tolerance = 15) => {
+      return !(
+        rect1.right < rect2.left - tolerance
+        || rect1.left > rect2.right + tolerance
+        || rect1.bottom < rect2.top - tolerance
+        || rect1.top > rect2.bottom + tolerance
+      );
+    };
 
-    // Check heart items
-    for (const [id, element] of heartItemRefs.current.entries()) {
-      if (element) {
-        const itemRect = element.getBoundingClientRect();
-        const isColliding = checkRectOverlap(hookTipRect, itemRect, 15);
-        if (isColliding) {
-          const item = heartItems.find(g => g.id === id);
-          if (item) {
-            return item;
-          }
-        }
-      }
-    }
+    // Check all item types in order of priority
+    const itemChecks = [
+      { refs: blueStarRefs, items: state.blueStars },
+      { refs: starRefs, items: state.stars },
+      { refs: stoneRefs, items: state.stones },
+      { refs: blindBoxRefs, items: state.blindBox },
+    ];
 
-    // Check blue stars
-    for (const [id, element] of blueStarRefs.current.entries()) {
-      if (element) {
-        const itemRect = element.getBoundingClientRect();
-        const isColliding = checkRectOverlap(hookTipRect, itemRect, 15);
-        if (isColliding) {
-          const item = blueStars.find(s => s.id === id);
-          if (item) {
-            return item;
-          }
-        }
-      }
-    }
-
-    // Check stars
-    for (const [id, element] of starRefs.current.entries()) {
-      if (element) {
-        const itemRect = element.getBoundingClientRect();
-        const isColliding = checkRectOverlap(hookTipRect, itemRect, 15);
-        if (isColliding) {
-          const item = stars.find(s => s.id === id);
-          if (item) {
-            return item;
-          }
-        }
-      }
-    }
-
-    // Check stones
-    for (const [id, element] of stoneRefs.current.entries()) {
-      if (element) {
-        const itemRect = element.getBoundingClientRect();
-        const isColliding = checkRectOverlap(hookTipRect, itemRect, 15);
-        if (isColliding) {
-          const item = stones.find(s => s.id === id);
-          if (item) {
-            return item;
-          }
-        }
-      }
-    }
-
-    // Check blind boxes
-    for (const [id, element] of blindBoxRefs.current.entries()) {
-      if (element) {
-        const itemRect = element.getBoundingClientRect();
-        const isColliding = checkRectOverlap(hookTipRect, itemRect, 15);
-        if (isColliding) {
-          const item = blindBox.find(s => s.id === id);
-          if (item) {
-            return item;
+    for (const { refs, items } of itemChecks) {
+      for (const [id, element] of refs.current.entries()) {
+        if (element) {
+          const itemRect = element.getBoundingClientRect();
+          if (checkRectOverlap(tipRect, itemRect)) {
+            const item = items.find(item => item.id === id);
+            if (item) {
+              return item;
+            }
           }
         }
       }
     }
 
     return null;
-  }, [heartItems, blueStars, stars, stones, blindBox, getHookTipPosition]);
+  }, [state.blueStars, state.stars, state.stones, state.blindBox]);
 
+  // Optimized click handler with batched updates
   const handleClick = useCallback(() => {
-    if (isExtending) {
+    if (state.isExtending) {
       return;
     }
-    setIsSwinging(false);
-    setIsExtending(true);
-    setIsShrinking(false);
-    const maxLength = Math.min(600, viewportBounds.containerHeight * 0.8);
+
+    // Clear any existing intervals
+    if (extendIntervalRef.current) {
+      clearInterval(extendIntervalRef.current);
+    }
+    if (retractIntervalRef.current) {
+      clearInterval(retractIntervalRef.current);
+    }
+
+    // Batch initial state updates
+    dispatch({ type: 'SET_SWINGING', payload: false });
+    dispatch({ type: 'SET_EXTENDING', payload: true });
+    dispatch({ type: 'SET_SHRINKING', payload: false });
+
+    const maxLength = Math.min(600, state.viewportBounds.containerHeight * 0.8);
     let extendLength = 20;
     let currentCarriedItem: GameItem | null = null;
 
-    const extendInterval = setInterval(() => {
+    extendIntervalRef.current = setInterval(() => {
       extendLength += 2;
-      setRopeLength(extendLength);
+      dispatch({ type: 'SET_ROPE_LENGTH', payload: extendLength });
 
       const hitItem = checkCollisionWithBoundingRect();
-
       if (hitItem || extendLength >= maxLength) {
-        clearInterval(extendInterval);
+        if (extendIntervalRef.current) {
+          clearInterval(extendIntervalRef.current);
+        }
 
         if (hitItem) {
           currentCarriedItem = hitItem;
-          setCarriedItem(hitItem);
-          // Remove item from game field immediately when caught
-          if (hitItem.type === 'heart') {
-            setHeartItems(prev => prev.filter(g => g.id !== hitItem.id));
-            heartItemRefs.current.delete(hitItem.id);
-          } else if (hitItem.type === 'blueStar') {
-            setBlueStars(prev => prev.filter(s => s.id !== hitItem.id));
-            blueStarRefs.current.delete(hitItem.id);
-          } else if (hitItem.type === 'stone') {
-            setStones(prev => prev.filter(s => s.id !== hitItem.id));
-            stoneRefs.current.delete(hitItem.id);
-          } else if (hitItem.type === 'blindBox') {
-            setBlindBox(prev => prev.filter(s => s.id !== hitItem.id));
-            blindBoxRefs.current.delete(hitItem.id);
-          } else if (hitItem.type === 'star') {
-            setStars(prev => prev.filter(s => s.id !== hitItem.id));
-            starRefs.current.delete(hitItem.id);
-          }
+          dispatch({ type: 'SET_CARRIED_ITEM', payload: hitItem });
+          dispatch({ type: 'REMOVE_ITEM', payload: { type: hitItem.type, id: hitItem.id } });
+
+          // Remove from refs
+          const refMap
+            = hitItem.type === 'blueStar'
+              ? blueStarRefs
+              : hitItem.type === 'star'
+                ? starRefs
+                : hitItem.type === 'stone'
+                  ? stoneRefs
+                  : blindBoxRefs;
+          refMap.current.delete(hitItem.id);
         }
 
         // Start retracting
-        setIsShrinking(true);
+        dispatch({ type: 'SET_SHRINKING', payload: true });
         let retract = extendLength;
-        const retractInterval = setInterval(
+
+        retractIntervalRef.current = setInterval(
           () => {
             retract -= 8;
-            setRopeLength(retract);
+            dispatch({ type: 'SET_ROPE_LENGTH', payload: retract });
 
             if (retract <= 20) {
-              clearInterval(retractInterval);
-              setIsExtending(false);
-              setIsShrinking(false);
-              setIsSwinging(true);
+              if (retractIntervalRef.current) {
+                clearInterval(retractIntervalRef.current);
+              }
 
-              // Add score when item reaches the top
+              // Batch final state updates
+              dispatch({ type: 'SET_EXTENDING', payload: false });
+              dispatch({ type: 'SET_SHRINKING', payload: false });
+              dispatch({ type: 'SET_SWINGING', payload: true });
 
               if (currentCarriedItem) {
-                if (currentCarriedItem.type === 'heart') {
-                  setScore(prev => ({ original: prev.original + 10, newScore: 10 }));
-                } else if (currentCarriedItem.type === 'blueStar') {
-                  setScore(prev => ({ original: prev.original + 40, newScore: 40 }));
-                } else if (currentCarriedItem.type === 'stone') {
-                  setScore(prev => ({ original: prev.original - 10, newScore: -10 }));
-                } else if (currentCarriedItem.type === 'blindBox') {
-                  setScore(prev => ({ original: prev.original + 100, newScore: 100 }));
-                  setDisplayRandomBlindBox({
-                    isDisplay: true,
-                    secretNumber: hitItem?.randomBlindBoxNumber || 0,
+                const scoreMap = {
+                  blueStar: 10,
+                  stone: 0,
+                  blindBox: 99,
+                  star: 9,
+                };
+
+                const newScore = scoreMap[currentCarriedItem.type];
+                dispatch({
+                  type: 'UPDATE_SCORE',
+                  payload: {
+                    original: state.score.original + newScore,
+                    newScore,
+                  },
+                });
+
+                if (currentCarriedItem.type === 'blindBox') {
+                  dispatch({
+                    type: 'SET_RANDOM_BLIND_BOX',
+                    payload: {
+                      isDisplay: true,
+                    },
                   });
-                } else if (currentCarriedItem.type === 'star') {
-                  setScore(prev => ({ original: prev.original + 50, newScore: 50 }));
                 }
-                setCarriedItem(null);
-                setIsUpScore(true);
+
+                dispatch({ type: 'SET_CARRIED_ITEM', payload: null });
+                dispatch({ type: 'SET_UP_SCORE', payload: true });
+
+                // Auto-hide score animation
+                if (upScoreTimeoutRef.current) {
+                  clearTimeout(upScoreTimeoutRef.current);
+                }
+                upScoreTimeoutRef.current = setTimeout(() => {
+                  dispatch({ type: 'SET_UP_SCORE', payload: false });
+                }, 800);
               }
             }
           },
@@ -419,102 +517,136 @@ const SpaceshipGame = () => {
         );
       }
     }, 4);
-  }, [isExtending, checkCollisionWithBoundingRect, viewportBounds.containerHeight]);
-  // Swinging logic
+  }, [state.isExtending, state.viewportBounds.containerHeight, state.score.original, checkCollisionWithBoundingRect]);
+
+  // Debounced resize handler
+  const debouncedResize = useMemo(() => {
+    let timeoutId: NodeJS.Timeout;
+    return () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        const newBounds = calculateViewportBounds();
+        dispatch({ type: 'SET_VIEWPORT_BOUNDS', payload: newBounds });
+        regenerateAllItems();
+      }, 150);
+    };
+  }, [calculateViewportBounds, regenerateAllItems]);
+
+  // Consolidated effects
   useEffect(() => {
-    if (!isSwinging) {
+    // Initialize game
+    handleTimeInterval(59, true);
+
+    const updateBounds = () => {
+      const newBounds = calculateViewportBounds();
+      dispatch({ type: 'SET_VIEWPORT_BOUNDS', payload: newBounds });
+    };
+
+    updateBounds();
+
+    // Add resize listener
+    window.addEventListener('resize', debouncedResize);
+
+    return () => {
+      window.removeEventListener('resize', debouncedResize);
+      if (swingAnimationRef.current) {
+        cancelAnimationFrame(swingAnimationRef.current as unknown as number);
+      }
+      if (extendIntervalRef.current) {
+        clearInterval(extendIntervalRef.current);
+      }
+      if (retractIntervalRef.current) {
+        clearInterval(retractIntervalRef.current);
+      }
+      if (upScoreTimeoutRef.current) {
+        clearTimeout(upScoreTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Initialize items when bounds are ready
+  useEffect(() => {
+    if (gameContainerRef.current && state.viewportBounds.containerWidth > 0) {
+      regenerateAllItems();
+    }
+  }, [state.viewportBounds.containerWidth]);
+
+  // Handle swinging animation - Fixed version
+  useEffect(() => {
+    if (!state.isSwinging) {
+      if (swingAnimationRef.current) {
+        clearInterval(swingAnimationRef.current);
+      }
       return;
     }
 
     let direction = 1;
-    const interval = setInterval(() => {
-      setAngle((prev) => {
-        const next = prev + direction * 2;
-        if (next > 90 || next < -90) {
-          direction *= -1;
-        }
-        return prev + direction * 2;
+    swingAnimationRef.current = setInterval(() => {
+      dispatch({
+        type: 'SET_ANGLE',
+        payload: (prevAngle: number) => {
+          const next = prevAngle + direction * 2;
+          if (next > 90 || next < -90) {
+            direction *= -1;
+          }
+          return prevAngle + direction * 2;
+        },
       });
     }, 16);
-    return () => clearInterval(interval);
-  }, [isSwinging]);
 
+    return () => {
+      if (swingAnimationRef.current) {
+        clearInterval(swingAnimationRef.current);
+      }
+    };
+  }, [state.isSwinging]);
+
+  // Save score to cookie
   useEffect(() => {
-    if (isUpScore) {
-      setTimeout(() => {
-        setIsUpScore(false);
-      }, 800);
+    if (state.score && timeLeft >= 0) {
+      localStorage.setItem('goldMiningScore', JSON.stringify(state.score.original));
     }
-  }, [isUpScore]);
+    if (isCompleted) {
+      const inspirationNumber = localStorage.getItem('inspiration');
+      const inspirationParsed = Number(JSON.parse(inspirationNumber || '0'));
+      if (inspirationParsed) {
+        localStorage.setItem('inspiration', (inspirationParsed + 1).toString());
+      } else {
+        localStorage.setItem('inspiration', '1');
+      }
+      redirect('/gold-mining/result');
+    }
+  }, [state.score, timeLeft]);
 
+  // Add this new useEffect after the existing useEffects:
   useEffect(() => {
-    handleTimeInterval(59, true, '/gold-mining/result');
-  }, []);
-
-  useEffect(() => {
-    if (score && timeLeft >= 0) {
+    if (timeLeft === 0 && isCounting) {
+      // Save final score before redirect
       createCookie({
         name: 'goldMiningScore',
-        value: JSON.stringify(score.original),
+        value: JSON.stringify(state.score.original),
       });
+
+      // Redirect to result page
+      window.location.href = '/gold-mining/result';
     }
-  }, [score]);
+  }, [timeLeft, isCounting, state.score.original]);
 
-  // Ref callbacks
-  const setHeartItemRef = useCallback(
-    (id: number) => (element: HTMLDivElement | null) => {
+  // Memoized ref callbacks
+  const createRefCallback = useCallback((refMap: React.RefObject<Map<number, HTMLDivElement>>) => {
+    return (id: number) => (element: HTMLDivElement | null) => {
       if (element) {
-        heartItemRefs.current.set(id, element);
+        refMap.current.set(id, element);
       } else {
-        heartItemRefs.current.delete(id);
+        refMap.current.delete(id);
       }
-    },
-    [],
-  );
+    };
+  }, []);
 
-  const setBlueStarRef = useCallback(
-    (id: number) => (element: HTMLDivElement | null) => {
-      if (element) {
-        blueStarRefs.current.set(id, element);
-      } else {
-        blueStarRefs.current.delete(id);
-      }
-    },
-    [],
-  );
-
-  const setStarRef = useCallback(
-    (id: number) => (element: HTMLDivElement | null) => {
-      if (element) {
-        starRefs.current.set(id, element);
-      } else {
-        starRefs.current.delete(id);
-      }
-    },
-    [],
-  );
-
-  const setStoneRef = useCallback(
-    (id: number) => (element: HTMLDivElement | null) => {
-      if (element) {
-        stoneRefs.current.set(id, element);
-      } else {
-        stoneRefs.current.delete(id);
-      }
-    },
-    [],
-  );
-
-  const setBlindBoxRef = useCallback(
-    (id: number) => (element: HTMLDivElement | null) => {
-      if (element) {
-        blindBoxRefs.current.set(id, element);
-      } else {
-        blindBoxRefs.current.delete(id);
-      }
-    },
-    [],
-  );
+  const setBlueStarRef = useMemo(() => createRefCallback(blueStarRefs), [createRefCallback]);
+  const setStarRef = useMemo(() => createRefCallback(starRefs), [createRefCallback]);
+  const setStoneRef = useMemo(() => createRefCallback(stoneRefs), [createRefCallback]);
+  const setBlindBoxRef = useMemo(() => createRefCallback(blindBoxRefs), [createRefCallback]);
 
   return (
     <div
@@ -549,33 +681,45 @@ const SpaceshipGame = () => {
           height={100}
           alt="badge medal"
         />
-        <p className="text-shadow-custom text-[1rem] font-[590]">{score.original}</p>
+        <p className="text-shadow-custom text-[1rem] font-[590]">{state.score.original}</p>
       </div>
-
-      {/*  Blind box */}
-
-      {
-        displayRandomBlindBox.isDisplay && <RandomBlindBox secretNumber={displayRandomBlindBox.secretNumber} setDisplayRandomBlindBox={setDisplayRandomBlindBox} />
-      }
 
       {/* Score Animation */}
       <p
         className={`${
-          isUpScore ? '-translate-y-10 opacity-100' : ''
+          state.isUpScore ? '-translate-y-10 opacity-100' : ''
         } text-shadow-custom transition-all duration-300 opacity-0 absolute top-56 -translate-x-10`}
       >
-        {score.newScore === -10 ? '' : '+'}
-        {score.newScore}
+        {state.score.newScore === -10 ? '' : '+'}
+        {state.score.newScore}
       </p>
 
       {/* Robot + Hook */}
-      <RobotHook angle={angle} carriedItem={carriedItem} hookRef={hookRef} hookTipMarkerRef={hookTipMarkerRef} isExtending={isExtending} isShrinking={isShrinking} isSwinging={isSwinging} ropeLength={ropeLength} />
+      <RobotHook
+        angle={state.angle}
+        carriedItem={state.carriedItem}
+        hookRef={hookRef}
+        hookTipMarkerRef={hookTipMarkerRef}
+        isExtending={state.isExtending}
+        isShrinking={state.isShrinking}
+        isSwinging={state.isSwinging}
+        ropeLength={state.ropeLength}
+      />
 
       {/* Game Items */}
-      <GameItems blindBox={blindBox} blueStars={blueStars} heartItems={heartItems} stars={stars} stones={stones} setStoneRef={setStoneRef} setBlindBoxRef={setBlindBoxRef} setBlueStarRef={setBlueStarRef} setHeartItemRef={setHeartItemRef} setStarRef={setStarRef} />
+      <GameItems
+        blindBox={state.blindBox}
+        blueStars={state.blueStars}
+        stars={state.stars}
+        stones={state.stones}
+        setStoneRef={setStoneRef}
+        setBlindBoxRef={setBlindBoxRef}
+        setBlueStarRef={setBlueStarRef}
+        setStarRef={setStarRef}
+      />
 
     </div>
   );
 };
 
-export default SpaceshipGame;
+export default SpaceshipGameOptimized;

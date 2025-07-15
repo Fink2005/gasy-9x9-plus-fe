@@ -1,7 +1,6 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import Image from 'next/image';
-import type { Dispatch, SetStateAction } from 'react';
 import { useState } from 'react';
 
 const blindBoxList = [
@@ -130,7 +129,7 @@ const blindBoxList = [
 
 type Props = {
   secretNumber: number;
-  setDisplayRandomBlindBox: Dispatch<SetStateAction<{ isDisplay: boolean; secretNumber: number }>>;
+  setDisplayRandomBlindBox: (value: { isDisplay: boolean; secretNumber: number }) => void;
 };
 
 const RandomBlindBox = ({ secretNumber, setDisplayRandomBlindBox }: Props) => {

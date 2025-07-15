@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import GamePad2 from '@/libs/shared/icons/GamePad2';
 import QuestionCircleIcon from '@/libs/shared/icons/QuestionCircle';
 import UnknowAvatarIcon from '@/libs/shared/icons/UnknowAvatar';
+import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -15,24 +16,35 @@ type Props = {
 
 const GoldMining = ({ address }: Props) => {
   const [isDisplayQuestion, setIsDisplayQuestion] = useState<boolean>(false);
+  const [isLoading, setisLoading] = useState<boolean>(false);
   const router = useRouter();
   const handlePlayGame = async () => {
-    const result = await goldMiningRequest.GoldMiningStart();
-    const sessionId = result?.sessionId || '';
-    createCookie({
-      name: 'sessionId',
-      value: sessionId || '',
-    });
-    router.push('/gold-mining/game');
+    setisLoading(true);
+    try {
+      const result = await goldMiningRequest.GoldMiningStart();
+      const sessionId = result?.sessionId || '';
+      createCookie({
+        name: 'sessionId',
+        value: sessionId || '',
+      });
+      router.push('/gold-mining/game');
+    } finally {
+      setisLoading(false);
+    }
   };
   return (
     <>
       <div className="flex space-x-2 z-10">
-        <Button className="button-base" onClick={handlePlayGame}>
-          <GamePad2 />
-          <span className="-translate-x-2">
-            Chơi game 10/1000
-          </span>
+        <Button className="button-base " onClick={handlePlayGame}>
+          {isLoading ? <Loader2 className="animate-spin w-40" />
+            : (
+                <>
+                  <GamePad2 />
+                  <span className="-translate-x-2">
+                    Chơi game 9/10
+                  </span>
+                </>
+              )}
         </Button>
         <Button className="button-base !p-0" onClick={() => setIsDisplayQuestion(!isDisplayQuestion)}>
           <QuestionCircleIcon />

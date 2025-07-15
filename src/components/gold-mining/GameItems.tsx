@@ -1,29 +1,24 @@
 import BlueStarIcon from '@/libs/shared/icons/BlueStar';
-import HeartIcon from '@/libs/shared/icons/Heart';
 import StarIcon from '@/libs/shared/icons/Star';
 import StoneIcon from '@/libs/shared/icons/Stone';
 import type { GameItem } from '@/types/game';
 import Image from 'next/image';
 
 type Props = {
-  heartItems: GameItem[];
   blueStars: GameItem[];
   stones: GameItem[];
   blindBox: GameItem[];
   stars: GameItem[];
-  setHeartItemRef: (id: number) => (element: HTMLDivElement | null) => void;
   setBlueStarRef: (id: number) => (element: HTMLDivElement | null) => void;
   setStoneRef: (id: number) => (element: HTMLDivElement | null) => void;
   setBlindBoxRef: (id: number) => (element: HTMLDivElement | null) => void;
   setStarRef: (id: number) => (element: HTMLDivElement | null) => void;
 };
 const GameItems = ({
-  heartItems,
   blueStars,
   stones,
   blindBox,
   stars,
-  setHeartItemRef,
   setBlueStarRef,
   setStoneRef,
   setBlindBoxRef,
@@ -31,23 +26,6 @@ const GameItems = ({
 }: Props) => {
   return (
     <>
-      {/* Heart Items */}
-      {heartItems.map(item => (
-        <div
-          key={item.id}
-          ref={setHeartItemRef(item.id)}
-          className="absolute shadow-lg"
-          style={{
-            width: 65,
-            height: 65,
-            left: `calc(50% + ${item.x}px)`,
-            top: `${item.y}px`,
-            transform: 'translate(-50%, -50%)',
-          }}
-        >
-          <HeartIcon />
-        </div>
-      ))}
 
       {/* Blue Stars */}
       {blueStars.map(star => (

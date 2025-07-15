@@ -88,10 +88,15 @@ const OTPForm = ({ email }: Props) => {
       const responseKyc = await userRequests.verifyKyc({ kycOtp: countFormated });
       createCookie({
         name: 'authData',
-        value: JSON.stringify({
-          user: responseKyc?.user,
-          accessToken: responseKyc?.accessToken,
-        }),
+        value: JSON.stringify(
+          responseKyc?.user,
+        ),
+      });
+      createCookie({
+        name: 'accessToken9x9',
+        value: JSON.stringify(
+          responseKyc?.accessToken,
+        ),
       });
       router.push('/verified');
       // redirect('/verified');

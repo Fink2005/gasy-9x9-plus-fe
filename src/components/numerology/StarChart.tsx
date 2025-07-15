@@ -15,26 +15,26 @@ const StarChart = ({ baseUrl, numerologyResult }: Props) => {
       {/* Destiny */}
       <Link href={`${baseUrl}&meaning=destiny`} className="flex flex-col items-center absolute -top-5 left-35">
         <p className="text-shadow-custom text-medium-custom-2">SỨ MỆNH</p>
-        <Image width={62} height={62} alt="destiny" src="/assets/destiny.png" />
+        <Image width={62} height={62} alt="destiny" src="/assets/destiny.png" className="size-auto" />
       </Link>
       {/* Life Path */}
       <Link href={`${baseUrl}&meaning=lifePath`} className="flex flex-col items-center right-[49px] absolute top-10">
         <p className="text-shadow-custom text-medium-custom text-medium-custom-2">ĐƯỜNG ĐỜI</p>
-        <Image width={62} height={62} alt="life path" src="/assets/life-path.png" />
+        <Image width={62} height={62} alt="life path" src="/assets/life-path.png" className="size-auto" />
       </Link>
       {/* Personality */}
       <Link href={`${baseUrl}&meaning=personality`} className="flex flex-col items-center left-8 absolute top-27">
         <p className="text-shadow-custom text-medium-custom-2">TÍNH CÁCH</p>
-        <Image width={62} height={62} alt="life path" src="/assets/personality.png" />
+        <Image width={62} height={62} alt="life path" src="/assets/personality.png" className="size-auto" />
       </Link>
       {/* soul */}
       <Link href={`${baseUrl}&meaning=soul`} className="flex flex-col items-center left-34 absolute bottom-0">
-        <Image width={62} height={62} alt="life path" src="/assets/soul.png" />
+        <Image width={62} height={62} alt="life path" src="/assets/soul.png" className="size-auto" />
         <p className="text-shadow-custom text-medium-custom-2">TÂM HỒN</p>
       </Link>
       {/* Physical */}
       <Link href={`${baseUrl}&meaning=body`} className="flex flex-col items-center absolute right-15 bottom-12">
-        <Image width={62} height={62} alt="life path" src="/assets/physical.png" />
+        <Image width={62} height={62} alt="life path" src="/assets/physical.png" className="size-auto" />
         <p className="text-shadow-custom text-medium-custom-2">THỂ CHẤT</p>
       </Link>
 

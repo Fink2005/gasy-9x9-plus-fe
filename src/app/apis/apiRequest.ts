@@ -52,12 +52,20 @@ const retryRefreshToken = async <T>(refreshToken: string, endpoint: string, retr
       credentials: 'include',
     });
 
+    const contentType = refreshResponse.headers.get('content-type');
+    let refreshData: any = null;
+
+    if (contentType && contentType.includes('application/json')) {
+      refreshData = await refreshResponse.json();
+    }
+
     if (!refreshResponse.ok) {
-      throw new Error(`Refresh token request failed with status ${refreshResponse.status}`);
+      const errorMessage = refreshData?.message || `Refresh token request failed with status ${refreshResponse.status}`;
+      throw new Error(errorMessage);
     }
 
     // Get the new access token after refresh
-    const newAccessToken = await getCookie('accessToken9x9');
+    const newAccessToken = refreshData?.accessToken || null;
     if (!newAccessToken) {
       throw new Error('Failed to get new access token after refresh');
     }

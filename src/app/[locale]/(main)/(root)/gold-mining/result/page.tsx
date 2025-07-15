@@ -6,7 +6,11 @@ import Image from 'next/image';
 const page = async () => {
   const score = await getCookie('goldMiningScore');
   const sessionId = await getCookie('sessionId');
-  await goldMiningRequest.GoldMiningResult(sessionId || '', Number(score) || 0);
+  try {
+    await goldMiningRequest.GoldMiningResult(sessionId || '', Number(score) || 0);
+  } catch (error) {
+    console.warn(error);
+  }
   return (
     <div className="bg-gold-mining-game min-h-screen flex flex-col items-center justify-center">
       <h1 className="text-shadow-custom text-[3.25rem] font-[860]">{score}</h1>

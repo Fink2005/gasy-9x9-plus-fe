@@ -194,13 +194,16 @@ const SpaceshipGame = () => {
   const [stones, setStones] = useState<GameItem[]>([]);
   const [blindBox, setBlindBox] = useState<GameItem[]>([]);
   // Regenerate all items when bounds change
+
+  const randomBlindBoxSize = Math.floor(Math.random() * 3) + 1;
+
   const regenerateAllItems = useCallback(() => {
     const bounds = calculateViewportBounds();
     setHeartItems(generateRandomItems(5, 'heart', bounds));
     setBlueStars(generateRandomItems(3, 'blueStar', bounds));
     setStars(generateRandomItems(3, 'star', bounds));
     setStones(generateRandomItems(3, 'stone', bounds));
-    setBlindBox(generateRandomItems(3, 'blindBox', bounds));
+    setBlindBox(generateRandomItems(randomBlindBoxSize, 'blindBox', bounds));
   }, [generateRandomItems, calculateViewportBounds]);
 
   const [displayRandomBlindBox, setDisplayRandomBlindBox] = useState<{
@@ -445,7 +448,7 @@ const SpaceshipGame = () => {
   }, [isUpScore]);
 
   useEffect(() => {
-    handleTimeInterval(30, true, '/gold-mining/result');
+    handleTimeInterval(59, true, '/gold-mining/result');
   }, []);
 
   useEffect(() => {

@@ -7,5 +7,16 @@ export const goldMiningRequest = {
   },
   async GoldMiningResult(sessionId: string, score: number): Promise<UserScore | null> {
     return await apiRequest<UserScore | null>('/mining/submit', 'POST', { sessionId, score });
+  },
+  async GoldMiningMessage(number: number): Promise<{
+    _id: string;
+    number: number;
+    content: string;
+  } | null> {
+    return await apiRequest<{
+      _id: string;
+      number: number;
+      content: string;
+    } | null>(`/mining/get-message/${number}`, 'GET');
   }
 };

@@ -285,7 +285,7 @@ const SpaceshipGameOptimized = () => {
         while (!validPosition && attempts < 100) {
           const size
             = type === 'stone'
-              ? Math.random() * 20 + 30
+              ? Math.random() * 15 + 30
               : type === 'blueStar'
                 ? Math.random() * 15 + 15
                 : type === 'blindBox'
@@ -343,9 +343,9 @@ const SpaceshipGameOptimized = () => {
   const regenerateAllItems = useCallback(() => {
     const bounds = calculateViewportBounds();
     // random stone number
-    const stoneNumber = Math.floor(Math.random() * 5) + 1;
+    const stoneNumber = Math.floor(Math.random() * 3) + 1;
     // random 3 to 5
-    const starNumber = Math.floor(Math.random() * 3) + 2;
+    const starNumber = Math.floor(Math.random() * 6) + 4;
     // Generate larger items first to ensure they get placed
     const blindBox = generateRandomItems(1, 'blindBox', bounds, []);
     const stones = generateRandomItems(stoneNumber, 'stone', bounds, blindBox);
@@ -461,10 +461,15 @@ const SpaceshipGameOptimized = () => {
         // Start retracting
         dispatch({ type: 'SET_SHRINKING', payload: true });
         let retract = extendLength;
-
         retractIntervalRef.current = setInterval(
           () => {
-            retract -= 8;
+            if (hitItem?.type === 'stone') {
+              retract -= 3;
+            } else if (hitItem?.type === 'blueStar') {
+              retract -= 6;
+            } else {
+              retract -= 5;
+            }
             dispatch({ type: 'SET_ROPE_LENGTH', payload: retract });
 
             if (retract <= 20) {
@@ -538,7 +543,7 @@ const SpaceshipGameOptimized = () => {
   // Consolidated effects
   useEffect(() => {
     // Initialize game
-    handleTimeInterval(59, true);
+    handleTimeInterval(45, true);
 
     const updateBounds = () => {
       const newBounds = calculateViewportBounds();
@@ -612,7 +617,7 @@ const SpaceshipGameOptimized = () => {
     if (isCompleted) {
       const inspirationNumber = localStorage.getItem('inspiration');
       const inspirationParsed = Number(JSON.parse(inspirationNumber || '0'));
-      if (inspirationParsed) {
+      if (inspirationParsed < 100) {
         localStorage.setItem('inspiration', (inspirationParsed + 1).toString());
       } else {
         localStorage.setItem('inspiration', '1');
@@ -631,7 +636,7 @@ const SpaceshipGameOptimized = () => {
       });
 
       // Redirect to result page
-      window.location.href = '/gold-mining/result';
+      redirect('/gold-mining/result');
     }
   }, [timeLeft, isCounting, state.score.original]);
 

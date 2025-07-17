@@ -1,6 +1,7 @@
 'use client';
+import { goldMiningRequest } from '@/app/apis/requests/goldMining';
 import ResultController from '@/components/gold-mining/result/ResultController';
-import inspirationData from '@/libs/jsons/inspiration.json';
+import LoadingDots from '@/libs/shared/icons/LoadingDots';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
@@ -8,11 +9,17 @@ const ResultMiningGold = () => {
   const score = (typeof window !== 'undefined' && localStorage.getItem('goldMiningScore')) || '';
   const inspirationNumber = (typeof window !== 'undefined' && localStorage.getItem('inspiration')) || '';
   const [data, setData] = useState<string | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchInspiration = async () => {
-      const res = inspirationData.find(item => item.id === Number(inspirationNumber));
-      setData(res?.content);
+      setIsLoading(true);
+      try {
+        const res = await goldMiningRequest.GoldMiningMessage(Number(inspirationNumber));
+        setData(res?.content);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchInspiration();
   }, [inspirationNumber]);
@@ -28,7 +35,20 @@ const ResultMiningGold = () => {
         </p>
       </div>
       <Image width="500" height="500" className="w-[200px] h-[130px]" alt="logo" src="/assets/logo-9x9.png" />
-      <p className="text-shadow-custom text-center">{data}</p>
+      {
+        isLoading ? (
+          <div className="flex flex-col items-center mt-10">
+            <LoadingDots />
+            <p className="text-shadow-custom text-[1rem] font-[700] mt-4">Đang tải thông điệp...</p>
+          </div>
+        ) : (
+          data && (
+            <p className="text-shadow-custom text-[1rem] font-[700] mt-4 text-center">
+              {data}
+            </p>
+          )
+        )
+      }
       <ResultController score={Number(score || 0)} />
     </div>
   );

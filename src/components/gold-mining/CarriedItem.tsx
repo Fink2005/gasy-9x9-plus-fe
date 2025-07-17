@@ -83,7 +83,7 @@ export const CarriedItem = ({ item, ropeLength, isShrinking }: CarriedItemProps)
     <div
       className="absolute"
       style={{
-        left: `${-item.size / 2}px`,
+        right: `${(-item.size / 2)}px`,
         top: `${ropeLength + 36}px`,
         width: item.size,
         height: item.size,

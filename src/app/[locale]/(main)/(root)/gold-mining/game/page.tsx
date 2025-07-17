@@ -659,7 +659,7 @@ const SpaceshipGameOptimized = () => {
   return (
     <div
       ref={gameContainerRef}
-      className="flex flex-col items-center min-h-screen bg-gold-mining-game pt-10 relative overflow-hidden"
+      className="flex flex-col items-center min-h-screen bg-gold-mining-game pt-10 relative overflow-hidden select-none"
       role="button"
       tabIndex={0}
       onClick={handleClick}

@@ -1,12 +1,16 @@
 'use client';
+import { getCookie } from '@/app/actions/cookie';
+import { ApiException } from '@/app/apis/apiRequest';
 import { goldMiningRequest } from '@/app/apis/requests/goldMining';
 import ResultController from '@/components/gold-mining/result/ResultController';
 import LoadingDots from '@/libs/shared/icons/LoadingDots';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 const ResultMiningGold = () => {
   const score = (typeof window !== 'undefined' && localStorage.getItem('goldMiningScore')) || '';
+
   const inspirationNumber = (typeof window !== 'undefined' && localStorage.getItem('inspiration')) || '';
   const [data, setData] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -15,14 +19,25 @@ const ResultMiningGold = () => {
     const fetchInspiration = async () => {
       setIsLoading(true);
       try {
-        const res = await goldMiningRequest.GoldMiningMessage(Number(inspirationNumber));
+        const [res, sessionId] = await Promise.all([
+          goldMiningRequest.GoldMiningMessage(Number(inspirationNumber)),
+          getCookie('sessionId'),
+        ]);
         setData(res?.content);
+        await goldMiningRequest.GoldMiningResult(sessionId || '', Number(score) || 0);
+      } catch (error) {
+        if (error instanceof ApiException) {
+          toast.error(error.message);
+        } else {
+          toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau.');
+        }
+        console.warn(error);
       } finally {
         setIsLoading(false);
       }
     };
     fetchInspiration();
-  }, [inspirationNumber]);
+  }, [inspirationNumber, score]);
 
   return (
     <div className="bg-gold-mining-game min-h-screen flex flex-col items-center pt-40 px-4">
@@ -49,7 +64,7 @@ const ResultMiningGold = () => {
           )
         )
       }
-      <ResultController score={Number(score || 0)} />
+      <ResultController />
     </div>
   );
 };

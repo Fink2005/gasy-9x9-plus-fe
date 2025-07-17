@@ -1,8 +1,5 @@
-import BlueStarIcon from '@/libs/shared/icons/BlueStar';
-import HeartIcon from '@/libs/shared/icons/Heart';
 import { HookIcon } from '@/libs/shared/icons/Hook';
 import HookBaseIcon from '@/libs/shared/icons/HookBase';
-import StarIcon from '@/libs/shared/icons/Star';
 import StoneIcon from '@/libs/shared/icons/Stone';
 import type { GameItem } from '@/types/game';
 import Image from 'next/image';
@@ -53,7 +50,7 @@ const RobotHook = ({ hookRef, carriedItem, angle, isSwinging, ropeLength, isShri
             ref={hookTipMarkerRef}
             className="absolute w-2 h-2 pointer-events-none"
             style={{
-              left: '-1px',
+              left: '1px',
               top: `${ropeLength + 36}px`,
               backgroundColor: 'transparent',
               borderRadius: '50%',
@@ -74,17 +71,13 @@ const RobotHook = ({ hookRef, carriedItem, angle, isSwinging, ropeLength, isShri
                 zIndex: 10,
               }}
             >
-              {carriedItem.type === 'heart' ? (
-                <div style={{ width: 65, height: 65 }}>
-                  <HeartIcon />
-                </div>
-              ) : carriedItem.type === 'stone' ? (
+              {carriedItem.type === 'stone' ? (
                 <div style={{ width: 65, height: 65 }}>
                   <StoneIcon />
                 </div>
               ) : carriedItem.type === 'blueStar' ? (
                 <div style={{ width: 65, height: 65 }}>
-                  <BlueStarIcon />
+                  <Image src="/assets/blue-star.webp" width={65} height={65} alt="blue star" />
                 </div>
               ) : carriedItem.type === 'blindBox' ? (
                 <div style={{ width: 65, height: 65 }}>
@@ -92,7 +85,7 @@ const RobotHook = ({ hookRef, carriedItem, angle, isSwinging, ropeLength, isShri
                 </div>
               ) : (
                 <div style={{ width: 65, height: 65 }}>
-                  <StarIcon />
+                  <Image src="/assets/star.webp" width={60} height={60} alt="star" />
                 </div>
               )}
             </div>

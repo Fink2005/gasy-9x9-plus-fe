@@ -1,6 +1,3 @@
-import BlueStarIcon from '@/libs/shared/icons/BlueStar';
-import HeartIcon from '@/libs/shared/icons/Heart';
-import StarIcon from '@/libs/shared/icons/Star';
 import StoneIcon from '@/libs/shared/icons/Stone';
 import type { GameItem } from '@/types/game';
 import Image from 'next/image';
@@ -14,12 +11,6 @@ interface CarriedItemProps {
 export const CarriedItem = ({ item, ropeLength, isShrinking }: CarriedItemProps) => {
   const renderIcon = () => {
     switch (item.type) {
-      case 'heart':
-        return (
-          <div style={{ width: 65, height: 65 }}>
-            <HeartIcon />
-          </div>
-        );
       case 'stone':
         return (
           <div
@@ -45,7 +36,8 @@ export const CarriedItem = ({ item, ropeLength, isShrinking }: CarriedItemProps)
               justifyContent: 'center',
             }}
           >
-            <BlueStarIcon />
+            <Image src="/assets/blue-star.webp" width={65} height={65} alt="blue star" />
+
           </div>
         );
       case 'blindBox':
@@ -73,7 +65,7 @@ export const CarriedItem = ({ item, ropeLength, isShrinking }: CarriedItemProps)
               justifyContent: 'center',
             }}
           >
-            <StarIcon />
+            <Image src="/assets/star.webp" width={60} height={60} alt="star" />
           </div>
         );
     }

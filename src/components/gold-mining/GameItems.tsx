@@ -1,5 +1,3 @@
-import BlueStarIcon from '@/libs/shared/icons/BlueStar';
-import StarIcon from '@/libs/shared/icons/Star';
 import StoneIcon from '@/libs/shared/icons/Stone';
 import type { GameItem } from '@/types/game';
 import Image from 'next/image';
@@ -41,7 +39,8 @@ const GameItems = ({
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <BlueStarIcon />
+          <Image src="/assets/blue-star.webp" width={65} height={65} alt="blue star" />
+
         </div>
       ))}
 
@@ -91,7 +90,8 @@ const GameItems = ({
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <StarIcon />
+          <Image src="/assets/star.webp" width={60} height={60} alt="star" />
+
         </div>
       ))}
     </>

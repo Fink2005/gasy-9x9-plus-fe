@@ -10,7 +10,7 @@ const ResultController = () => {
     redirect('/gold-mining');
   };
   return (
-    <div className="w-full flex flex-col items-center space-y-3 absolute bottom-20 sm:bottom-30">
+    <div className="w-full flex flex-col items-center space-y-3 fixed bottom-20">
       <Button
         className="button-base items-center max-w-[21.4375rem] w-full"
         onClick={handleSubmit}

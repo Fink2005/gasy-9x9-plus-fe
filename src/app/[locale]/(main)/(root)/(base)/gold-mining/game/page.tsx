@@ -1,9 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
-
-import type React from 'react';
-
 import { createCookie } from '@/app/actions/cookie';
 import GameItems from '@/components/gold-mining/GameItems';
 import RobotHook from '@/components/gold-mining/RobotHook';
@@ -12,6 +9,7 @@ import ClockIcon from '@/libs/shared/icons/Clock';
 import SpeakerIcon from '@/libs/shared/icons/Speaker';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
+import type React from 'react';
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 
 type GameItem = {

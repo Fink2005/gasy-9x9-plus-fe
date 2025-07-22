@@ -12,6 +12,7 @@ import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 type Props = {
   address: string | undefined;
@@ -49,6 +50,13 @@ const GoldMining = ({ address }: Props) => {
       const result = await goldMiningRequest.GoldMiningRestTimes();
       if (result) {
         setDataRestTimes(result);
+      }
+    } catch (error) {
+      console.error('Error fetching rest times:', error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau.');
       }
     } finally {
       setIsLoading(false);

@@ -6,7 +6,7 @@ import { routing } from './libs/i18nRouting';
 const handleI18nRouting = createMiddleware(routing);
 
 const isProtectedRoute = (pathname: string): boolean => {
-  return pathname.startsWith('/numerology') || pathname === '/' || pathname.startsWith('/ranking');
+  return pathname.startsWith('/numerology') || pathname === '/' || pathname.startsWith('/ranking') || pathname.startsWith('/gold-mining');
 };
 
 const isAuthPage = (pathname: string): boolean => {
@@ -93,6 +93,8 @@ export default async function middleware(request: NextRequest) {
     const homeUrl = new URL('/', request.url);
     return NextResponse.redirect(homeUrl);
   }
+  // await tokenMiddleware(request);
+  // if (tokenResponse) return tokenResponse;
 
   // Apply i18n routing
   return handleI18nRouting(requestWithHeaders);

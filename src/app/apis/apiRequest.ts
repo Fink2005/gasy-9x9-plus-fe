@@ -1,4 +1,5 @@
-import { getCookie } from '@/app/actions/cookie';
+import { createCookie, getCookie } from '@/app/actions/cookie';
+import { redirect } from 'next/navigation';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -41,31 +42,8 @@ const retryRequest = async <T>(retryEndpoint: string, retryConfig: ApiRequestCon
   }
 };
 
-const retryRefreshToken = async <T>(refreshToken: string, endpoint: string, retryConfig: ApiRequestConfig): Promise<T | null> => {
+const retryRefreshToken = async <T>(newAccessToken, endpoint: string, retryConfig: ApiRequestConfig): Promise<T | null> => {
   try {
-    const refreshResponse = await fetch(`${baseURL}/auth/refresh-token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refreshToken }),
-      credentials: 'include',
-    });
-
-    const contentType = refreshResponse.headers.get('content-type');
-    let refreshData: any = null;
-
-    if (contentType && contentType.includes('application/json')) {
-      refreshData = await refreshResponse.json();
-    }
-
-    if (!refreshResponse.ok) {
-      const errorMessage = refreshData?.message || `Refresh token request failed with status ${refreshResponse.status}`;
-      throw new Error(errorMessage);
-    }
-
-    // Get the new access token after refresh
-    const newAccessToken = refreshData?.accessToken || null;
     if (!newAccessToken) {
       throw new Error('Failed to get new access token after refresh');
     }
@@ -93,6 +71,10 @@ const apiRequest = async <T>(
   headers: Record<string, string> = {},
 ): Promise<T | null> => {
   try {
+    createCookie({
+      name: '2123',
+      value: '2123',
+    });
     const accessToken = await getCookie('accessToken9x9');
 
     const config: ApiRequestConfig = {
@@ -114,16 +96,19 @@ const apiRequest = async <T>(
     if (!response.ok) {
       if (response.status === 401) {
         const refreshToken = await getCookie('refreshToken9x9');
-        if (refreshToken) {
-          try {
-            const responseRefreshToken = await retryRefreshToken(refreshToken, endpoint, config);
-            return responseRefreshToken as T | null;
-          } catch (refreshError) {
-            throw new Error(`Failed to refresh access token: ${refreshError instanceof Error ? refreshError.message : 'Unknown error'}`);
-          }
-        } else {
-          throw new Error('No refresh token available. Please login again.');
+        if (!refreshToken) {
+          redirect('/login');
         }
+        const refreshRes = await fetch('http://localhost:3000/api/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Cookie': `refreshToken9x9=${refreshToken}`, },
+          credentials: 'include',
+        });
+        if (!refreshRes.ok) {
+          redirect('/login');
+        }
+        const refreshData = await refreshRes.json();
+        return await retryRefreshToken<T>(refreshData.accessToken, endpoint, config);
       } else if (response.status === 400 || response.status === 403) {
         try {
           const errorBody = await response.json();

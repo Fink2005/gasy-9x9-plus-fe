@@ -1,10 +1,10 @@
 import { createCookie, getCookie } from '@/app/actions/cookie';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export async function tokenMiddleware(request: NextRequest) {
-  console.log(123);
-  const accessToken =  await getCookie('accessToken9x9')
-  const refreshToken =    await getCookie('refreshToken9x9');
+  const accessToken = await getCookie('accessToken9x9');
+  const refreshToken = await getCookie('refreshToken9x9');
 
   if (!accessToken) {
     return NextResponse.redirect(new URL('/login', request.url));
@@ -16,7 +16,6 @@ export async function tokenMiddleware(request: NextRequest) {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-  console.log(testResponse);
   if (testResponse.ok) {
     return NextResponse.next();
   }
@@ -34,23 +33,21 @@ export async function tokenMiddleware(request: NextRequest) {
       const response = NextResponse.next();
 
       // Cập nhật access token
- 
+
       createCookie({
         name: 'accessToken9x9',
         value: newAccessToken,
-      })
+      });
 
       createCookie({
         name: 'refreshToken9x9',
         value: newRefreshToken,
-      })
+      });
       return response;
     }
   }
-  console.log('❌ Không thể refresh token, redirect login');
   // Nếu không thể refresh, redirect login
   // await authRequests.logout();
   // return NextResponse.redirect(new URL('/login', request.url));
   return NextResponse.next();
-
 }

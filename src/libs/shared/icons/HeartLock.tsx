@@ -19,44 +19,7 @@ const HeartLockIcon = (props: SVGComponentProps) => (
         fill="#91D5FF"
       />
     </g>
-    <defs>
-      <filter
-        id="a"
-        x={-4}
-        y={-1}
-        width={62}
-        height={62}
-        filterUnits="userSpaceOnUse"
-        colorInterpolationFilters="sRGB"
-      >
-        <feFlood floodOpacity={0} result="BackgroundImageFix" />
-        <feColorMatrix
-          in="SourceAlpha"
-          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-          result="hardAlpha"
-        />
-        <feOffset dy={4} />
-        <feGaussianBlur stdDeviation={7.5} />
-        <feComposite in2="hardAlpha" operator="out" />
-        <feColorMatrix values="0 0 0 0 0.568627 0 0 0 0 0.835294 0 0 0 0 1 0 0 0 0.5 0" />
-        <feBlend in2="BackgroundImageFix" result="effect1_dropShadow_38_82" />
-        <feBlend
-          in="SourceGraphic"
-          in2="effect1_dropShadow_38_82"
-          result="shape"
-        />
-        <feColorMatrix
-          in="SourceAlpha"
-          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-          result="hardAlpha"
-        />
-        <feOffset dy={4} />
-        <feGaussianBlur stdDeviation={2} />
-        <feComposite in2="hardAlpha" operator="arithmetic" k2={-1} k3={1} />
-        <feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.75 0" />
-        <feBlend in2="shape" result="effect2_innerShadow_38_82" />
-      </filter>
-    </defs>
+
   </svg>
 );
 export default HeartLockIcon;

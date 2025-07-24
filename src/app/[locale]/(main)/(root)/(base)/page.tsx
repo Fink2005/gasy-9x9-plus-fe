@@ -17,7 +17,6 @@ const page = () => {
         Box Chưa ?
       </h2>
       <BoxTable />
-
     </div>
   );
 };

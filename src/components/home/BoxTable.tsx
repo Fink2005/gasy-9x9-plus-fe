@@ -61,7 +61,6 @@ const BoxTable = () => {
           </div>
         ))
       }
-
     </div>
   );
 };

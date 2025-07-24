@@ -5,13 +5,15 @@ import SafePalIcon from '@/libs/shared/icons/SafePal';
 import { Loader2 } from 'lucide-react';
 
 export default function SafePal() {
-  const { onConnectWallet, isConnecting } = useSafePalWallet();
-
+  const { safePalMethods, isConnecting } = useSafePalWallet();
   return (
     <main className="flex-1">
       <Button
         className="button-login mt-[0.5rem] w-full"
-        onClick={onConnectWallet}
+        onClick={
+          async () => await safePalMethods.onConnectWallet()
+
+        }
         disabled={isConnecting}
       >
         {isConnecting ? <Loader2 className="animate-spin" /> : (

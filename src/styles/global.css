@@ -678,16 +678,17 @@ body::-webkit-scrollbar {
   background-repeat: no-repeat;
 }
 
-/* .box-card {
+.box-card-detail {
   border-radius: 0.375rem;
   border: 1px solid #fff;
   background: linear-gradient(180deg, rgba(104, 218, 242, 0.5) 0%, rgba(28, 91, 185, 0.5) 95.1%);
   box-shadow:
     0px 4px 4px 0px rgba(255, 255, 255, 0.25) inset,
     0px 4px 15px 0px rgba(145, 213, 255, 0.5);
-  display: flex;
-  width: 21.4375rem;
-  padding: 0.5rem 0.625rem;
-  align-items: center;
-  gap: 0.75rem;
-} */
+}
+
+.box-table {
+  border-radius: 0.375rem;
+  border: 1px solid #fff;
+  background: rgba(255, 255, 255, 0.1);
+}

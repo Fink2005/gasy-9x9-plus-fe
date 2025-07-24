@@ -42,7 +42,7 @@ const retryRequest = async <T>(retryEndpoint: string, retryConfig: ApiRequestCon
   }
 };
 
-const retryRefreshToken = async <T>(newAccessToken, endpoint: string, retryConfig: ApiRequestConfig): Promise<T | null> => {
+const retryRefreshToken = async <T>(newAccessToken: string, endpoint: string, retryConfig: ApiRequestConfig): Promise<T | null> => {
   try {
     if (!newAccessToken) {
       throw new Error('Failed to get new access token after refresh');

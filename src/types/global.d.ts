@@ -17,6 +17,12 @@ declare global {
         toString: () => string;
       }>;
     };
+    ethereum?: {
+      request: ({ method, params }: {
+        method: string;
+        params?: any[];
+      }) => Promise<any>;
+    };
   }
 }
 

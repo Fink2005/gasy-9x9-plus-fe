@@ -1,19 +1,21 @@
-import BoxCard from '@/components/box/boxCard';
+import BoxCard from '@/components/box/BoxCard';
+import BoxTable from '@/components/box/BoxTable';
 import LeftArrowIcon from '@/libs/shared/icons/LeftArrow';
 import Link from 'next/link';
 
 type PageProps = {
-  params: {
+  params: Promise<{
+    locale: string;
     boxSlug: string;
-  };
+  }>;
 };
 
-const page = ({
-  params: { boxSlug },
-}: PageProps) => {
+const Page = async ({ params }: PageProps) => {
+  const { boxSlug } = await params;
+
   return (
-    <div className="min-h-screen bg-9x9 flex flex-col items-center pt-10">
-      <Link href="/numerology">
+    <div className="min-h-screen bg-9x9 flex flex-col items-center pt-10 px-3 sm:px-7">
+      <Link href="/">
         <LeftArrowIcon className="absolute left-4" />
       </Link>
       <div className="flex flex-col items-center mb-6">
@@ -26,8 +28,9 @@ const page = ({
         </h2>
       </div>
       <BoxCard boxSlug={boxSlug} />
+      <BoxTable />
     </div>
   );
 };
 
-export default page;
+export default Page;

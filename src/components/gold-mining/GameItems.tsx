@@ -32,15 +32,12 @@ const GameItems = ({
           ref={setBlueStarRef(star.id)}
           className="absolute"
           style={{
-            width: 65,
-            height: 65,
             left: `calc(50% + ${star.x}px)`,
             top: `${star.y}px`,
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <Image src="/assets/blue-star.webp" width={65} height={65} alt="blue star" />
-
+          <Image src="/assets/blue-star.webp" width={65} height={65} className="size-[65px]" alt="blue star" />
         </div>
       ))}
 
@@ -74,7 +71,7 @@ const GameItems = ({
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <Image src="/assets/blind-box.webp" width={65} height={65} alt="blind box" />
+          <Image src="/assets/blind-box.webp" width={65} height={65} className="size-[65px]" alt="blind box" />
         </div>
       ))}
 
@@ -90,7 +87,7 @@ const GameItems = ({
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <Image src="/assets/star.webp" width={60} height={60} alt="star" />
+          <Image src="/assets/star.webp" width={60} height={60} className="size-[65px]" alt="star" />
 
         </div>
       ))}

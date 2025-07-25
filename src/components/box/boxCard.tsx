@@ -39,8 +39,8 @@ const BoxCard = ({ boxSlug }: Props) => {
     <div className="w-full">
       <span className="hidden">{boxSlug}</span>
       <div className="box-card-detail w-full py-2">
-        {data.map((item, index) => (
-          <div className="flex items-center h-8" key={index}>
+        {data.map(item => (
+          <div className="flex items-center h-8" key={item.label}>
             {item.icon}
             <p className="text-shadow-custom text-[1rem] font-[590]">
               {item.label}

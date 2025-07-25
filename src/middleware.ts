@@ -55,14 +55,6 @@ export default async function middleware(request: NextRequest) {
   const authDataCookie = request.cookies.get('authData');
   const now = Math.round(new Date().getTime() / 1000);
   const isTokenExpired = accessToken ? decodeToken(accessToken).exp < now : false;
-  if (
-    pathname !== '/refresh-token' && (isTokenExpired && refreshToken) && isProtectedRoute(pathname)
-  ) {
-    const url = new URL(`/refresh-token`, request.url);
-    url.searchParams.set('refreshToken', refreshToken);
-    url.searchParams.set('redirect', pathenameAndSearchParams);
-    return NextResponse.redirect(url);
-  }
 
   if (authDataCookie) {
     try {
@@ -107,9 +99,15 @@ export default async function middleware(request: NextRequest) {
     const homeUrl = new URL('/', request.url);
     return NextResponse.redirect(homeUrl);
   }
-  // await tokenMiddleware(request);
-  // if (tokenResponse) return tokenResponse;
 
+  if (
+    pathname !== '/refresh-token' && (isTokenExpired && refreshToken) && isProtectedRoute(pathname)
+  ) {
+    const url = new URL(`/refresh-token`, request.url);
+    url.searchParams.set('refreshToken', refreshToken);
+    url.searchParams.set('redirect', pathenameAndSearchParams);
+    return NextResponse.redirect(url);
+  }
   // Apply i18n routing
   return handleI18nRouting(requestWithHeaders);
 }

@@ -47,7 +47,6 @@ const apiRequest = async <T>(
       ? baseURLBe
       : options.nextServer;
 
-    console.log('hehe', baseUrl);
     const baseHeaders: {
       [key: string]: string;
     }

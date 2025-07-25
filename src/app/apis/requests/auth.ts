@@ -7,10 +7,9 @@ const authRequests = {
   },
   async refreshToken(token: string): Promise<{ success: boolean } | null> {
     return await http.post<{ success: boolean } | null>('/auth/refresh-token', token);
-    
-  },  
-  async serverRefreshToken(): Promise<{ accessToken: string, refreshToken: string } | null> {
-    return await http.post<{ accessToken: string, refreshToken: string } | null>('/api/server-refresh-token', null, {
+  },
+  async serverRefreshToken(): Promise<{ accessToken: string; refreshToken: string } | null> {
+    return await http.post<{ accessToken: string; refreshToken: string } | null>('/api/server-refresh-token', null, {
       nextServer: ''
     });
   },

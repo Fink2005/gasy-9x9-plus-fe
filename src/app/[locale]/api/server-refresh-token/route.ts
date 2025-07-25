@@ -5,7 +5,6 @@ import { NextResponse } from 'next/server';
 export async function POST() {
   const refreshToken = await getCookie('refreshToken9x9');
 
-
   if (!refreshToken) {
     return NextResponse.json({ error: 'No refresh token' }, { status: 401 });
   }
@@ -19,7 +18,6 @@ export async function POST() {
   const data = await res.json();
 
   if (!res.ok) {
-    console.log('loi');
     return NextResponse.json({ error: 'Refresh token invalid' }, { status: 401 });
   }
 
@@ -33,6 +31,5 @@ export async function POST() {
     value: data.refreshToken,
   });
 
-  console.log(response);
   return response;
 }

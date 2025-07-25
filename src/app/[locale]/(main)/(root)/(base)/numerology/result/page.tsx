@@ -3,13 +3,13 @@ import Loading from '@/app/[locale]/loading';
 import { Suspense } from 'react';
 
 const page = async ({ searchParams }: { searchParams: Promise<Record<'name' | 'birth' | 'meaning', string | undefined>> }) => {
-return (
-  <>
-  <Suspense fallback={<Loading/>}>
-  <ResultNumerology searchParams={searchParams}/>
-  </Suspense>
-  </>
-)
+  return (
+    <>
+      <Suspense fallback={<Loading />}>
+        <ResultNumerology searchParams={searchParams} />
+      </Suspense>
+    </>
+  );
 };
 
 export default page;

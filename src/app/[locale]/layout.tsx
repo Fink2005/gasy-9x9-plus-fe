@@ -59,7 +59,7 @@ export default async function RootLayout(props: {
     <html lang={locale} className={sfPro.variable}>
       <body className="min-h-screen">
         <NextIntlClientProvider>
-        <RefreshToken/>
+          <RefreshToken />
           <RootTemplate>
             {props.children}
           </RootTemplate>

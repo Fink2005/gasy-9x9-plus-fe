@@ -43,10 +43,9 @@ export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const pathenameAndSearchParams = pathname + request.nextUrl.search;
 
+  const accessToken = request.cookies.get('accessToken9x9')?.value;
 
-const accessToken = request.cookies.get('accessToken9x9')?.value;
-
-const refreshToken = request.cookies.get('refreshToken9x9')?.value;
+  const refreshToken = request.cookies.get('refreshToken9x9')?.value;
   // Set custom header with pathname
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
@@ -54,18 +53,16 @@ const refreshToken = request.cookies.get('refreshToken9x9')?.value;
   // Safely parse authData cookie
   let isAuthenticated: boolean | undefined;
   const authDataCookie = request.cookies.get('authData');
-  const now = Math.round(new Date().getTime() / 1000)
-    const isTokenExpired  = accessToken ? decodeToken(accessToken).exp < now : false
-    console.log(isTokenExpired);
+  const now = Math.round(new Date().getTime() / 1000);
+  const isTokenExpired = accessToken ? decodeToken(accessToken).exp < now : false;
   if (
-   pathname !== '/refresh-token' && (isTokenExpired && refreshToken) && isProtectedRoute(pathname)
+    pathname !== '/refresh-token' && (isTokenExpired && refreshToken) && isProtectedRoute(pathname)
   ) {
-    const url = new URL(`/refresh-token`, request.url)
-    url.searchParams.set('refreshToken', refreshToken)
-    url.searchParams.set('redirect', pathenameAndSearchParams)
-    return NextResponse.redirect(url)
+    const url = new URL(`/refresh-token`, request.url);
+    url.searchParams.set('refreshToken', refreshToken);
+    url.searchParams.set('redirect', pathenameAndSearchParams);
+    return NextResponse.redirect(url);
   }
-
 
   if (authDataCookie) {
     try {

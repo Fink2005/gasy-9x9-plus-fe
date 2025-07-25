@@ -1,14 +1,18 @@
 import authRequests from '@/app/apis/requests/auth';
-import { TokenPayload } from '@/types/jwt';
+import type { TokenPayload } from '@/types/jwt';
 import type { ClassValue } from 'clsx';
 import { clsx } from 'clsx';
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from 'jwt-decode';
 import { twMerge } from 'tailwind-merge';
 import { devtools } from 'zustand/middleware';
 import { deleteCookie, getCookie } from '../app/actions/cookie';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+export const decodeToken = (token: string) => {
+  return jwtDecode(token) as TokenPayload;
+};
 
 export const withDevTools = (fn: any) =>
   process.env.NEXT_PUBLIC_NOVEL_ENV !== 'prod' ? devtools(fn) : fn;
@@ -19,31 +23,31 @@ export function NumberFormat(number: number): string {
   return formatted;
 }
 
-export const isClient =  typeof window !== 'undefined';
-
+export const isClient = typeof window !== 'undefined';
 
 export const checkAndRefreshToken = async (param?: {
-  onError?: () => void
-  onSuccess?: () => void
-  force?: boolean
+  onError?: () => void;
+  onSuccess?: () => void;
+  force?: boolean;
 }) => {
-  console.log('jello');
   // Không nên đưa logic lấy access và refresh token ra khỏi cái function `checkAndRefreshToken`
   // Vì để mỗi lần mà checkAndRefreshToken() được gọi thì chúng ta se có một access và refresh token mới
   // Tránh hiện tượng bug nó lấy access và refresh token cũ ở lần đầu rồi gọi cho các lần tiếp theo
   const accessToken = await getCookie('accessToken9x9');
   const refreshToken = await getCookie('refreshToken9x9');
   // Chưa đăng nhập thì cũng không cho chạy
-  if (!accessToken || !refreshToken) return
-  const decodedAccessToken = decodeToken(accessToken)
-  const decodedRefreshToken = decodeToken(refreshToken)
+  if (!accessToken || !refreshToken) {
+    return;
+  }
+  const decodedAccessToken = decodeToken(accessToken);
+  const decodedRefreshToken = decodeToken(refreshToken);
   // Thời điểm hết hạn của token là tính theo epoch time (s)
   // Còn khi các bạn dùng cú pháp new Date().getTime() thì nó sẽ trả về epoch time (ms)
-  const now = Math.round(new Date().getTime() / 1000)
+  const now = Math.round(new Date().getTime() / 1000);
   // trường hợp refresh token hết hạn thì cho logout
   if (decodedRefreshToken.exp <= now) {
-      deleteCookie('refreshToken9x9')
-    return param?.onError && param.onError()
+    deleteCookie('refreshToken9x9');
+    return param?.onError && param.onError();
   }
   // Ví dụ access token của chúng ta có thời gian hết hạn là 10s
   // thì mình sẽ kiểm tra còn 1/3 thời gian (3s) thì mình sẽ cho refresh token lại
@@ -54,26 +58,20 @@ export const checkAndRefreshToken = async (param?: {
   //   (decodedAccessToken.exp - decodedAccessToken.iat) );
   //   console.log(accessToken, 'access ne');
   if (
-    param?.force ||
-    decodedAccessToken.exp - now <
-      (decodedAccessToken.exp - decodedAccessToken.iat) / 3 
+    param?.force
+    || decodedAccessToken.exp - now
+    < (decodedAccessToken.exp - decodedAccessToken.iat) / 3
   ) {
     // Gọi API refresh token
     try {
-      const tokens = await authRequests.serverRefreshToken()       
+      const tokens = await authRequests.serverRefreshToken();
 
       if (!tokens) {
-        return param?.onError && param.onError()
+        return param?.onError && param.onError();
       }
-      param?.onSuccess && param.onSuccess()
-    } catch (error) {
-      param?.onError && param.onError()
+      param?.onSuccess && param.onSuccess();
+    } catch {
+      param?.onError && param.onError();
     }
   }
-}
-
-
-export const decodeToken = (token: string) => {
-  return jwtDecode(token) as TokenPayload
-  
-}
+};

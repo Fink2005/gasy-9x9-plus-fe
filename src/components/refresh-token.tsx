@@ -1,40 +1,39 @@
-'use client'
+'use client';
 import { checkAndRefreshToken } from '@/libs/utils';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-const UNAUTHENTICATED_PATH = ['/login', '/refresh-token','/welcome','/introduction', '/policy-terms','/verify-email', '/verified', '/kyc'];
+
+const UNAUTHENTICATED_PATH = ['/login', '/refresh-token', '/welcome', '/introduction', '/policy-terms', '/verify-email', '/verified', '/kyc'];
 
 const RefreshToken = () => {
-  const pathname = usePathname()
-  const router = useRouter()
-useEffect(() => {
-  console.log('vao');
-  if (UNAUTHENTICATED_PATH.includes(pathname)) return;
-  let interval: any = null
-  const onRefreshToken = (force?: boolean) => {
-    console.log('xin chi')
-    checkAndRefreshToken({
-      onError: () => {
-        clearInterval(interval)
-        router.push('/login')
-      },
-      force
-    })
-    
-  }
-    onRefreshToken()
+  const pathname = usePathname();
+  const router = useRouter();
+  useEffect(() => {
+    if (UNAUTHENTICATED_PATH.includes(pathname)) {
+      return;
+    }
+    let interval: any = null;
+    const onRefreshToken = (force?: boolean) => {
+      checkAndRefreshToken({
+        onError: () => {
+          clearInterval(interval);
+          router.push('/login');
+        },
+        force
+      });
+    };
+    onRefreshToken();
     // Timeout interval phải bé hơn thời gian hết hạn của access token
     // Ví dụ thời gian hết hạn access token là 10s thì 1s mình sẽ cho check 1 lần
-    const TIMEOUT = 15000 // 15s;
-    interval = setInterval(onRefreshToken, TIMEOUT)
-    
+    const TIMEOUT = 15000; // 15s;
+    interval = setInterval(onRefreshToken, TIMEOUT);
+
     return () => {
-      clearInterval(interval)
-    }
+      clearInterval(interval);
+    };
+  }, [pathname, router]);
 
-}, [pathname, router]);
+  return null;
+};
 
-  return  null
-}
-
-export default RefreshToken
+export default RefreshToken;

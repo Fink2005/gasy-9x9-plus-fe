@@ -7,7 +7,7 @@ export async function Header() {
   const address = authData ? JSON.parse(authData)?.address : undefined;
   return (
     <header className="header bg-white sticky top-0 left-0 right-0 z-50 w-full px-4 flex items-center">
-      <Image width={200} height={200} className='size-[74px]' alt="logo" src="/assets/logo-9x9.png" />
+      <Image width={200} height={200} className="size-[74px]" alt="logo" src="/assets/logo-9x9.png" />
       <DropdownWallet address={address} />
     </header>
   );

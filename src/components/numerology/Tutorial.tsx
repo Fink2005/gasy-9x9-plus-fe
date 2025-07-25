@@ -16,14 +16,14 @@ const Tutorial = () => {
     if (tutorialStatus) {
       setIsVisible(JSON.parse(tutorialStatus));
     } else {
-      isClient &&  localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(true));
+      isClient && localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(true));
       setIsVisible(true);
     }
   }, []);
 
   const handleContinue = () => {
     setIsVisible(false);
-    isClient &&   localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(false));
+    isClient && localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(false));
   };
 
   return (

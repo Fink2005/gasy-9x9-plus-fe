@@ -1,14 +1,18 @@
 import { getCookie } from '@/app/actions/cookie';
-import { redirect } from 'next/navigation';
+import authRequests from '@/app/apis/requests/auth';
+import { isClient } from '@/libs/utils';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export type ApiRequestConfig = {
   method: HttpMethod;
   headers: Record<string, string>;
-  body?: string;
+  body?: string | FormData | undefined;
   credentials?: RequestCredentials;
 };
+type CustomOptions = Omit<RequestInit, 'method'> & {
+  nextServer?: string | undefined
+}
 
 export class ApiException extends Error {
   status: number;
@@ -19,41 +23,64 @@ export class ApiException extends Error {
   }
 }
 
-const baseURL = typeof window === 'undefined'
+const baseURLBe = typeof window === 'undefined'
   ? process.env.API_BASE_SERVER // server-side
   : process.env.NEXT_PUBLIC_API_BASE_CLIENT; // client-side
 
 
 const apiRequest = async <T>(
   endpoint: string,
-  method: HttpMethod = 'GET',
-  data: unknown = null,
-  headers: Record<string, string> = {},
+  method: HttpMethod,
+  options?: CustomOptions | undefined
 ): Promise<T | null> => {
   try {
-    const accessToken = await getCookie('accessToken9x9');
+  let body: FormData | string | undefined = undefined
+  if (options?.body instanceof FormData) {
+    body = options.body
+  } else if (options?.body) {
+    body = JSON.stringify(options.body)
 
+  }// Nếu không truyền baseUrl (hoặc baseUrl = undefined) thì lấy từ envConfig.NEXT_PUBLIC_API_ENDPOINT
+  // Nếu truyền baseUrl thì lấy giá trị truyền vào, truyền vào '' thì đồng nghĩa với việc chúng ta gọi API đến Next.js Server
+
+  const baseUrl =
+    options?.nextServer === undefined
+      ? baseURLBe
+      : options.nextServer
+
+
+      console.log('hehe',baseUrl);
+  const baseHeaders: {
+    [key: string]: string
+  } =
+    body instanceof FormData
+      ? {}
+      : {
+          'Content-Type': 'application/json'
+        }
+      const accessToken = await getCookie('accessToken9x9');
+      if (accessToken) {
+        baseHeaders.Authorization = `Bearer ${accessToken}`
+      }
     const config: ApiRequestConfig = {
       method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-        ...headers,
-      },
+        body,
+        headers: {
+          ...baseHeaders,
+          ...options?.headers
+      } as any,
       credentials: 'include',
     };
-
-    if (data && method !== 'GET') {
-      config.body = JSON.stringify(data);
-    }
-
-    const response = await fetch(`${baseURL}${endpoint}`, config);
+    const response = await fetch(`${baseUrl}${endpoint}`, config);
 
     if (!response.ok) {
       if (response.status === 401) {
-        const refreshToken = await getCookie('refreshToken9x9');
-        if (!refreshToken) {
-          redirect('/login');
+        if (isClient) {
+          await authRequests.logout()
+        }
+        else {
+          console.log('redirect logout');
+
         }
       } else if (response.status === 400 || response.status === 403) {
         try {
@@ -83,5 +110,29 @@ const apiRequest = async <T>(
     throw error;
   }
 };
+
+export const http = {
+   get: <T>(endpoint: string, options?:  Omit<CustomOptions, 'body'> | undefined )=>  apiRequest<T>(
+    endpoint,
+    'GET',
+    options 
+  ),
+    post: <T>(endpoint: string, body: any, options?:  Omit<CustomOptions, 'body'> | undefined) => apiRequest<T>(
+      endpoint,
+       'POST',
+      { ...options, body }
+ ),
+    patch: <T>(endpoint: string, body?: any, options?:  Omit<CustomOptions, 'body'> | undefined) => apiRequest<T>(
+      endpoint,
+      'PATCH',
+      { ...options, body }
+   ),
+    delete: <T>(endpoint: string,body: any, options?:  Omit<CustomOptions, 'body'> | undefined) => apiRequest<T>(
+      endpoint,
+    'DELETE',
+      { ...options, body }
+  )
+}
+
 
 export default apiRequest;

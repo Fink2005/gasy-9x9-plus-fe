@@ -1,4 +1,5 @@
 import { sfPro } from '@/app/fonts/sfPro';
+import RefreshToken from '@/components/refresh-token';
 import { Toaster } from '@/components/ui/sonner';
 import { routing } from '@/libs/i18nRouting';
 import '@/styles/global.css';
@@ -58,6 +59,7 @@ export default async function RootLayout(props: {
     <html lang={locale} className={sfPro.variable}>
       <body className="min-h-screen">
         <NextIntlClientProvider>
+        <RefreshToken/>
           <RootTemplate>
             {props.children}
           </RootTemplate>

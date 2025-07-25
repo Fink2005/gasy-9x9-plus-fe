@@ -1,3 +1,4 @@
+import { decodeToken } from '@/libs/utils';
 import arcjet, { detectBot } from '@arcjet/next';
 import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
@@ -40,7 +41,8 @@ const aj = arcjet({
 export default async function middleware(request: NextRequest) {
   // await tokenMiddleware(request);
   const pathname = request.nextUrl.pathname;
-
+const accessToken = request.cookies.get('accessToken9x9')?.value;
+const refreshToken = request.cookies.get('refreshToken9x9')?.value;
   // Set custom header with pathname
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
@@ -48,6 +50,23 @@ export default async function middleware(request: NextRequest) {
   // Safely parse authData cookie
   let isAuthenticated: boolean | undefined;
   const authDataCookie = request.cookies.get('authData');
+  const now = Math.round(new Date().getTime() / 1000)
+
+    const isTokenExpired  = accessToken ? decodeToken(accessToken).exp < now : false
+    console.log(
+      accessToken && decodeToken(accessToken).exp , now
+    );
+    console.log(isTokenExpired);
+  if (
+    (isTokenExpired && refreshToken) && isProtectedRoute(pathname)
+  ) {
+    console.log('vaoo');
+    const url = new URL(`/refresh-token`, request.url)
+    url.searchParams.set('refreshToken', refreshToken)
+    url.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(url)
+  }
+
 
   if (authDataCookie) {
     try {

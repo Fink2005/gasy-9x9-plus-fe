@@ -1,11 +1,10 @@
 // app/api/auth/refresh-token/route.ts
-import { createCookie } from '@/app/actions/cookie';
-import { cookies } from 'next/headers';
+import { getCookie } from '@/app/actions/cookie';
 import { NextResponse } from 'next/server';
 
 export async function POST() {
-  const cookieStore = await cookies(); // 👈 đúng API
-  const refreshToken = cookieStore.get('refreshToken9x9')?.value;
+  const refreshToken = await getCookie('refreshToken9x9');
+
 
   if (!refreshToken) {
     return NextResponse.json({ error: 'No refresh token' }, { status: 401 });
@@ -18,18 +17,12 @@ export async function POST() {
   });
 
   const data = await res.json();
+
   if (!res.ok) {
+    console.log('loi');
     return NextResponse.json({ error: 'Refresh token invalid' }, { status: 401 });
   }
 
   const response = NextResponse.json({ accessToken: data.accessToken, refreshToken: data.refreshToken });
-  createCookie({
-    name: 'accessToken9x9',
-    value: data.accessToken,
-  });
-  createCookie({
-    name: 'refreshToken9x9',
-    value: data.refreshToken,
-  });
   return response;
 }

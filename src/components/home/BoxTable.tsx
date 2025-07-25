@@ -54,7 +54,7 @@ const BoxTable = () => {
       {
         boxes.map(item => (
           <div className="box-card" key={item.id}>
-            <Image src="/assets/starBox.webp" width={80} height={80} alt="box" />
+            <Image src="/assets/starBox.webp" width={300} height={300} className='size-24' alt="box" />
             <p className="text-shadow-custom font-[860] text-[12px]">{item.title}</p>
             <p className="text-shadow-custom text-nowrap font-[590] text-[10px]">{item.description}</p>
             <ConfirmDialog />

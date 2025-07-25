@@ -36,7 +36,7 @@ const BoxCard = ({ boxSlug }: Props) => {
   ];
 
   return (
-    <div className="w-full ">
+    <div className="w-full">
       <span className="hidden">{boxSlug}</span>
       <div className="box-card-detail w-full py-2">
         {data.map((item, index) => (

@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-export default function BoxTable() {
+export default function BoxTableDetail() {
   const data = [
     { box: 'Box 1', f1: 9, connection: '9' },
     { box: 'Box 2', f1: 2, connection: '81' },

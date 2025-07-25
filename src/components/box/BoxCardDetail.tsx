@@ -17,7 +17,7 @@ type Props = {
   boxSlug: string;
 };
 
-const BoxCard = ({ boxSlug }: Props) => {
+const BoxCardDetail = ({ boxSlug }: Props) => {
   const data = [
     { icon: <UserHeart />, label: 'Tổng kết nối hệ thống:', value: '230' },
     { icon: <HeartUnlockIcon />, label: 'Hành trình mở khóa:', value: '3/9' },
@@ -101,4 +101,4 @@ const BoxCard = ({ boxSlug }: Props) => {
   );
 };
 
-export default BoxCard;
+export default BoxCardDetail;

@@ -1,5 +1,5 @@
-import BoxCard from '@/components/box/BoxCard';
-import BoxTable from '@/components/box/BoxTable';
+import BoxCardDetail from '@/components/box/BoxCardDetail';
+import BoxTableDetail from '@/components/box/BoxTableDetail';
 import LeftArrowIcon from '@/libs/shared/icons/LeftArrow';
 import Link from 'next/link';
 
@@ -27,8 +27,8 @@ const page = async ({ params }: PageProps) => {
           & nhận thông điệp khai sáng.
         </h2>
       </div>
-      <BoxCard boxSlug={boxSlug} />
-      <BoxTable />
+      <BoxCardDetail boxSlug={boxSlug} />
+      <BoxTableDetail />
     </div>
   );
 };

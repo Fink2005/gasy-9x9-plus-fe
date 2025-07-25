@@ -1,6 +1,6 @@
-import { getCookie } from '@/app/actions/cookie';
-import authRequests from '@/app/apis/requests/auth';
+import { deleteCookie, getCookie } from '@/app/actions/cookie';
 import { isClient } from '@/libs/utils';
+import { redirect } from 'next/navigation';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -76,7 +76,19 @@ const apiRequest = async <T>(
     if (!response.ok) {
       if (response.status === 401) {
         if (isClient) {
-          await authRequests.logout()
+      const res =  await fetch(`${baseURLBe}/auth/logout`, {method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }, 
+        )
+        if (!res.ok) {
+         await   deleteCookie('accessToken9x9');
+          await  deleteCookie('refreshToken9x9');
+          await deleteCookie('authData');
+          redirect('/login');
+        } 
         }
         else {
           console.log('redirect logout');

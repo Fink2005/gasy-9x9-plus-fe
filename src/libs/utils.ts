@@ -5,7 +5,7 @@ import { clsx } from 'clsx';
 import { jwtDecode } from "jwt-decode";
 import { twMerge } from 'tailwind-merge';
 import { devtools } from 'zustand/middleware';
-import { createCookie, deleteCookie, getCookie } from '../app/actions/cookie';
+import { deleteCookie, getCookie } from '../app/actions/cookie';
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -49,13 +49,14 @@ export const checkAndRefreshToken = async (param?: {
   // thì mình sẽ kiểm tra còn 1/3 thời gian (3s) thì mình sẽ cho refresh token lại
   // Thời gian còn lại sẽ tính dựa trên công thức: decodedAccessToken.exp - now
   // Thời gian hết hạn của access token dựa trên công thức: decodedAccessToken.exp - decodedAccessToken.iat
-  console.log( decodedAccessToken.exp - now ,  (decodedAccessToken.exp - decodedAccessToken.iat) ,
-    (decodedAccessToken.exp - decodedAccessToken.iat) / 3);
-    console.log(accessToken, 'access ne');
+
+  // console.log( decodedAccessToken.exp - now ,  (decodedAccessToken.exp - decodedAccessToken.iat) ,
+  //   (decodedAccessToken.exp - decodedAccessToken.iat) );
+  //   console.log(accessToken, 'access ne');
   if (
     param?.force ||
     decodedAccessToken.exp - now <
-      (decodedAccessToken.exp - decodedAccessToken.iat) / 3
+      (decodedAccessToken.exp - decodedAccessToken.iat) / 3 
   ) {
     // Gọi API refresh token
     try {
@@ -64,15 +65,6 @@ export const checkAndRefreshToken = async (param?: {
       if (!tokens) {
         return param?.onError && param.onError()
       }
-      console.log('thanh cong', tokens);
-      createCookie({
-        name: 'accessToken9x9',
-        value: tokens.accessToken,
-      });
-      createCookie({
-        name: 'refreshToken9x9',
-        value: tokens.refreshToken,
-      });
       param?.onSuccess && param.onSuccess()
     } catch (error) {
       param?.onError && param.onError()
@@ -83,4 +75,5 @@ export const checkAndRefreshToken = async (param?: {
 
 export const decodeToken = (token: string) => {
   return jwtDecode(token) as TokenPayload
+  
 }

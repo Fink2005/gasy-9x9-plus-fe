@@ -1,10 +1,10 @@
 'use client'
 
-import { checkAndRefreshToken } from '@/libs/utils'
+import { checkAndRefreshToken } from '@/libs/utils';
 
-import { Loader2 } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect } from 'react'
+import { Loader2 } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 type Props = {
   refreshToken?: string;
 }
@@ -20,8 +20,7 @@ export default function RefreshToken({refreshToken} :Props) {
     ) {
       checkAndRefreshToken({
         onSuccess: () => {
-          console.log('thanh cong nha ma', redirectPathname, );
-          router.push(redirectPathname || '/')
+            router.replace(redirectPathname || '/');
         }
       })
     } else {

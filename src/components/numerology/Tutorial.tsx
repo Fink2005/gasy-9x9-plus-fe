@@ -1,7 +1,7 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import HandTouch from '@/libs/shared/icons/HandTouch';
+import { isClient } from '@/libs/utils';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
@@ -11,19 +11,19 @@ const Tutorial = () => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
   useEffect(() => {
-    const tutorialStatus = localStorage.getItem(TUTORIAL_STORAGE_KEY);
+    const tutorialStatus = isClient && localStorage.getItem(TUTORIAL_STORAGE_KEY);
 
     if (tutorialStatus) {
       setIsVisible(JSON.parse(tutorialStatus));
     } else {
-      localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(true));
+      isClient &&  localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(true));
       setIsVisible(true);
     }
   }, []);
 
   const handleContinue = () => {
     setIsVisible(false);
-    localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(false));
+    isClient &&   localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(false));
   };
 
   return (

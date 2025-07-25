@@ -1,6 +1,7 @@
 export interface TokenPayload {
-  address: string
+  address: string;
   isKyc: boolean
   exp: number
   iat: number
+  
 }

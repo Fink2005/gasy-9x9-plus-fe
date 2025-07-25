@@ -12,7 +12,6 @@ type Props = {
 const Numerology = ({ baseUrl, numerologyResult }: Props) => {
   return (
     <>
-      <Tutorial />
       <Link href="/numerology">
         <LeftArrowIcon className="absolute left-4" />
       </Link>
@@ -23,6 +22,7 @@ const Numerology = ({ baseUrl, numerologyResult }: Props) => {
       <p className="text-[#FFD8BF] mt-6 italic text-center text-small-custom text-shadow-[0px_4px_4px_rgba(255,216,191,0.50)] px-4">
         Lưu ý: Đây là những chỉ số mang tính chất tham khảo, không đảm bảo về tính chính xác tuyệt đối.
       </p>
+      <Tutorial />
     </>
   );
 };

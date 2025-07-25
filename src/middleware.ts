@@ -38,6 +38,7 @@ const aj = arcjet({
 });
 
 export default async function middleware(request: NextRequest) {
+  // await tokenMiddleware(request);
   const pathname = request.nextUrl.pathname;
 
   // Set custom header with pathname
@@ -61,8 +62,6 @@ export default async function middleware(request: NextRequest) {
     ...request,
     headers: requestHeaders,
   });
-
-  // Skip middleware for specific paths
   if (pathname.startsWith('/request')) {
     return NextResponse.next();
   }

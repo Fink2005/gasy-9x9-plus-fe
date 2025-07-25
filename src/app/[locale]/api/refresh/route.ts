@@ -1,4 +1,5 @@
 // app/api/auth/refresh-token/route.ts
+import { createCookie } from '@/app/actions/cookie';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
@@ -22,18 +23,13 @@ export async function POST() {
   }
 
   const response = NextResponse.json({ accessToken: data.accessToken, refreshToken: data.refreshToken });
-
-  response.cookies.set('accessToken9x9', data.accessToken, {
-    path: '/',
-    httpOnly: true,
-    sameSite: 'lax',
+  createCookie({
+    name: 'accessToken9x9',
+    value: data.accessToken,
   });
-
-  response.cookies.set('refreshToken9x9', data.refreshToken, {
-    path: '/',
-    httpOnly: true,
-    sameSite: 'lax',
+  createCookie({
+    name: 'refreshToken9x9',
+    value: data.refreshToken,
   });
-
   return response;
 }

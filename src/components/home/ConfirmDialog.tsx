@@ -119,19 +119,9 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
           from: fromAddress
         });
 
-        let isReceipt = false;
-        let receiptInterval: NodeJS.Timeout | null = null;
-        const receipt = async () => {
           const receiptRes = await web3.eth.getTransactionReceipt(response.transactionHash);
-          if (receiptRes.status) {
-            isReceipt = true;
-            clearInterval(receiptInterval as NodeJS.Timeout);
-          }
-        };
-        receipt();
-        receiptInterval = setInterval(receipt, 500);
 
-        if (isReceipt) {
+        if (receiptRes.status) {
           await boxRequest.boxOpen(response.transactionHash as string);
           toast.success('Mở box thành công!');
         } else {

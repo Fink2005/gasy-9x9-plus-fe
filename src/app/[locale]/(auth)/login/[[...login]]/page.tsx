@@ -15,7 +15,7 @@ const login = async ({ searchParams }: Props) => {
           <Image src="/assets/logo-9x9.png" quality="100" width="300" height="300" className="robot-login !w-[200px] !h-[130px] " alt="logo 9x9" />
         </div>
         <div className="bg-login-card w-full">
-          <p className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#4EC1FF]  text-[1.375rem] font-[510]">Kết nối để bắt đầu hành trình</p>
+          <p className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#4EC1FF]  text-[1.375rem] font-[510] text-nowrap">Kết nối để bắt đầu hành trình</p>
           <SafePal />
         </div>
         { invitedBy && (

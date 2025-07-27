@@ -93,6 +93,7 @@ const useSafePalWallet = () => {
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: '0xaa36a7' }], // 0xaa36a7 = Sepolia chain ID in hex
       });
+
       // Create contract instance
       const contract = new web3.eth.Contract(ERC20_ABI, USDT_CONTRACT_ADDRESS);
       if (!contract || !contract.methods.balanceOf) {
@@ -101,6 +102,7 @@ const useSafePalWallet = () => {
 
       // Get balance
       const rawBalance = await contract.methods.balanceOf(address).call();
+
       // Convert balance from wei to USDT (6 decimals)
       const balanceInUSDT = NumberFormat(Number.parseFloat(String(rawBalance)) / 10 ** USDT_DECIMALS);
       return balanceInUSDT;

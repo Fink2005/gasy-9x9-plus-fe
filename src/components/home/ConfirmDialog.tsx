@@ -121,14 +121,14 @@ const ConfirmDialog = ({ boxNumber, userData }: Props) => {
           gas: gasPrice
         };
 
-        // Lấy account từ wallet (MetaMask)
         const accounts = await web3.eth.getAccounts();
         const fromAddress = accounts[0];
 
-        await web3.eth.sendTransaction({
+        const response = await web3.eth.sendTransaction({
           ...txObject,
           from: fromAddress
         });
+        boxRequest.boxOpen(response.transactionHash as string);
       } else {
         throw new Error('approve method is undefined on the contract');
       }

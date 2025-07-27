@@ -3,6 +3,7 @@ import authRequests from '@/app/apis/requests/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import useSafePalWallet from '@/hooks/useSafePalWallet';
 import CopyIcon from '@/libs/shared/icons/Copy';
+import LoadingDots from '@/libs/shared/icons/LoadingDots';
 import { handleClipboardCopy } from '@/libs/utils';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -16,7 +17,7 @@ const DropdownWallet = ({ address }: Props) => {
   const [balance, setBalance] = useState<string>('0');
   const router = useRouter();
   const { safePalMethods } = useSafePalWallet();
-
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const handleLogout = async () => {
     try {
       await authRequests.logout();
@@ -37,15 +38,15 @@ const DropdownWallet = ({ address }: Props) => {
         if (USDTbalance) {
           setBalance(USDTbalance);
         }
-      } catch (error) {
-        console.error('Error fetching USDT balance:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
+
+    setIsLoading(true); // Only set loading on first mount
     fetchUSDT();
-    // Only set interval if address and safePalMethods are available
     USDTInterval = setInterval(fetchUSDT, 2000);
 
-    // Cleanup function to clear interval on unmount or dependency change
     return () => {
       if (USDTInterval) {
         clearInterval(USDTInterval);
@@ -53,10 +54,14 @@ const DropdownWallet = ({ address }: Props) => {
     };
   }, [address, safePalMethods]);
   return (
-    <div>
-      <span className="text-shadow-custom text-[0.75rem] font-[510] border-r border-r-white px-3 me-3">
-        {balance}
-      </span>
+    <div className="flex items-center">
+      <div className="text-shadow-custom text-[0.75rem] font-[510] border-r border-r-white px-3 me-3 h-5 flex items-center">
+        {isLoading ? <LoadingDots size="size-1" /> : (
+          <span>
+            {balance}
+          </span>
+        )}
+      </div>
       <DropdownMenu>
         <DropdownMenuTrigger
           className="bg-white rounded-[6.25rem] w-[5.625rem] h-[1.875rem] text-[0.75rem] p-1 text-white gap-[0.25rem]"

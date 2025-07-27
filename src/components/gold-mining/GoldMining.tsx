@@ -59,11 +59,7 @@ const GoldMining = ({ address }: Props) => {
       }
     } catch (error) {
       console.error('Error fetching rest times:', error);
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau.');
-      }
+      toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
     }

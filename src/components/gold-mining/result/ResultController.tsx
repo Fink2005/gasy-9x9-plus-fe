@@ -18,7 +18,7 @@ const ResultController = () => {
     })();
   }, []);
   return (
-    <div className="w-full flex flex-col items-center space-y-3 fixed bottom-20">
+    <div className="w-full flex flex-col items-center space-y-3 fixed bottom-24">
       <Button
         className="button-base items-center max-w-[21.4375rem] w-full"
         onClick={handleSubmit}

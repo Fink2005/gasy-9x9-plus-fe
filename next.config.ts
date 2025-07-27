@@ -7,7 +7,7 @@ const baseConfig = {
     dirs: ['.'],
   },
   poweredByHeader: false,
-  reactStrictMode: false,
+  reactStrictMode: true,
 };
 
 const config = withNextIntl(baseConfig);

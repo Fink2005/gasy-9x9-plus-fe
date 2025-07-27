@@ -18,7 +18,6 @@ import {
 } from '../ui/dialog';
 // Minimal USDT ABI for approval
 import BoxDistributor from '@/contracts/BoxDistributor.json';
-import type { UserGetMe } from '@/types/user';
 
 const usdtAbi = [
   {
@@ -41,27 +40,18 @@ const approveAmount = 26 * 10 ** 6; // 26 USDT (6 decimals)
 
 type Props = {
   boxNumber: number;
-  userData: UserGetMe | null;
+  isOpenBox: boolean;
 };
 
-const ConfirmDialog = ({ boxNumber, userData }: Props) => {
+const ConfirmDialog = ({ boxNumber, isOpenBox }: Props) => {
   const [isConfirm, setIsConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const router = useRouter();
-
   const handleOpenChange = (open: boolean) => {
-    if (open) {
-      // Opening the dialog
-      if (((boxNumber !== 1) && (userData!.openedBox < boxNumber))) {
-        toast.warning(`Bạn cần phải mở hộp ${userData!.openedBox === 0 ? '1' : userData!.openedBox} trước khi mở hộp ${boxNumber}`);
-        return; // Don't open the dialog
-      }
-    } else {
-      // Closing the dialog - reset state
-      setIsConfirm(false);
-      setLoading(false);
-    }
+    // // Closing the dialog - reset state
+    // setIsConfirm(false);
+    // setLoading(false);
     setIsOpen(open);
   };
 
@@ -126,8 +116,26 @@ const ConfirmDialog = ({ boxNumber, userData }: Props) => {
           ...txObject,
           from: fromAddress
         });
-        boxRequest.boxOpen(response.transactionHash as string);
-        toast.success('Mở box thành công!');
+
+        let isReceipt = false;
+        let receiptInterval: NodeJS.Timeout | null = null;
+        const receipt = async () => {
+          const receiptRes = await web3.eth.getTransactionReceipt(response.transactionHash);
+          if (receiptRes.status) {
+            isReceipt = true;
+            clearInterval(receiptInterval as NodeJS.Timeout);
+          }
+        };
+        receipt();
+        receiptInterval = setInterval(receipt, 500);
+
+        if (isReceipt) {
+          await boxRequest.boxOpen(response.transactionHash as string);
+          toast.success('Mở box thành công!');
+        } else {
+          toast.error('Giao dịch thất bại hoặc bị huỷ.');
+        }
+        router.refresh();
       } else {
         throw new Error('approve method is undefined on the contract');
       }
@@ -144,9 +152,9 @@ const ConfirmDialog = ({ boxNumber, userData }: Props) => {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger
-        className={`${((userData!.openedBox === 0 && boxNumber === 1) || (userData!.openedBox > boxNumber)) ? 'button-base' : 'button-base-disabled'} text-white !py-1 font-[700] text-[11px]`}
+        className={`${(boxNumber === 1 || isOpenBox) ? 'button-base' : 'button-base-disabled'} text-white !py-1 font-[700] text-[11px]`}
       >
-        {boxNumber >= (userData!.openedBox + 1) ? 'Mở khóa' : 'Chi tiết'}
+        {!isOpenBox ? 'Mở khóa' : 'Chi tiết'}
       </DialogTrigger>
       <DialogContent className="confirm-dialog gap-3">
         <DialogHeader>

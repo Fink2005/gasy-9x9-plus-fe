@@ -24,6 +24,15 @@ export type UserScore = {
   };
 };
 
+type BoxHistoryItems = {
+  boxNumber: number;
+  open: boolean;
+  time: Date;
+  title: string;
+  description: string;
+
+};
+
 export type UserGetMe = {
   _id: string;
   address: string;
@@ -34,7 +43,7 @@ export type UserGetMe = {
   restTimes: number;
   lastUpdatedTime: number;
   amount: number;
-  openBoxHistories: any[]; // You can replace `any` with a specific type if you have one
+  openBoxHistories: BoxHistoryItems[];
   createdAt: string;
   updatedAt: string | null;
   _destroy: boolean;

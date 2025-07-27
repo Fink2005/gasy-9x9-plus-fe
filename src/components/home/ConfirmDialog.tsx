@@ -10,7 +10,6 @@ import Web3 from 'web3';
 import { Button } from '../ui/button';
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -19,6 +18,7 @@ import {
 } from '../ui/dialog';
 // Minimal USDT ABI for approval
 import BoxDistributor from '@/contracts/BoxDistributor.json';
+import type { UserGetMe } from '@/types/user';
 
 const usdtAbi = [
   {
@@ -41,11 +41,38 @@ const approveAmount = 26 * 10 ** 6; // 26 USDT (6 decimals)
 
 type Props = {
   boxNumber: number;
+  userData: UserGetMe | null;
 };
-const ConfirmDialog = ({ boxNumber }: Props) => {
+
+const ConfirmDialog = ({ boxNumber, userData }: Props) => {
   const [isConfirm, setIsConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const router = useRouter();
+
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      // Opening the dialog
+      if ((userData!.openedBox !== 0) && boxNumber >= (userData!.openedBox)) {
+        toast.warning(`Bạn cần phải mở hộp ${userData!.openedBox} trước khi mở hộp ${boxNumber}`);
+        return; // Don't open the dialog
+      }
+    } else if (boxNumber <= (userData!.openedBox + 1)) {
+      router.push(`/box/${boxNumber}`);
+    } else {
+      // Closing the dialog - reset state
+      setIsConfirm(false);
+      setLoading(false);
+    }
+    setIsOpen(open);
+  };
+
+  const handleCancel = () => {
+    setIsOpen(false);
+    setIsConfirm(false);
+    setLoading(false);
+  };
+
   const handleConfirm = async () => {
     if (typeof window.ethereum === 'undefined') {
       toast.error('Vui lòng cài đặt ví');
@@ -60,16 +87,11 @@ const ConfirmDialog = ({ boxNumber }: Props) => {
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: '0xaa36a7' }], // 0xaa36a7 = Sepolia chain ID in hex
       });
-      // await window.ethereum.request({ method: 'eth_requestAccounts' });
 
       const accounts = await web3.eth.getAccounts();
       const sender = accounts[0];
 
       const usdtContract = new web3.eth.Contract(usdtAbi as any, usdtAddress);
-      // get signer
-      // const signer = web3.eth.accounts.privateKeyToAccount(
-      //   process.env.NEXT_PUBLIC_PRIVATE_KEY || ''
-      // );
 
       if (usdtContract.methods.approve) {
         const hax = await usdtContract.methods.approve(contractAddress, approveAmount).send({ from: sender });
@@ -107,24 +129,6 @@ const ConfirmDialog = ({ boxNumber }: Props) => {
           ...txObject,
           from: fromAddress
         });
-
-        // const data = iface.encodeFunctionData('openBox', [
-        //   recipientsArray,
-        //   amountsArray,
-        //   signature,
-        // ]);
-
-        // // Tạo transaction object
-        // const txObject = {
-        //   to: contractAddress,
-        //   data,
-        //   gasLimit: 500000, // set thủ công, nên để lớn
-        //   gasPrice: feeData.gasPrice,
-        // };
-
-        // // Gửi transaction qua signer (luôn hiện popup ví)
-        // const response = await signer.sendTransaction(txObject);
-        // await response.wait();
       } else {
         throw new Error('approve method is undefined on the contract');
       }
@@ -139,8 +143,12 @@ const ConfirmDialog = ({ boxNumber }: Props) => {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger className="button-base text-white !py-1 font-[700] text-[11px]">Mở khóa</DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogTrigger
+        className={`${boxNumber > (userData!.openedBox + 1) ? 'button-base-disabled' : 'button-base'} text-white !py-1 font-[700] text-[11px]`}
+      >
+        {boxNumber >= (userData!.openedBox + 1) ? 'Mở khóa' : 'Chi tiết'}
+      </DialogTrigger>
       <DialogContent className="confirm-dialog gap-3">
         <DialogHeader>
           <DialogTitle className="text-shadow-custom text-[1.5rem] font-[700] mb-0">
@@ -157,21 +165,25 @@ const ConfirmDialog = ({ boxNumber }: Props) => {
         ) : (
           <div className="w-full flex flex-col items-center -translate-y-3">
             <GoodSign />
-            <p className="text-shadow-custom font-[700] text-[1.125rem]">Mở box thành công</p>
+            <p className="text-shadow-custom font-[700] text-[1.125rem]">Mở box thành công</p>
             <p className="text-shadow-custom text-[0.875rem] font-[400] text-center">
-              Nhấn
+              Nhấn
               {' '}
-              <span className="font-[700]">"Chi tiết box 1"</span>
+              <span className="font-[700]">"Chi tiết box 1"</span>
               {' '}
-              để bắt đầu hành trình gieo hạt của bạn
+              để bắt đầu hành trình gieo hạt của bạn
             </p>
           </div>
         )}
 
         <div className="space-x-3 px-3 flex w-full -translate-y-2">
-          <DialogClose asChild>
-            <Button variant="outline" className="bg-transparent text-white w-1/2">Hủy bỏ</Button>
-          </DialogClose>
+          <Button
+            variant="outline"
+            className="bg-transparent text-white w-1/2"
+            onClick={handleCancel}
+          >
+            Hủy bỏ
+          </Button>
           <Button
             className="w-1/2 button-custom"
             onClick={() => {
@@ -179,7 +191,7 @@ const ConfirmDialog = ({ boxNumber }: Props) => {
             }}
             disabled={loading}
           >
-            {loading ? 'Đang xử lý...' : isConfirm ? 'Chi tiết' : 'Xác nhận'}
+            {loading ? 'Đang xử lý...' : isConfirm ? 'Chi tiết' : 'Xác nhận'}
           </Button>
         </div>
       </DialogContent>

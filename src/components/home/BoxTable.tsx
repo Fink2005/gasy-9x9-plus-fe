@@ -1,3 +1,4 @@
+import userRequests from '@/app/apis/requests/user';
 import Image from 'next/image';
 import ConfirmDialog from './ConfirmDialog';
 
@@ -57,16 +58,22 @@ const boxes = [
     boxNumber: 9,
   }
 ];
-const BoxTable = () => {
+const BoxTable = async () => {
+  const userData = await userRequests.userGetMe();
+  console.log(userData);
   return (
     <div className="grid grid-cols-3 gap-3 w-full px-6 mt-6 pb-20">
       {
         boxes.map(item => (
           <div className="box-card" key={item.id}>
-            <Image src="/assets/starBox.webp" width={300} height={300} className="w-24 h-22" alt="box" />
+            {
+              ((userData!.openedBox) >= item.boxNumber)
+                ? <Image src="/assets/box-opened.webp" width={300} height={300} className="w-18 h-20" alt="box" />
+                : <Image src="/assets/box-open.webp" width={300} height={300} className="w-18 h-20" alt="box" />
+            }
             <p className="text-shadow-custom font-[860] text-[12px]">{item.title}</p>
             <p className="text-shadow-custom text-nowrap font-[590] text-[10px]">{item.description}</p>
-            <ConfirmDialog boxNumber={item.boxNumber} />
+            <ConfirmDialog boxNumber={item.boxNumber} userData={userData} />
           </div>
         ))
       }

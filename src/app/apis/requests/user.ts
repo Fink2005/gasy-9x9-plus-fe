@@ -1,7 +1,7 @@
 import { http } from '@/app/apis/apiRequest';
 import { USER_RANKING_LIMIT } from '@/libs/shared/constants/globals';
 import type { VerifyKycResponse } from '@/types/auth';
-import type { UserRanking } from '@/types/user';
+import type { UserGetMe, UserRanking } from '@/types/user';
 
 const userRequests = {
   async userKyc(body: { email: string }): Promise<{ message: string } | null> {
@@ -25,6 +25,11 @@ const userRequests = {
   async userRanking(page: number): Promise<UserRanking | null> {
     return await http.get<UserRanking | null>(
       `/user/ranking?page=${page}?limit=${USER_RANKING_LIMIT}`
+    );
+  },
+  async userGetMe(): Promise<UserGetMe | null> {
+    return await http.get<UserGetMe | null>(
+      '/user/get-me'
     );
   }
 };

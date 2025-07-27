@@ -174,6 +174,21 @@
   background: linear-gradient(180deg, #68daf2 0%, #1c5bb9 95.1%);
   box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
 }
+
+.button-base-disabled {
+  display: flex;
+  height: 2.75rem;
+  padding: 0.625rem 1.125rem;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 0 0;
+  border-radius: 0.5rem;
+  border: 1px solid #68daf2;
+  background: linear-gradient(180deg, #68daf2 0%, #1c5bb9 95.1%);
+  opacity: 0.5;
+  box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+}
 .button-custom {
   background: linear-gradient(180deg, #68daf2 0%, #1c5bb9 95.1%);
   box-shadow:

@@ -19,19 +19,19 @@ export const metadata: Metadata = {
   icons: [
     {
       rel: 'apple-touch-icon',
-      url: '/apple-touch-icon.png',
+      url: '/favicon.ico',
     },
     {
       rel: 'icon',
       type: 'image/png',
       sizes: '32x32',
-      url: '/favicon-32x32.png',
+      url: '/icon0.svg',
     },
     {
       rel: 'icon',
       type: 'image/png',
       sizes: '16x16',
-      url: '/favicon-16x16.png',
+      url: '/favicon.ico',
     },
     {
       rel: 'icon',
@@ -58,6 +58,9 @@ export default async function RootLayout(props: {
   return (
     <html lang={locale} className={sfPro.variable}>
       <body className="min-h-screen">
+        <head>
+          <meta name="apple-mobile-web-app-title" content="9x9plus" />
+        </head>
         <NextIntlClientProvider>
           <RefreshToken />
           <RootTemplate>
@@ -66,10 +69,7 @@ export default async function RootLayout(props: {
           <Toaster
             position="top-center"
             toastOptions={{
-              style: {
-                color: 'white',
-                background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)',
-              },
+              className: 'text-white bg-gradient-to-b from-[#68DAF2] to-[#1C5BB9]',
             }}
           />
         </NextIntlClientProvider>

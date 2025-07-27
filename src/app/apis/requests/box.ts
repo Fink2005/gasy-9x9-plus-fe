@@ -8,9 +8,9 @@ export const boxRequest = {
       boxNumber
     });
   },
-  async boxOpen(txHax: string): Promise<BoxRes | null> {
+  async boxOpen(txHash: string): Promise<BoxRes | null> {
     return await http.post<BoxRes | null>('/box/open', {
-      txHax
+      txHash
     });
   }
 };

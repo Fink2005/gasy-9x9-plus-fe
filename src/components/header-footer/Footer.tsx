@@ -37,9 +37,12 @@ const tabBar = [
 
 export function Footer() {
   const pathName = usePathname();
+  if (pathName.includes('game')) {
+    return;
+  }
   return (
     <footer
-      className={`${pathName.includes('game') ? 'hidden' : 'absolute'} bottom-0 w-full footer `}
+      className="absolute bottom-0 w-full footer"
       style={{
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}

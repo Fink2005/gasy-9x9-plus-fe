@@ -16,6 +16,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://gasy-9x9-plus-fe.vercel.app/'), // Replace with your actual domain
   icons: [
     {
       rel: 'apple-touch-icon',

@@ -38,6 +38,21 @@ export const metadata: Metadata = {
       url: '/favicon.ico',
     },
   ],
+  openGraph: {
+    title: '9x9 Plus',
+    description: 'HÀNH TRÌNH LAN TOẢ GIÁ TRỊ BẮT ĐẦU TỪ ĐÂY',
+    url: 'https://gasy-9x9-plus-fe.vercel.app/',
+    siteName: '9x9 Plus',
+    images: [
+      {
+        url: '/assets/logo-9x9.png',
+        width: 1200,
+        height: 630,
+        alt: '9x9 Plus Logo',
+      },
+    ],
+    type: 'website',
+  },
 };
 
 export function generateStaticParams() {

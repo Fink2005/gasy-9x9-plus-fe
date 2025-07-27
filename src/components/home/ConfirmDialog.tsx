@@ -62,7 +62,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
   };
 
   const handleCancel = () => {
-    setIsOpen(false);
+    setIsOpen(false);n
     setIsConfirm(false);
     setLoading(false);
   };
@@ -172,7 +172,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
             <p className="text-shadow-custom text-[0.875rem] font-[400] text-center">
               Nhấn
               {' '}
-              <span className="font-[700]">"Chi tiết box 1"</span>
+              <span className="font-[700]">{`"Chi tiết box ${boxNumber}"`}</span>
               {' '}
               để bắt đầu hành trình gieo hạt của bạn
             </p>

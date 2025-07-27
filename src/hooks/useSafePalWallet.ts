@@ -74,11 +74,14 @@ const useSafePalWallet = () => {
             }
           }
         }
-      } catch {
-        toast.error('Kết nối ví thất bại, vui lòng thử lại sau!');
-        // router.refresh();
-        console.error('Error connecting to SafePal wallet');
+      } catch (error) {
+        if (error instanceof Error) {
         setIsConnecting(false);
+          toast.error(error.message);
+          return
+        }
+        setIsConnecting(false);
+        toast.error('Kết nối ví thất bại, vui lòng thử lại sau!');
       } finally {
         setIsConnecting(false);
       }

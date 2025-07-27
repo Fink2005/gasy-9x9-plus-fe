@@ -50,7 +50,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const router = useRouter();
   const handleOpenChange = (open: boolean) => {
-    if ((!isOpenBox && boxNumber !== 1) || currentBox !== boxNumber) {
+    if ((!isOpenBox && boxNumber !== 1) && currentBox !== boxNumber) {
       toast.warning(`Bạn cần phải mở hộp ${currentBox}`);
       return;
     }

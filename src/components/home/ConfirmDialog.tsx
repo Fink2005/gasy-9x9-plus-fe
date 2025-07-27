@@ -62,7 +62,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
   };
 
   const handleCancel = () => {
-    setIsOpen(false);n
+    setIsOpen(false);
     setIsConfirm(false);
     setLoading(false);
   };

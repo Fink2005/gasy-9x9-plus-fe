@@ -8,6 +8,8 @@ const WelcomeList5 = () => {
       gọi bạn là Người Gieo Hạt. Vì mỗi lần mở khoá, là một
       {' '}
       <br />
+
+      {/*  */}
       {' '}
       lần gieo yêu thương, gieo niềm tin cho thế giới. Và người đầu tiên nhận được món quà ấy, luôn là CHÍNH BẠN.
     </p>

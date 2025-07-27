@@ -9,7 +9,7 @@ import { handleClipboardCopy, isClient } from '@/libs/utils';
 import { useEffect, useState } from 'react';
 
 const BoxDetailController = () => {
-  const urlSharing = isClient ? `${window.location.host}/login` : '';
+  const urlSharing = isClient ? `${window.location.origin}/login` : '';
   const [address, setAddress] = useState<string | undefined>();
   useEffect(() => {
     (async () => {

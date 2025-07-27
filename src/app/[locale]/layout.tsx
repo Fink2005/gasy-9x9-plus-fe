@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     siteName: '9x9 Plus',
     images: [
       {
-        url: '/assets/logo-9x9.png',
+        url: '/apple-icon.png',
         width: 1200,
         height: 630,
         alt: '9x9 Plus Logo',

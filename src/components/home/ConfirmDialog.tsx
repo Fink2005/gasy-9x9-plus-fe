@@ -49,9 +49,10 @@ const ConfirmDialog = ({ boxNumber, isOpenBox }: Props) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const router = useRouter();
   const handleOpenChange = (open: boolean) => {
-    // // Closing the dialog - reset state
-    // setIsConfirm(false);
-    // setLoading(false);
+    if (!isOpenBox && boxNumber !== 1) {
+      toast.warning('Số box không hợp lệ');
+      return;
+    }
     setIsOpen(open);
   };
 

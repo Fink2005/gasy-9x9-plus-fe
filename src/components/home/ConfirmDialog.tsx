@@ -54,6 +54,10 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
       toast.warning(`Bạn cần phải mở hộp ${currentBox}`);
       return;
     }
+    else if (isOpenBox) {
+      router.push(`/box/${boxNumber}`);
+      return;
+    }
     setIsOpen(open);
   };
 

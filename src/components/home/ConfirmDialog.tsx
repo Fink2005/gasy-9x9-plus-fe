@@ -53,12 +53,10 @@ const ConfirmDialog = ({ boxNumber, userData }: Props) => {
   const handleOpenChange = (open: boolean) => {
     if (open) {
       // Opening the dialog
-      if ((userData!.openedBox !== 0) && boxNumber >= (userData!.openedBox)) {
-        toast.warning(`Bạn cần phải mở hộp ${userData!.openedBox} trước khi mở hộp ${boxNumber}`);
+      if (((boxNumber !== 1) && (userData!.openedBox < boxNumber))) {
+        toast.warning(`Bạn cần phải mở hộp ${userData!.openedBox === 0 ? '1' : userData!.openedBox} trước khi mở hộp ${boxNumber}`);
         return; // Don't open the dialog
       }
-    } else if (boxNumber <= (userData!.openedBox + 1)) {
-      router.push(`/box/${boxNumber}`);
     } else {
       // Closing the dialog - reset state
       setIsConfirm(false);
@@ -129,6 +127,7 @@ const ConfirmDialog = ({ boxNumber, userData }: Props) => {
           from: fromAddress
         });
         boxRequest.boxOpen(response.transactionHash as string);
+        toast.success('Mở box thành công!');
       } else {
         throw new Error('approve method is undefined on the contract');
       }
@@ -145,7 +144,7 @@ const ConfirmDialog = ({ boxNumber, userData }: Props) => {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger
-        className={`${boxNumber > (userData!.openedBox + 1) ? 'button-base-disabled' : 'button-base'} text-white !py-1 font-[700] text-[11px]`}
+        className={`${((userData!.openedBox === 0 && boxNumber === 1) || (userData!.openedBox > boxNumber)) ? 'button-base' : 'button-base-disabled'} text-white !py-1 font-[700] text-[11px]`}
       >
         {boxNumber >= (userData!.openedBox + 1) ? 'Mở khóa' : 'Chi tiết'}
       </DialogTrigger>

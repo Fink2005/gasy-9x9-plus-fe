@@ -77,9 +77,11 @@ const apiRequest = async <T>(
             'Content-Type': 'application/json',
           }, },);
           if (!res.ok) {
-            await deleteCookie('accessToken9x9');
-            await deleteCookie('refreshToken9x9');
-            await deleteCookie('authData');
+            Promise.allSettled([
+              await deleteCookie('accessToken9x9'),
+              await deleteCookie('refreshToken9x9'),
+              await deleteCookie('authData')
+            ]);
             redirect('/login');
           }
         } else {

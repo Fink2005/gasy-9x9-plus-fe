@@ -20,16 +20,17 @@ export async function POST() {
   if (!res.ok) {
     return NextResponse.json({ error: 'Refresh token invalid' }, { status: 401 });
   }
-
+  Promise.allSettled([
+    createCookie({
+      name: 'accessToken9x9',
+      value: data.accessToken,
+    }),
+    createCookie({
+      name: 'refreshToken9x9',
+      value: data.refreshToken,
+    })
+  ]);
   const response = NextResponse.json({ success: true });
-  createCookie({
-    name: 'accessToken9x9',
-    value: data.accessToken,
-  });
-  createCookie({
-    name: 'refreshToken9x9',
-    value: data.refreshToken,
-  });
 
   return response;
 }

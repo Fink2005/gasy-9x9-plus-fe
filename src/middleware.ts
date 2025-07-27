@@ -6,8 +6,8 @@ import { routing } from './libs/i18nRouting';
 
 const handleI18nRouting = createMiddleware(routing);
 
-const isProtectedRoute = (pathname: string): boolean => {
-  return pathname.startsWith('/numerology') || pathname === '/' || pathname.startsWith('/ranking') || pathname.startsWith('/gold-mining');
+const isProtectedPage = (pathname: string): boolean => {
+  return pathname.startsWith('/numerology') || pathname.startsWith('/numerology/result') || pathname === '/' || pathname.startsWith('/ranking') || pathname.startsWith('/gold-mining') || pathname.startsWith('/gold-mining/result');
 };
 
 const isAuthPage = (pathname: string): boolean => {
@@ -87,7 +87,7 @@ export default async function middleware(request: NextRequest) {
   }
 
   // Redirect unauthenticated users from protected routes
-  if (isProtectedRoute(pathname)) {
+  if (isProtectedPage(pathname)) {
     if (!isAuthenticated) {
       const loginUrl = new URL('/login', request.url);
       return NextResponse.redirect(loginUrl);
@@ -101,7 +101,7 @@ export default async function middleware(request: NextRequest) {
   }
 
   if (
-    pathname !== '/refresh-token' && (isTokenExpired && refreshToken) && isProtectedRoute(pathname)
+    pathname !== '/refresh-token' && (isTokenExpired && refreshToken) && isProtectedPage(pathname)
   ) {
     const url = new URL(`/refresh-token`, request.url);
     url.searchParams.set('refreshToken', refreshToken);

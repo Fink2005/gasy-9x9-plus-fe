@@ -3,6 +3,7 @@ import authRequests from '@/app/apis/requests/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import useSafePalWallet from '@/hooks/useSafePalWallet';
 import CopyIcon from '@/libs/shared/icons/Copy';
+import { handleClipboardCopy } from '@/libs/utils';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -15,10 +16,6 @@ const DropdownWallet = ({ address }: Props) => {
   const [balance, setBalance] = useState<string>('0');
   const router = useRouter();
   const { safePalMethods } = useSafePalWallet();
-  const handleClipboardCopy = () => {
-    navigator.clipboard.writeText(address);
-    toast.success('Đã sao chép địa chỉ ví');
-  };
 
   const handleLogout = async () => {
     try {
@@ -32,12 +29,29 @@ const DropdownWallet = ({ address }: Props) => {
     }
   };
   useEffect(() => {
-    (async () => {
-      const USDTbalance = await safePalMethods.onGetBalance(address);
-      USDTbalance && setBalance(USDTbalance);
-    })();
-  }, [address, safePalMethods]);
+    let USDTInterval = null;
 
+    const fetchUSDT = async () => {
+      try {
+        const USDTbalance = await safePalMethods.onGetBalance(address);
+        if (USDTbalance) {
+          setBalance(USDTbalance);
+        }
+      } catch (error) {
+        console.error('Error fetching USDT balance:', error);
+      }
+    };
+    fetchUSDT();
+    // Only set interval if address and safePalMethods are available
+    USDTInterval = setInterval(fetchUSDT, 2000);
+
+    // Cleanup function to clear interval on unmount or dependency change
+    return () => {
+      if (USDTInterval) {
+        clearInterval(USDTInterval);
+      }
+    };
+  }, [address, safePalMethods]);
   return (
     <div>
       <span className="text-shadow-custom text-[0.75rem] font-[510] border-r border-r-white px-3 me-3">
@@ -53,7 +67,7 @@ const DropdownWallet = ({ address }: Props) => {
         <DropdownMenuContent className="dropdown-address text-white">
           <DropdownMenuItem
             className="flex items-center justify-start !focus:bg-red-500 w-full"
-            onClick={handleClipboardCopy}
+            onClick={() => handleClipboardCopy(address)}
           >
             <span>
               {`${address?.slice(0, 5)}...${address?.slice(-3)}`}

@@ -64,7 +64,7 @@ const RobotHook = ({ hookRef, carriedItem, angle, isSwinging, ropeLength, isShri
               className="absolute"
               style={{
                 left: `${-carriedItem.size / 2}px`,
-                top: `${ropeLength + ((carriedItem.type === 'star' || carriedItem.type === 'blueStar') ? 20 : 34)}px`,
+                top: `${ropeLength + ((carriedItem.type === 'star') ? 20 : 34)}px`,
                 width: carriedItem.size,
                 height: carriedItem.size,
                 transition: isShrinking ? 'transform 0.05s linear' : 'none',
@@ -76,7 +76,7 @@ const RobotHook = ({ hookRef, carriedItem, angle, isSwinging, ropeLength, isShri
                   <StoneIcon />
                 </div>
               ) : carriedItem.type === 'blueStar' ? (
-                <div style={{ width: 65, height: 65 }}>
+                <div style={{ width: 50, height: 50 }}>
                   <Image src="/assets/blue-star.webp" width={65} height={65} alt="blue star" />
                 </div>
               ) : carriedItem.type === 'blindBox' ? (
@@ -85,7 +85,7 @@ const RobotHook = ({ hookRef, carriedItem, angle, isSwinging, ropeLength, isShri
                 </div>
               ) : (
                 <div style={{ width: 65, height: 65 }}>
-                  <Image src="/assets/star.webp" width={60} height={60} alt="star" />
+                  <Image src="/assets/star.webp" width={60} height={60} className="size-[62px]" alt="star" />
                 </div>
               )}
             </div>

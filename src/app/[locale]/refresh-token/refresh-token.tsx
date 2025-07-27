@@ -28,5 +28,9 @@ export default function RefreshToken({ refreshToken }: Props) {
       router.push('/');
     }
   }, [router, refreshTokenFromUrl, redirectPathname, refreshToken]);
-  return <div className="h-screen text-white flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
+  return (
+    <div className="h-screen text-white flex items-center justify-center">
+      <Loader2 className="animate-spin" />
+    </div>
+  );
 }

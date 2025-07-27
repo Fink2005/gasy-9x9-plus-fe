@@ -1,13 +1,10 @@
+import BoxDetailController from '@/components/box/BoxDetailController';
 import CalendarColorIcon from '@/libs/shared/icons/CalendarColor';
-import ChartIcon from '@/libs/shared/icons/Chart';
-import ConnectionIcon from '@/libs/shared/icons/Connection';
-import CopyIcon2 from '@/libs/shared/icons/Copy2';
 import HandMoney2 from '@/libs/shared/icons/HandMoney2';
 import HeartUnlockIcon from '@/libs/shared/icons/HeartUnlock';
 import MoneyMessageIcon from '@/libs/shared/icons/MoneyMessage';
 import MoneySuitcaseIcon from '@/libs/shared/icons/MoneySuitcase';
 import MoneyWalletIcon from '@/libs/shared/icons/MoneyWallet';
-import RightArrowIcon from '@/libs/shared/icons/RightArrow';
 import ShieldIcon from '@/libs/shared/icons/Shield';
 import UserConnection from '@/libs/shared/icons/UserConnection';
 import UserHeart from '@/libs/shared/icons/UserHeart';
@@ -78,25 +75,7 @@ const BoxCardDetail = ({ boxSlug }: Props) => {
           className="absolute bottom-4 right-1"
         />
       </div>
-
-      <div className="space-y-4 my-4">
-        <div className="box-card-detail flex items-center relative cursor-pointer">
-          <ConnectionIcon className="translate-y-[2px] w-10" />
-          <p className="text-shadow-custom text-[1rem] font-[590]">
-            Chia sẻ link
-            {' '}
-            <span className="font-[860]">9/9</span>
-          </p>
-          <CopyIcon2 className="absolute right-0 top-0 size-14" />
-        </div>
-        <div className="box-card-detail flex items-center relative cursor-pointer">
-          <ChartIcon className="translate-y-[2px] w-10" />
-          <p className="text-shadow-custom text-[1rem] font-[590]">
-            Sơ đồ hệ thống
-          </p>
-          <RightArrowIcon className="absolute right-0 top-0 size-14" />
-        </div>
-      </div>
+      <BoxDetailController />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 'use client';
 
+import { boxRequest } from '@/app/apis/requests/box';
 import CoinIcon from '@/libs/shared/icons/Coin';
 import GoodSign from '@/libs/shared/icons/GoodSign';
 import { useRouter } from 'next/navigation';
@@ -16,8 +17,9 @@ import {
   DialogTitle,
   DialogTrigger
 } from '../ui/dialog';
-
 // Minimal USDT ABI for approval
+import BoxDistributor from '@/contracts/BoxDistributor.json';
+
 const usdtAbi = [
   {
     constant: false,
@@ -34,10 +36,13 @@ const usdtAbi = [
 // Constants
 // const usdtAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
 const usdtAddress = '0xc45D0156553e000eBcdFc05B08Ea5184911e13De'; // this is for Sepolia testnet USDT
-const spenderAddress = '0x562Ae2ED39cb2bA9d03268B83EE88504e9675f03';
+const contractAddress = '0x3A87e9E8616957eA2F4b8960CFa333fCF5887589';
 const approveAmount = 26 * 10 ** 6; // 26 USDT (6 decimals)
 
-const ConfirmDialog = () => {
+type Props = {
+  boxNumber: number;
+};
+const ConfirmDialog = ({ boxNumber }: Props) => {
   const [isConfirm, setIsConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -61,9 +66,65 @@ const ConfirmDialog = () => {
       const sender = accounts[0];
 
       const usdtContract = new web3.eth.Contract(usdtAbi as any, usdtAddress);
+      // get signer
+      // const signer = web3.eth.accounts.privateKeyToAccount(
+      //   process.env.NEXT_PUBLIC_PRIVATE_KEY || ''
+      // );
 
       if (usdtContract.methods.approve) {
-        await usdtContract.methods.approve(spenderAddress, approveAmount).send({ from: sender });
+        const hax = await usdtContract.methods.approve(contractAddress, approveAmount).send({ from: sender });
+        const res = await boxRequest.boxApprove(hax.transactionHash, boxNumber);
+        if (!res) {
+          throw new Error('Box approval failed');
+        }
+        const { signature, addresses, amounts } = res;
+
+        // Encode data cho openBox
+        const parsed = JSON.parse(JSON.stringify(BoxDistributor));
+        const contract = new web3.eth.Contract(parsed, contractAddress);
+
+        const data = contract.methods.openBox!(
+          addresses,
+          amounts,
+          signature
+        ).encodeABI();
+
+        // Lấy gas price
+        const gasPrice = await web3.eth.getGasPrice();
+
+        // Tạo transaction object
+        const txObject = {
+          to: contractAddress,
+          data,
+          gas: gasPrice
+        };
+
+        // Lấy account từ wallet (MetaMask)
+        const accounts = await web3.eth.getAccounts();
+        const fromAddress = accounts[0];
+
+        await web3.eth.sendTransaction({
+          ...txObject,
+          from: fromAddress
+        });
+
+        // const data = iface.encodeFunctionData('openBox', [
+        //   recipientsArray,
+        //   amountsArray,
+        //   signature,
+        // ]);
+
+        // // Tạo transaction object
+        // const txObject = {
+        //   to: contractAddress,
+        //   data,
+        //   gasLimit: 500000, // set thủ công, nên để lớn
+        //   gasPrice: feeData.gasPrice,
+        // };
+
+        // // Gửi transaction qua signer (luôn hiện popup ví)
+        // const response = await signer.sendTransaction(txObject);
+        // await response.wait();
       } else {
         throw new Error('approve method is undefined on the contract');
       }

@@ -466,7 +466,7 @@ const SpaceshipGameOptimized = () => {
             } else if (hitItem?.type === 'blueStar') {
               retract -= 6;
             } else {
-              retract -= 5;
+              retract -= 4;
             }
             dispatch({ type: 'SET_ROPE_LENGTH', payload: retract });
 

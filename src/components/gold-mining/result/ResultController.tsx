@@ -1,14 +1,22 @@
 'use client';
-import { deleteCookie } from '@/app/actions/cookie';
+import { deleteCookie, getCookie } from '@/app/actions/cookie';
 import { Button } from '@/components/ui/button';
 import GamePad2 from '@/libs/shared/icons/GamePad2';
 import { redirect } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const ResultController = () => {
+  const [playLeft, setPlayLeft] = useState<string | undefined>('0');
   const handleSubmit = async () => {
     await deleteCookie('goldMiningScore');
     redirect('/gold-mining');
   };
+  useEffect(() => {
+    (async () => {
+      const playTimes = await getCookie('playLeft');
+      setPlayLeft(playTimes);
+    })();
+  }, []);
   return (
     <div className="w-full flex flex-col items-center space-y-3 fixed bottom-20">
       <Button
@@ -17,7 +25,10 @@ const ResultController = () => {
       >
         <GamePad2 />
         <span>
-          Chơi lại (còn 8/9)
+          Chơi lại (còn
+          {' '}
+          {playLeft}
+          /9)
         </span>
 
       </Button>

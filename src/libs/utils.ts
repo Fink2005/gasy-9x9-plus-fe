@@ -3,6 +3,7 @@ import type { TokenPayload } from '@/types/jwt';
 import type { ClassValue } from 'clsx';
 import { clsx } from 'clsx';
 import { jwtDecode } from 'jwt-decode';
+import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 import { devtools } from 'zustand/middleware';
 import { deleteCookie, getCookie } from '../app/actions/cookie';
@@ -22,6 +23,11 @@ export function NumberFormat(number: number): string {
 
   return formatted;
 }
+
+export const handleClipboardCopy = (data: string | number) => {
+  navigator.clipboard.writeText(data.toString());
+  toast.success('Đã sao chép địa chỉ ví');
+};
 
 export const isClient = typeof window !== 'undefined';
 

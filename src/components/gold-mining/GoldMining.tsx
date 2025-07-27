@@ -34,10 +34,16 @@ const GoldMining = ({ address }: Props) => {
     try {
       const result = await goldMiningRequest.GoldMiningStart();
       const sessionId = result?.sessionId || '';
-      createCookie({
-        name: 'sessionId',
-        value: sessionId,
-      });
+      Promise.allSettled([
+        createCookie({
+          name: 'sessionId',
+          value: sessionId,
+        }),
+        createCookie({
+          name: 'playLeft',
+          value: (dataRestTimes.restTimes - 1).toString(),
+        })
+      ]);
       router.push('/gold-mining/game');
     } finally {
       setIsLoading(false);
@@ -133,17 +139,15 @@ const GoldMining = ({ address }: Props) => {
       </div>
 
       {isDisplayQuestion && (
-        <div className="question-card max-w-[21.4375rem] w-full mt-[1rem] z-10">
-          <div>
-            <QuestionCircleIcon />
-          </div>
-          <p className="text-shadow-custom text-[0.875rem] font-[590]">
-            Một ngày chỉ chơi tối đa 10 lượt chơi. Khi bạn mời được 1 người chơi bạn sẽ được 1 lượt chơi.
+        <div className="question-card mt-[1rem] z-10 max-w-[360px] w-full">
+          <QuestionCircleIcon className="w-30" />
+          <p className="text-shadow-custom text-[0.875rem] font-[510]">
+            Mỗi người bạn mời sẽ giúp bạn mở thêm 1 cánh cửa khám phá bản thân. Càng mời nhiều, cơ hội nhận hộp quà lan tỏa càng lớn.
           </p>
         </div>
       )}
 
-      <div className="user-card flex justify-around items-center size-full max-w-[21.4375rem] w-full mt-[1rem] z-10">
+      <div className="user-card flex justify-around items-center max-w-[360px] w-full mt-[1rem] z-10">
         <div className="flex items-center">
           <span className="text-shadow-custom font-[500] text-[1rem]">4</span>
           <UnknowAvatarIcon className="size-12" />

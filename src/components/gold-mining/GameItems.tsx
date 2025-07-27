@@ -37,7 +37,7 @@ const GameItems = ({
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <Image src="/assets/blue-star.webp" width={65} height={65} className="size-[65px]" alt="blue star" />
+          <Image src="/assets/blue-star.webp" width={65} height={65} className="size-[50px]" alt="blue star" />
         </div>
       ))}
 
@@ -71,7 +71,7 @@ const GameItems = ({
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <Image src="/assets/blind-box.webp" width={65} height={65} className="size-[65px]" alt="blind box" />
+          <Image src="/assets/blind-box.webp" width={65} height={65} className="size-[74px]" alt="blind box" />
         </div>
       ))}
 
@@ -80,15 +80,14 @@ const GameItems = ({
         <div
           key={star.id}
           ref={setStarRef(star.id)}
-          className="absolute size-[65px]"
+          className="absolute "
           style={{
             left: `calc(50% + ${star.x}px)`,
             top: `${star.y}px`,
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <Image src="/assets/star.webp" width={60} height={60} className="size-[65px]" alt="star" />
-
+          <Image src="/assets/star.webp" width={65} height={65} className="size-[62px]" alt="star" />
         </div>
       ))}
     </>

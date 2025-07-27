@@ -637,9 +637,7 @@ body::-webkit-scrollbar {
 .question-card {
   display: flex;
   padding: 0.625rem 0.75rem;
-  justify-content: center;
   align-items: center;
-  gap: 0.5rem;
   border-radius: 0.5rem;
   border: 1px solid #68daf2;
   background: rgba(0, 39, 102, 0.7);

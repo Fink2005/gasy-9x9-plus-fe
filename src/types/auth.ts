@@ -1,6 +1,6 @@
 import type { User } from '@/types/user';
 
-export type LoginPayload = { address: string; signature: string; message: string };
+export type LoginPayload = { address: string; signature: string; message: string; invitedBy?: string | undefined };
 
 export type LoginResponse = {
   user: User;

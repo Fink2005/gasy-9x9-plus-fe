@@ -36,7 +36,7 @@ const useSafePalWallet = () => {
     }
   };
   const safePalMethods = {
-    async onConnectWallet() {
+    async onConnectWallet(invitedBy: string | null) {
       setIsConnecting(true);
       try {
         const provider = getSafePalProvider();
@@ -55,7 +55,7 @@ const useSafePalWallet = () => {
               method: 'personal_sign',
               params: [responseNonce.nonce, response[0]]
             });
-            const authData = await authRequests.login({ address: response[0], signature, message: responseNonce.nonce });
+            const authData = await authRequests.login({ address: response[0], signature, message: responseNonce.nonce, ...(invitedBy && { invitedBy }) });
             if (authData) {
               createCookie({
                 name: 'authData',

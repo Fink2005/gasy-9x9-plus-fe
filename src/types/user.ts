@@ -46,6 +46,7 @@ export type UserGetMe = {
   openBoxHistories: BoxHistoryItems[];
   createdAt: string;
   updatedAt: string | null;
+  currentBox: number;
   _destroy: boolean;
   email: string;
   openedBox: number;

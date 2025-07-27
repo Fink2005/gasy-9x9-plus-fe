@@ -40,17 +40,18 @@ const approveAmount = 26 * 10 ** 6; // 26 USDT (6 decimals)
 
 type Props = {
   boxNumber: number;
+  currentBox: number;
   isOpenBox: boolean;
 };
 
-const ConfirmDialog = ({ boxNumber, isOpenBox }: Props) => {
+const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
   const [isConfirm, setIsConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const router = useRouter();
   const handleOpenChange = (open: boolean) => {
-    if (!isOpenBox && boxNumber !== 1) {
-      toast.warning('Số box không hợp lệ');
+    if ((!isOpenBox && boxNumber !== 1) || currentBox !== boxNumber) {
+      toast.warning(`Bạn cần phải mở hộp ${currentBox}`);
       return;
     }
     setIsOpen(open);
@@ -153,7 +154,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox }: Props) => {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger
-        className={`${(boxNumber === 1 || isOpenBox) ? 'button-base' : 'button-base-disabled'} text-white !py-1 font-[700] text-[11px]`}
+        className={`${(boxNumber === 1 || isOpenBox || currentBox === boxNumber) ? 'button-base' : 'button-base-disabled'} text-white !py-1 font-[700] text-[11px]`}
       >
         {!isOpenBox ? 'Mở khóa' : 'Chi tiết'}
       </DialogTrigger>

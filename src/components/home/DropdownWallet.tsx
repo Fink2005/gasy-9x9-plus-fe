@@ -6,7 +6,7 @@ import CopyIcon from '@/libs/shared/icons/Copy';
 import LoadingDots from '@/libs/shared/icons/LoadingDots';
 import { handleClipboardCopy } from '@/libs/utils';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 type Props = {
@@ -15,47 +15,87 @@ type Props = {
 
 const DropdownWallet = ({ address }: Props) => {
   const [balance, setBalance] = useState<string | undefined>(undefined);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
   const { safePalMethods } = useSafePalWallet();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const handleLogout = async () => {
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleLogout = useCallback(async () => {
+    if (isLoggingOut) {
+      return;
+    } // Prevent double-click
+
+    setIsLoggingOut(true);
     try {
       await authRequests.logout();
-      typeof window !== 'undefined' && window.localStorage.removeItem('isDisplayTutorial');
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem('isDisplayTutorial');
+      }
       toast.success('Ngắt kết nối ví thành công');
       router.replace('/login');
     } catch (error) {
       console.error('Logout failed:', error);
       toast.error('Có lỗi xảy ra khi ngắt kết nối ví');
+      setIsLoggingOut(false); // Reset on error
     }
-  };
-  useEffect(() => {
-    let USDTInterval = null;
+  }, [isLoggingOut, router]);
 
-    const fetchUSDT = async () => {
-      try {
-        const USDTbalance = await safePalMethods.onGetBalance(address);
-        if (USDTbalance) {
-          setBalance(USDTbalance);
-        }
-      } finally {
-        setIsLoading(false);
+  const fetchBalance = useCallback(async () => {
+    try {
+      const USDTbalance = await safePalMethods.onGetBalance(address);
+      if (USDTbalance) {
+        setBalance(USDTbalance);
       }
-    };
-    setIsLoading(true); // Only set loading on first mount
-    setTimeout(fetchUSDT, 500);
-    USDTInterval = setInterval(fetchUSDT, 2000);
+    } catch (error) {
+      console.error('Failed to fetch balance:', error);
+      // Optionally show error toast or handle error state
+    }
+  }, [address, safePalMethods]);
+
+  useEffect(() => {
+    if (!address) {
+      return;
+    }
+
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    // Initial fetch with delay
+    const timeoutId = setTimeout(fetchBalance, 500);
+
+    // Set up polling interval
+    intervalRef.current = setInterval(fetchBalance, 2000);
 
     return () => {
-      if (USDTInterval) {
-        clearInterval(USDTInterval);
+      clearTimeout(timeoutId);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-  }, [address, safePalMethods]);
+  }, [address, fetchBalance]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
+  // const formatAddress = (addr: string) => `${addr?.slice(0, 5)}...${addr?.slice(-3)}`;
+
+  if (!address) {
+    return null; // Or some fallback UI
+  }
+
   return (
     <div className="flex items-center">
       <div className="text-shadow-custom text-[0.75rem] font-[510] border-r border-r-white px-3 me-3 h-5 flex items-center">
-        {isLoading ? <LoadingDots size="size-1" /> : (
+        {!balance ? <LoadingDots size="size-1" /> : (
           <span>
             {balance}
           </span>

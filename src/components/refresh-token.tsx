@@ -1,35 +1,60 @@
 'use client';
+
 import { checkAndRefreshToken } from '@/libs/utils';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
-const UNAUTHENTICATED_PATH = ['/login', '/refresh-token', '/welcome', '/introduction', '/policy-terms', '/verify-email', '/verified', '/kyc'];
+const UNAUTHENTICATED_PATHS = [
+  '/login',
+  '/refresh-token',
+  '/welcome',
+  '/introduction',
+  '/policy-terms',
+  '/verify-email',
+  '/verified',
+  '/kyc',
+];
 
 const RefreshToken = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
-    if (UNAUTHENTICATED_PATH.includes(pathname)) {
+    // Skip token refresh for unauthenticated paths
+    if (UNAUTHENTICATED_PATHS.includes(pathname)) {
       return;
     }
-    let interval: any = null;
-    const onRefreshToken = (force?: boolean) => {
-      checkAndRefreshToken({
-        onError: () => {
-          clearInterval(interval);
-          router.push('/login');
-        },
-        force
-      });
-    };
-    onRefreshToken();
-    // Timeout interval phải bé hơn thời gian hết hạn của access token
-    // Ví dụ thời gian hết hạn access token là 10s thì 1s mình sẽ cho check 1 lần
-    const TIMEOUT = 15000; // 15s;
-    interval = setInterval(onRefreshToken, TIMEOUT);
 
+    const handleRefreshToken = async (force = false) => {
+      try {
+        await checkAndRefreshToken({
+          onError: () => {
+            if (intervalRef.current) {
+              clearInterval(intervalRef.current);
+            }
+            router.push('/login');
+          },
+          force,
+        });
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+      }
+    };
+
+    // Initial token refresh
+    handleRefreshToken(true);
+
+    // Set up interval for periodic token refresh
+    const TIMEOUT = 15000; // 15 seconds
+    intervalRef.current = setInterval(() => handleRefreshToken(), TIMEOUT);
+
+    // Cleanup interval on component unmount or pathname change
     return () => {
-      clearInterval(interval);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
   }, [pathname, router]);
 

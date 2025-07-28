@@ -86,7 +86,6 @@ const OTPForm = ({ email }: Props) => {
     setIsLoading(true);
     try {
       const responseKyc = await userRequests.verifyKyc({ kycOtp: countFormated });
-      console.log(responseKyc?.accessToken);
 
       await Promise.all([
         createCookie({

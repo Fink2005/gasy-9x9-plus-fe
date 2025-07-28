@@ -42,7 +42,7 @@ const RefreshToken = () => {
     };
 
     // Initial token refresh
-    // handleRefreshToken();
+    handleRefreshToken();
 
     // Set up interval for periodic token refresh
     const TIMEOUT = 15000; // 15 seconds

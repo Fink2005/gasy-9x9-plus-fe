@@ -97,7 +97,6 @@ const DropdownWallet = ({ address }: Props) => {
       // Only proceed if component is still mounted
       if (isMountedRef.current) {
         window.localStorage.removeItem('isDisplayTutorial');
-        toast.success('Wallet disconnected successfully');
         router.replace('/login');
       }
     } catch (error) {

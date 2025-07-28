@@ -53,8 +53,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
     if ((!isOpenBox && boxNumber !== 1) && currentBox !== boxNumber) {
       toast.warning(`Bạn cần phải mở hộp ${currentBox}`);
       return;
-    }
-    else if (isOpenBox) {
+    } else if (isOpenBox) {
       router.push(`/box/${boxNumber}`);
       return;
     }
@@ -123,7 +122,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
           from: fromAddress
         });
 
-          const receiptRes = await web3.eth.getTransactionReceipt(response.transactionHash);
+        const receiptRes = await web3.eth.getTransactionReceipt(response.transactionHash);
 
         if (receiptRes.status) {
           await boxRequest.boxOpen(response.transactionHash as string);

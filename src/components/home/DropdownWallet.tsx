@@ -14,7 +14,7 @@ type Props = {
 };
 
 const DropdownWallet = ({ address }: Props) => {
-  const [balance, setBalance] = useState<string>('0');
+  const [balance, setBalance] = useState<string | undefined>(undefined);
   const router = useRouter();
   const { safePalMethods } = useSafePalWallet();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -42,9 +42,8 @@ const DropdownWallet = ({ address }: Props) => {
         setIsLoading(false);
       }
     };
-
     setIsLoading(true); // Only set loading on first mount
-    fetchUSDT();
+    setTimeout(fetchUSDT, 500);
     USDTInterval = setInterval(fetchUSDT, 2000);
 
     return () => {

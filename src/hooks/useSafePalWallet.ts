@@ -76,9 +76,9 @@ const useSafePalWallet = () => {
         }
       } catch (error) {
         if (error instanceof Error) {
-        setIsConnecting(false);
+          setIsConnecting(false);
           toast.error(error.message);
-          return
+          return;
         }
         setIsConnecting(false);
         toast.error('Kết nối ví thất bại, vui lòng thử lại sau!');

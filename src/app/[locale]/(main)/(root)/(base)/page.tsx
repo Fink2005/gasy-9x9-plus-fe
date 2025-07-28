@@ -1,5 +1,7 @@
+import Loading from '@/app/[locale]/loading';
 import { Header } from '@/components/header-footer/Header';
 import BoxTable from '@/components/home/BoxTable';
+import { Suspense } from 'react';
 
 const page = () => {
   // const headersList = await headers();
@@ -16,7 +18,9 @@ const page = () => {
         <br />
         Box Chưa ?
       </h2>
-      <BoxTable />
+      <Suspense fallback={<Loading />}>
+        <BoxTable />
+      </Suspense>
     </div>
   );
 };

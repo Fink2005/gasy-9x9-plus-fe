@@ -26,7 +26,7 @@ const RefreshToken = () => {
       return;
     }
 
-    const handleRefreshToken = async (force = false) => {
+    const handleRefreshToken = async () => {
       try {
         await checkAndRefreshToken({
           onError: () => {
@@ -35,7 +35,6 @@ const RefreshToken = () => {
             }
             router.push('/login');
           },
-          force,
         });
       } catch (error) {
         console.error('Token refresh failed:', error);
@@ -43,7 +42,7 @@ const RefreshToken = () => {
     };
 
     // Initial token refresh
-    handleRefreshToken(true);
+    // handleRefreshToken(true);
 
     // Set up interval for periodic token refresh
     const TIMEOUT = 15000; // 15 seconds

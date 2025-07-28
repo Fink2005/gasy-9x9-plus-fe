@@ -2,27 +2,12 @@
 import { createCookie } from '@/app/actions/cookie';
 import authRequests from '@/app/apis/requests/auth';
 import connectWalletRequest from '@/app/apis/requests/connectWallet';
-import { NumberFormat } from '@/libs/utils';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import Web3 from 'web3';
 // USDT contract address on Ethereum
 // const USDT_CONTRACT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
-const USDT_CONTRACT_ADDRESS = '0xc45D0156553e000eBcdFc05B08Ea5184911e13De'; // this is for Sepolia testnet USDT
 
-// USDT has 6 decimal places
-const USDT_DECIMALS = 6;
-// Simple ERC-20 ABI - only need balanceOf function
-const ERC20_ABI = [
-  {
-    constant: true,
-    inputs: [{ name: '_owner', type: 'address' }],
-    name: 'balanceOf',
-    outputs: [{ name: 'balance', type: 'uint256' }],
-    type: 'function'
-  }
-];
 const useSafePalWallet = () => {
   const router = useRouter();
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
@@ -85,30 +70,6 @@ const useSafePalWallet = () => {
       } finally {
         setIsConnecting(false);
       }
-    },
-    async onGetBalance(address: string) {
-      if (typeof window.ethereum === 'undefined') {
-        toast.error('Vui lòng cài đặt ví');
-        return;
-      }
-      const web3 = new Web3(window.ethereum);
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0xaa36a7' }], // 0xaa36a7 = Sepolia chain ID in hex
-      });
-
-      // Create contract instance
-      const contract = new web3.eth.Contract(ERC20_ABI, USDT_CONTRACT_ADDRESS);
-      if (!contract || !contract.methods.balanceOf) {
-        throw new Error('Failed to create contract instance or balanceOf method is undefined.');
-      }
-
-      // Get balance
-      const rawBalance = await contract.methods.balanceOf(address).call();
-
-      // Convert balance from wei to USDT (6 decimals)
-      const balanceInUSDT = NumberFormat(Number.parseFloat(String(rawBalance)) / 10 ** USDT_DECIMALS);
-      return balanceInUSDT;
     },
 
   };

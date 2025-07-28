@@ -1,75 +1,140 @@
 'use client';
 import authRequests from '@/app/apis/requests/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import useSafePalWallet from '@/hooks/useSafePalWallet';
 import CopyIcon from '@/libs/shared/icons/Copy';
 import LoadingDots from '@/libs/shared/icons/LoadingDots';
-import { handleClipboardCopy } from '@/libs/utils';
+import { handleClipboardCopy, NumberFormat } from '@/libs/utils';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import Web3 from 'web3';
 
 type Props = {
   address: string;
 };
 
+// const USDT_CONTRACT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+const USDT_CONTRACT_ADDRESS = '0xc45D0156553e000eBcdFc05B08Ea5184911e13De'; // Sepolia testnet USDT
+const USDT_DECIMALS = 6;
+const ERC20_ABI = [
+  {
+    constant: true,
+    inputs: [{ name: '_owner', type: 'address' }],
+    name: 'balanceOf',
+    outputs: [{ name: 'balance', type: 'uint256' }],
+    type: 'function',
+  },
+];
+
+// Move Web3 instance outside component to prevent recreation
+let web3Instance: Web3 | null = null;
+
 const DropdownWallet = ({ address }: Props) => {
   const [balance, setBalance] = useState<string | undefined>(undefined);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
-  const { safePalMethods } = useSafePalWallet();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true); // Track component mount status
+
+  // Initialize Web3 instance only once
+  const getWeb3Instance = useCallback(() => {
+    if (!web3Instance && typeof window !== 'undefined' && window.ethereum) {
+      web3Instance = new Web3(window.ethereum);
+    }
+    return web3Instance;
+  }, []);
+
+  const onGetBalance = useCallback(async () => {
+    // Check if component is still mounted before proceeding
+    if (!isMountedRef.current) {
+      return undefined;
+    }
+
+    try {
+      const web3 = getWeb3Instance();
+      if (!web3 || !window.ethereum) {
+        throw new Error('Web3 or Ethereum provider not available');
+      }
+
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0xaa36a7' }], // Sepolia chain ID
+      });
+
+      const contract = new web3.eth.Contract(ERC20_ABI, USDT_CONTRACT_ADDRESS);
+      if (!contract || !contract.methods.balanceOf) {
+        throw new Error('Failed to create contract instance');
+      }
+
+      const rawBalance: string | undefined = await contract.methods.balanceOf(address).call();
+
+      // Check again if component is still mounted before setting state
+      if (!isMountedRef.current) {
+        return undefined;
+      }
+
+      const balanceInUSDT = NumberFormat(Number.parseFloat(rawBalance || '0') / 10 ** USDT_DECIMALS);
+      return balanceInUSDT;
+    } catch (error) {
+      console.error('Balance fetch error:', error);
+      // Only show toast if component is still mounted
+      if (isMountedRef.current) {
+        toast.error('Failed to fetch balance');
+      }
+      return undefined;
+    }
+  }, [address, getWeb3Instance]);
 
   const handleLogout = useCallback(async () => {
-    if (isLoggingOut) {
+    if (isLoggingOut || !isMountedRef.current) {
       return;
-    } // Prevent double-click
+    }
 
     setIsLoggingOut(true);
     try {
       await authRequests.logout();
-      if (typeof window !== 'undefined') {
+
+      // Only proceed if component is still mounted
+      if (isMountedRef.current) {
         window.localStorage.removeItem('isDisplayTutorial');
+        toast.success('Wallet disconnected successfully');
+        router.replace('/login');
       }
-      toast.success('Ngắt kết nối ví thành công');
-      router.replace('/login');
     } catch (error) {
       console.error('Logout failed:', error);
-      toast.error('Có lỗi xảy ra khi ngắt kết nối ví');
-      setIsLoggingOut(false); // Reset on error
+      if (isMountedRef.current) {
+        toast.error('Error disconnecting wallet');
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsLoggingOut(false);
+      }
     }
   }, [isLoggingOut, router]);
 
   const fetchBalance = useCallback(async () => {
-    try {
-      const USDTbalance = await safePalMethods.onGetBalance(address);
-      if (USDTbalance) {
-        setBalance(USDTbalance);
-      }
-    } catch (error) {
-      console.error('Failed to fetch balance:', error);
-      // Optionally show error toast or handle error state
+    if (!isMountedRef.current) {
+      return;
     }
-  }, [address, safePalMethods]);
+
+    const USDTbalance = await onGetBalance();
+    if (USDTbalance && isMountedRef.current) {
+      setBalance(USDTbalance);
+    }
+  }, [onGetBalance]);
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     if (!address) {
       return;
     }
 
-    // Clear any existing interval
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-
-    // Initial fetch with delay
-    const timeoutId = setTimeout(fetchBalance, 500);
-
-    // Set up polling interval
+    fetchBalance(); // Initial fetch
     intervalRef.current = setInterval(fetchBalance, 2000);
 
     return () => {
-      clearTimeout(timeoutId);
+      isMountedRef.current = false; // Mark component as unmounted
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -80,22 +145,20 @@ const DropdownWallet = ({ address }: Props) => {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      isMountedRef.current = false;
     };
   }, []);
 
-  // const formatAddress = (addr: string) => `${addr?.slice(0, 5)}...${addr?.slice(-3)}`;
-
   if (!address) {
-    return null; // Or some fallback UI
+    return null;
   }
 
   return (
     <div className="flex items-center">
       <div className="text-shadow-custom text-[0.75rem] font-[510] border-r border-r-white px-3 me-3 h-5 flex items-center">
-        {!balance ? <LoadingDots size="size-1" /> : (
+        {balance === undefined ? (
+          <LoadingDots size="size-1" />
+        ) : (
           <span>
             {balance}
           </span>
@@ -104,22 +167,24 @@ const DropdownWallet = ({ address }: Props) => {
       <DropdownMenu>
         <DropdownMenuTrigger
           className="bg-white rounded-[6.25rem] w-[5.625rem] h-[1.875rem] text-[0.75rem] p-1 text-white gap-[0.25rem]"
-          style={{ boxShadow: '0px 20px 50px 0px rgba(54, 114, 233, 0.41)', background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)' }}
+          style={{
+            boxShadow: '0px 20px 50px 0px rgba(54, 114, 233, 0.41)',
+            background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)',
+          }}
         >
-          {`${address?.slice(0, 5)}...${address?.slice(-3)}`}
+          {`${address.slice(0, 5)}...${address.slice(-3)}`}
         </DropdownMenuTrigger>
         <DropdownMenuContent className="dropdown-address text-white">
           <DropdownMenuItem
-            className="flex items-center justify-start !focus:bg-red-500 w-full"
+            className="flex items-center justify-start w-full focus:bg-red-500"
             onClick={() => handleClipboardCopy(address)}
           >
-            <span>
-              {`${address?.slice(0, 5)}...${address?.slice(-3)}`}
-            </span>
-            <CopyIcon className=" absolute right-1 top-0" />
-            {' '}
+            <span>{`${address.slice(0, 5)}...${address.slice(-3)}`}</span>
+            <CopyIcon className="absolute right-1 top-2" />
           </DropdownMenuItem>
-          <DropdownMenuItem className="w-full" onClick={handleLogout}>Disconnect</DropdownMenuItem>
+          <DropdownMenuItem className="w-full" onClick={handleLogout}>
+            Disconnect
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

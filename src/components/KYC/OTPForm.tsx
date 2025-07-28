@@ -86,20 +86,21 @@ const OTPForm = ({ email }: Props) => {
     setIsLoading(true);
     try {
       const responseKyc = await userRequests.verifyKyc({ kycOtp: countFormated });
-      createCookie({
-        name: 'authData',
-        value: JSON.stringify(
-          responseKyc?.user,
-        ),
-      });
-      createCookie({
-        name: 'accessToken9x9',
-        value: JSON.stringify(
-          responseKyc?.accessToken,
-        ),
-      });
+      console.log(responseKyc?.accessToken);
+
+      await Promise.all([
+        createCookie({
+          name: 'authData',
+          value: JSON.stringify(
+            responseKyc?.user,
+          ),
+        }),
+        createCookie({
+          name: 'accessToken9x9',
+          value: responseKyc?.accessToken,
+        })
+      ]);
       router.push('/verified');
-      // redirect('/verified');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);

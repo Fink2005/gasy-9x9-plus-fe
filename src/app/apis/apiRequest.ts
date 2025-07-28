@@ -77,10 +77,10 @@ const apiRequest = async <T>(
             'Content-Type': 'application/json',
           }, },);
           if (!res.ok) {
-            Promise.allSettled([
-              await deleteCookie('accessToken9x9'),
-              await deleteCookie('refreshToken9x9'),
-              await deleteCookie('authData')
+            await Promise.allSettled([
+              deleteCookie('accessToken9x9'),
+              deleteCookie('refreshToken9x9'),
+              deleteCookie('authData')
             ]);
             redirect('/login');
           }

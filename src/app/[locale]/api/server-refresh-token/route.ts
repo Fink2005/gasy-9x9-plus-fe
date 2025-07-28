@@ -4,7 +4,6 @@ import { NextResponse } from 'next/server';
 
 export async function POST() {
   const refreshToken = await getCookie('refreshToken9x9');
-
   if (!refreshToken) {
     return NextResponse.json({ error: 'No refresh token' }, { status: 401 });
   }
@@ -20,16 +19,21 @@ export async function POST() {
   if (!res.ok) {
     return NextResponse.json({ error: 'Refresh token invalid' }, { status: 401 });
   }
-  Promise.allSettled([
-    createCookie({
-      name: 'accessToken9x9',
-      value: data.accessToken,
-    }),
-    createCookie({
-      name: 'refreshToken9x9',
-      value: data.refreshToken,
-    })
-  ]);
+  try {
+    await Promise.all([
+      createCookie({
+        name: 'accessToken9x9',
+        value: data.accessToken,
+      }),
+      createCookie({
+        name: 'refreshToken9x9',
+        value: data.refreshToken,
+      })
+    ]);
+  } catch (error) {
+    console.error('Failed to set cookies:', error);
+    return NextResponse.json({ error: 'Failed to set cookies' }, { status: 500 });
+  }
   const response = NextResponse.json({ success: true });
 
   return response;

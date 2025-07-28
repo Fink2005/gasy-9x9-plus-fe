@@ -155,9 +155,7 @@ const DropdownWallet = ({ address }: Props) => {
   return (
     <div className="flex items-center">
       <div className="text-shadow-custom text-[0.75rem] font-[510] border-r border-r-white px-3 me-3 h-5 flex items-center">
-        {balance === undefined ? (
-          <LoadingDots size="size-1" />
-        ) : (
+        {!balance ? <LoadingDots size="size-1" /> : (
           <span>
             {balance}
           </span>
@@ -166,24 +164,22 @@ const DropdownWallet = ({ address }: Props) => {
       <DropdownMenu>
         <DropdownMenuTrigger
           className="bg-white rounded-[6.25rem] w-[5.625rem] h-[1.875rem] text-[0.75rem] p-1 text-white gap-[0.25rem]"
-          style={{
-            boxShadow: '0px 20px 50px 0px rgba(54, 114, 233, 0.41)',
-            background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)',
-          }}
+          style={{ boxShadow: '0px 20px 50px 0px rgba(54, 114, 233, 0.41)', background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)' }}
         >
-          {`${address.slice(0, 5)}...${address.slice(-3)}`}
+          {`${address?.slice(0, 5)}...${address?.slice(-3)}`}
         </DropdownMenuTrigger>
         <DropdownMenuContent className="dropdown-address text-white">
           <DropdownMenuItem
-            className="flex items-center justify-start w-full focus:bg-red-500"
+            className="flex items-center justify-start !focus:bg-red-500 w-full"
             onClick={() => handleClipboardCopy(address)}
           >
-            <span>{`${address.slice(0, 5)}...${address.slice(-3)}`}</span>
-            <CopyIcon className="absolute right-1 top-2" />
+            <span>
+              {`${address?.slice(0, 5)}...${address?.slice(-3)}`}
+            </span>
+            <CopyIcon className=" absolute right-1 top-0" />
+            {' '}
           </DropdownMenuItem>
-          <DropdownMenuItem className="w-full" onClick={handleLogout}>
-            Disconnect
-          </DropdownMenuItem>
+          <DropdownMenuItem className="w-full" onClick={handleLogout}>Disconnect</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

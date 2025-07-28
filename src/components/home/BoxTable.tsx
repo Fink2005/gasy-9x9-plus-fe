@@ -7,7 +7,7 @@ const BoxTable = async () => {
   return (
     <div className="grid grid-cols-3 gap-3 w-full px-6 mt-6 pb-20">
       {
-        userData?.openBoxHistories && userData?.openBoxHistories.map(item => (
+        userData?.openBoxHistories ? userData?.openBoxHistories.map(item => (
           <div className="box-card" key={item.boxNumber}>
             {
               item.open
@@ -19,6 +19,7 @@ const BoxTable = async () => {
             <ConfirmDialog boxNumber={item.boxNumber} isOpenBox={item.open} currentBox={userData.currentBox} />
           </div>
         ))
+          : <p>Loi</p>
       }
     </div>
   );

@@ -88,6 +88,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
 
       if (usdtContract.methods.approve) {
         const hax = await usdtContract.methods.approve(contractAddress, approveAmount).send({ from: sender });
+
         const res = await boxRequest.boxApprove(hax.transactionHash, boxNumber);
         if (!res) {
           throw new Error('Box approval failed');
@@ -104,14 +105,21 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
           signature
         ).encodeABI();
 
+        const gasLimit = await web3.eth.estimateGas({
+          to: contractAddress,
+          data,
+          from: sender
+        });
+
         // Lấy gas price
         const gasPrice = await web3.eth.getGasPrice();
-
         // Tạo transaction object
         const txObject = {
           to: contractAddress,
           data,
-          gas: gasPrice
+          gas: gasLimit, // ✅ Use estimated gas limit
+          gasPrice, // ✅ Use gas price separately
+          from: sender
         };
 
         const accounts = await web3.eth.getAccounts();

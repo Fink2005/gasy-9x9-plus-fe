@@ -73,7 +73,7 @@ const DropdownWallet = ({ address }: Props) => {
         return undefined;
       }
 
-      const balanceInUSDT = NumberFormat(Number.parseFloat(rawBalance || '0') / 10 ** USDT_DECIMALS);
+      const balanceInUSDT = NumberFormat(Number(rawBalance || '0') / 10 ** USDT_DECIMALS);
       return balanceInUSDT;
     } catch (error) {
       console.error('Balance fetch error:', error);

@@ -31,7 +31,7 @@ const tabBar = [
   {
     icon: QuestionIcon,
     title: 'Nhiệm vụ',
-    to: '#',
+    to: '/mission',
   },
 ];
 

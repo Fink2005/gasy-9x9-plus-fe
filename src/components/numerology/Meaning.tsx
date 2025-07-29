@@ -1,7 +1,6 @@
-import LeftArrowIcon from '@/libs/shared/icons/LeftArrow';
+import PreviousNavigation from '@/components/PreviousNavigation';
 import type { NumerologyResponse } from '@/types/numberology';
 import Image from 'next/image';
-import Link from 'next/link';
 
 type Props = {
   baseUrl: string;
@@ -39,9 +38,8 @@ const meaningOptions = [
 const Meaning = ({ baseUrl, meaning, meaningList, numerologyResult }: Props) => {
   return (
     <div className="overflow-y-auto bg-meaning flex flex-col items-center pt-10 relative px-3 min-h-screen h-[200px] pb-16 overflow-x-hidden">
-      <Link href={baseUrl}>
-        <LeftArrowIcon className="absolute left-4" />
-      </Link>
+      <PreviousNavigation baseUrl={baseUrl} isReload />
+
       <h1 className="text-shadow-custom text-medium-custom">
         {
           meaningOptions.find(option => option.id === meaning)?.title || 'Kết quả Numerology'

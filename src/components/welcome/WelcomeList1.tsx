@@ -7,7 +7,7 @@ const WelcomeList1 = () => {
         <strong>9x9Plus</strong>
         !
       </span>
-      <ul className="translate-x-4">
+      <ul className="">
         <li>
           Nếu bạn từng mỏi mệt, lạc hướng, hay đánh mất niềm tin...
         </li>
@@ -21,7 +21,7 @@ const WelcomeList1 = () => {
         <li>
           Thì mỗi lần mở khoá trong 9x9Plus chính là một bước gieo cho đi, để nhận về giá trị bền vững.
         </li>
-        <li className="no-bullet">
+        <li className="no-bullet translate-x-3">
           → Tại đây, bạn không cần phải lo toan, không cần phải
           <br />
           {' '}

@@ -46,7 +46,7 @@ const dataIntro = [
     title: 'CÁCH THỨC THAM GIA',
     des: (
       <>
-        <ol className="translate-x-3">
+        <ol className="">
           <li>
             Tham gia bằng cách đóng góp tự nguyện 26$ để bắt đầu hành trình “mở khóa”.
           </li>
@@ -66,7 +66,7 @@ const dataIntro = [
     title: 'LUẬT CHƠI',
     des: (
       <>
-        <ul className="translate-x-3">
+        <ul className="">
           <li>Mỗi đóng góp là một hạt giá trị được gieo - hành trình “mở khóa” gồm 9 bước kết nối.</li>
           <li>Không có cam kết tài chính - chỉ có sự minh bạch và tự nguyện.</li>
           <li>Cộng đồng cùng tiến - không ai bị bỏ lại phía sau.</li>

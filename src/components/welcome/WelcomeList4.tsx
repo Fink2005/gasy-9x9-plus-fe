@@ -1,6 +1,6 @@
 const WelcomeList4 = () => {
   return (
-    <ul className="translate-x-4">
+    <ul className="">
       <li>
         Chỉ cần bạn dám bắt đầu - hệ thống sẽ đưa bạn đi.
       </li>

@@ -20,7 +20,7 @@ const finalConfig = {
     return [
       {
         source: '/request/:path*',
-        destination: 'https://backend-9x9.onrender.com/api/:path*',
+        destination: `${process.env.API_BASE_SERVER}/:path*`,
       },
     ];
   },

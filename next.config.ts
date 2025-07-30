@@ -15,15 +15,15 @@ const config = withNextIntl(baseConfig);
 // ✅ Attach rewrites AFTER plugin
 const finalConfig = {
   ...config,
-  async rewrites() {
-    console.log('✅ Rewrites function called'); // <--- Add this!
-    return [
-      {
-        source: '/request/:path*',
-        destination: `${process.env.API_BASE_SERVER}/:path*`,
-      },
-    ];
-  },
+  // async rewrites() {
+  //   console.log('✅ Rewrites function called'); // <--- Add this!
+  //   return [
+  //     {
+  //       source: '/request/:path*',
+  //       destination: `${process.env.API_BASE_SERVER}/:path*`,
+  //     },
+  //   ];
+  // },
   async headers() {
     return [
       {

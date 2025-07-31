@@ -1,3 +1,4 @@
+import { boxRequest } from '@/app/apis/requests/box';
 import BoxCardDetail from '@/components/box/BoxCardDetail';
 import BoxTableDetail from '@/components/box/BoxTableDetail';
 import LeftArrowIcon from '@/libs/shared/icons/LeftArrow';
@@ -12,7 +13,7 @@ type PageProps = {
 
 const page = async ({ params }: PageProps) => {
   const { boxSlug, locale } = await params;
-
+  const resBoxDetail = await boxRequest.boxDetail(boxSlug ? +boxSlug : 0);
   return (
     <div className="min-h-screen bg-9x9 flex flex-col items-center pt-10 px-3 sm:px-7">
       <Link href="/">
@@ -28,7 +29,7 @@ const page = async ({ params }: PageProps) => {
           & nhận thông điệp khai sáng.
         </h2>
       </div>
-      <BoxCardDetail boxSlug={boxSlug} />
+      <BoxCardDetail boxSlug={boxSlug} dataBoxDetail={resBoxDetail} />
       <BoxTableDetail />
     </div>
   );

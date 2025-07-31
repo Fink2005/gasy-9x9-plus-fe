@@ -8,10 +8,12 @@ import MoneyWalletIcon from '@/libs/shared/icons/MoneyWallet';
 import ShieldIcon from '@/libs/shared/icons/Shield';
 import UserConnection from '@/libs/shared/icons/UserConnection';
 import UserHeart from '@/libs/shared/icons/UserHeart';
+import type { BoxDetailRes } from '@/types/box';
 import Image from 'next/image';
 
 type Props = {
   boxSlug: string;
+  dataBoxDetail: BoxDetailRes | null;
 };
 
 const BoxCardDetail = ({ boxSlug }: Props) => {

@@ -79,6 +79,7 @@ export default antfu(
       'no-constant-condition': 0,
       'react-refresh/only-export-components': 'off',
       'style/comma-dangle': 'off',
+      'format/prettier': 'off',
       'ts/consistent-type-definitions': 'off',
       'react-hooks-extra/no-direct-set-state-in-use-effect': 'off', // Allow direct setState in useEffect
 

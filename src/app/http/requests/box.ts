@@ -1,5 +1,5 @@
-import { http } from '@/app/apis/apiRequest';
-import type { BoxDetailRes, BoxRes } from '@/types/box';
+import { http } from '@/app/http/apiRequest';
+import type { BoxDetailRes, BoxRes, boxTreeBody, boxTreeRes } from '@/types/box';
 
 export const boxRequest = {
   async boxApprove(txHash: string, boxNumber: number): Promise<BoxRes | null> {
@@ -15,5 +15,9 @@ export const boxRequest = {
   },
   async boxDetail(boxNumber: number): Promise<BoxDetailRes | null> {
     return await http.get<BoxDetailRes | null>(`/box/${boxNumber}`);
+  },
+  async boxTree(boxTree: boxTreeBody): Promise<boxTreeRes> {
+    const { address, limit, page } = boxTree;
+    return await http.get<boxTreeRes>(`/box/tree?address=${address}&limit=${limit}&page=${page}`);
   }
 };

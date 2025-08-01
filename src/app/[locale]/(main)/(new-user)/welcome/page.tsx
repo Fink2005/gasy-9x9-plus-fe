@@ -1,10 +1,7 @@
 import { montserrat } from '@/app/fonts/montserrat';
 import WelcomeFooter from '@/components/welcome/WelcomeFooter';
 import WelcomeList1 from '@/components/welcome/WelcomeList1';
-import WelcomeList2 from '@/components/welcome/WelcomeList2';
-import WelcomeList3 from '@/components/welcome/WelcomeList3';
-import WelcomeList4 from '@/components/welcome/WelcomeList4';
-import WelcomeList5 from '@/components/welcome/WelcomeList5';
+import Shield2Icon from '@/libs/shared/icons/Shield2';
 
 const page = () => {
   return (
@@ -14,13 +11,35 @@ const page = () => {
       </div>
       <p className="subtitle-welcome pt-[0.75rem]">Tấm vé mở ra hành trình kết nối thịnh vượng toàn cầu</p>
       <div className="layout-welcome-list">
-        <div className={`${montserrat.variable} welcome-list-items space-y-[0.38rem]`}>
+        <div className={`${montserrat.variable} welcome-list-items space-y-[0.38rem] mb-6`}>
           <WelcomeList1 />
-          <WelcomeList2 />
-          <WelcomeList3 />
-          <WelcomeList4 />
-          <WelcomeList5 />
-          <p className="pt-[0.62rem]">Với mỗi bước tiến của bạn - cả hệ thống sẽ cùng tiến bước.</p>
+          <div className="font-[700] text-white text-[0.6875rem] flex items-center h-4 -translate-x-3">
+            <Shield2Icon className="size-9 translate-y-[3px]" />
+            <span className="-translate-x-1 text-[0.6875rem] font-[500]">
+              Cam kết hành trình
+            </span>
+          </div>
+          <ul className="list-inside space-y-1">
+            <li>
+              Đây không phải một trò chơi tài chính, mà là hành trình khám phá và trưởng thành nội tâm.
+            </li>
+            <li>
+              Mỗi bước đi bạn thực hiện sẽ khắc sâu thêm sự tự tin, trí tuệ và khả năng lan tỏa yêu thương.
+            </li>
+            <li>
+              Chúng tôi đồng hành như một người bạn, một cộng đồng
+              <br />
+              – để cùng nhau mở những chiếc hộp kho báu vô giá.
+            </li>
+          </ul>
+          <div className="footer-layout-welcome mt-3">
+            <p className="footer-text-welcome">
+              Bắt đầu hành trình mở Kho báu bên trong bạn ngay
+              <br />
+              hôm nay
+            </p>
+          </div>
+
         </div>
         <WelcomeFooter />
       </div>

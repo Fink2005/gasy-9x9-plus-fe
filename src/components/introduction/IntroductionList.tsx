@@ -10,15 +10,31 @@ const dataIntro = [
   {
     icon: RocketIcon,
     title: 'Tầm nhìn',
-    des: <p>Trở thành nền tảng cộng đồng chia sẻ giá trị minh bạch - nơi kết nối thiện chí và lan toả ý nghĩa vì sự phát triển bền vững đến hàng triệu người</p>,
+    des: (
+      <p>
+        Mỗi con người đều mang trong mình một kho báu tiềm ẩn.
+        {' '}
+        <strong className="text-[#BAE7FF] font-[700]">9x9Plus</strong>
+        {' '}
+        ra đời để cùng bạn khám phá, nuôi dưỡng và lan tỏa những giá trị đó – kiến tạo một cộng đồng nơi ai cũng được tỏa sáng bằng trí tuệ, yêu thương và sự kết nối.
+      </p>
+    ),
   },
   {
     icon: HeartLockIcon,
     title: 'Sứ mệnh',
     des: (
-      <p>
-        Gieo giá trị - Mở khoá tiềm năng - Đồng hành cùng cộng đồng hướng đến nhận thức và trách nhiệm xã hội - Bắt đầu với sự đóng góp tự nguyện 26$.
-      </p>
+      <ul className="list-inside space-y-1">
+        <li>
+          Xây dựng một không gian an toàn – nhân văn – truyền cảm hứng.
+        </li>
+        <li>
+          Giúp bạn hiểu chính mình, mở khóa năng lực và khát vọng.
+        </li>
+        <li>
+          Đồng hành trong hành trình: học hỏi – hành động – chia sẻ – cộng hưởng.
+        </li>
+      </ul>
     ),
   },
   {
@@ -46,17 +62,28 @@ const dataIntro = [
     title: 'CÁCH THỨC THAM GIA',
     des: (
       <>
-        <ol className="">
+        <ol className="list-inside space-y-1">
           <li>
-            Tham gia bằng cách đóng góp tự nguyện 26$ để bắt đầu hành trình “mở khóa”.
+            Đọc và đồng thuận với Nguyên tắc đồng hành.
           </li>
           <li>
-            Mỗi chu kỳ mở khóa gồm 9 lượt gieo hạt kết nối.
+            Bắt đầu thử thách Kho báu bên trong bạn để mở từng hộp thông điệp.
           </li>
           <li>
-            Mỗi lần mở khóa là một hành động đóng góp giá trị vào cộng đồng.
+            Thực hành những hành động nhỏ mỗi ngày:
+            <ul className="list-inside space-y-1">
+              <li>Viết lời biết ơn</li>
+              <li>Ghi nhận một thành công</li>
+              <li>Chia sẻ một giá trị</li>
+            </ul>
           </li>
-          <li>Sau khi hoàn tất một chu kỳ, người tham gia có thể tiếp tục một hành trình mới nếu mong muốn.</li>
+          <li>
+            Kết nối và đồng hành cùng cộng đồng
+            <strong>
+              9x9Plus
+            </strong>
+            .
+          </li>
         </ol>
       </>
     ),
@@ -66,10 +93,12 @@ const dataIntro = [
     title: 'LUẬT CHƠI',
     des: (
       <>
-        <ul className="">
-          <li>Mỗi đóng góp là một hạt giá trị được gieo - hành trình “mở khóa” gồm 9 bước kết nối.</li>
-          <li>Không có cam kết tài chính - chỉ có sự minh bạch và tự nguyện.</li>
-          <li>Cộng đồng cùng tiến - không ai bị bỏ lại phía sau.</li>
+        <ul className="list-inside space-y-1">
+          <li className="text-nowrap">Tôn trọng – Chia sẻ – Minh bạch là ba giá trị cốt lõi.</li>
+          <li>
+            Không ai bị bỏ lại phía sau: thành công của bạn cũng là niềm vui của cộng đồng.
+          </li>
+          <li>Đây không phải cuộc đua, mà là hành trình trưởng thành cùng nhau.</li>
         </ul>
       </>
     ),
@@ -84,10 +113,10 @@ const IntroductionList = () => {
         return (
           <div key={item.title} className="introduction-list-items">
             <div>
-              <Icon className="-translate-y-2 size-10" />
+              <Icon className="-translate-y-2 size-14" />
             </div>
             <div>
-              <h3 className={`${montserrat.variable} introduction-title-items`}>{item.title}</h3>
+              <h3 className={`${montserrat.variable} introduction-title-items mb-1`}>{item.title}</h3>
               <div className="introduction-des-items pe-3 text-wrap">
                 {item.des}
               </div>

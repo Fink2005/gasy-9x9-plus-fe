@@ -135,12 +135,12 @@
   }
 }
 
-ul {
+/* ul {
   list-style-position: inside;
-}
-ol {
+} */
+/* ol {
   list-style-position: inside;
-}
+} */
 /*  Header  */
 .header {
   display: flex;

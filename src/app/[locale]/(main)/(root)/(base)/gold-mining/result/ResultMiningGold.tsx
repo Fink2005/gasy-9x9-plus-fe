@@ -1,7 +1,7 @@
 'use client';
 import { getCookie } from '@/app/actions/cookie';
-import { ApiException } from '@/app/apis/apiRequest';
-import { goldMiningRequest } from '@/app/apis/requests/goldMining';
+import { ApiException } from '@/app/http/apiRequest';
+import { goldMiningRequest } from '@/app/http/requests/goldMining';
 import ResultController from '@/components/gold-mining/result/ResultController';
 import LoadingDots from '@/libs/shared/icons/LoadingDots';
 import Image from 'next/image';

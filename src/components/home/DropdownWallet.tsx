@@ -1,8 +1,11 @@
 'use client';
-import authRequests from '@/app/apis/requests/auth';
+import authRequests from '@/app/http/requests/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { formatAddress } from '@/libs/shared/constants/globals';
 import CopyIcon from '@/libs/shared/icons/Copy';
+import ExitIcon from '@/libs/shared/icons/Exit';
 import LoadingDots from '@/libs/shared/icons/LoadingDots';
+import UserIcon from '@/libs/shared/icons/User';
 import { handleClipboardCopy, NumberFormat } from '@/libs/utils';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -166,20 +169,31 @@ const DropdownWallet = ({ address }: Props) => {
           className="bg-white rounded-[6.25rem] w-[5.625rem] h-[1.875rem] text-[0.75rem] p-1 text-white gap-[0.25rem]"
           style={{ boxShadow: '0px 20px 50px 0px rgba(54, 114, 233, 0.41)', background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)' }}
         >
-          {`${address?.slice(0, 5)}...${address?.slice(-3)}`}
+          {formatAddress(address)}
         </DropdownMenuTrigger>
         <DropdownMenuContent className="dropdown-address text-white">
+          <DropdownMenuItem className="w-full" onClick={handleLogout}>
+            <UserIcon className="absolute left-1 -top-[1px]" />
+            <span className="w-full translate-x-8">
+              Profile
+            </span>
+          </DropdownMenuItem>
           <DropdownMenuItem
             className="flex items-center justify-start !focus:bg-red-500 w-full"
             onClick={() => handleClipboardCopy(address)}
           >
-            <span>
-              {`${address?.slice(0, 5)}...${address?.slice(-3)}`}
+            <span className="w-full text-right">
+              {formatAddress(address)}
             </span>
-            <CopyIcon className=" absolute right-1 top-0" />
+            <CopyIcon className="absolute left-1 top-0" />
             {' '}
           </DropdownMenuItem>
-          <DropdownMenuItem className="w-full" onClick={handleLogout}>Disconnect</DropdownMenuItem>
+          <DropdownMenuItem className="w-full" onClick={handleLogout}>
+            <ExitIcon className=" absolute left-1 -top-[1px]" />
+            <span className="w-full text-right -translate-x-1">
+              Disconnect
+            </span>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

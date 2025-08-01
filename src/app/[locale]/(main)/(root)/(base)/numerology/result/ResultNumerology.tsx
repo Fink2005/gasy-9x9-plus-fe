@@ -1,4 +1,4 @@
-import { numerologyRequest } from '@/app/apis/requests/numerology';
+import { numerologyRequest } from '@/app/http/requests/numerology';
 import Meaning from '@/components/numerology/Meaning';
 import Numerology from '@/components/numerology/Numerology';
 import type { NumerologyResponse } from '@/types/numberology';

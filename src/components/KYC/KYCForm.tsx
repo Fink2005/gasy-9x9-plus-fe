@@ -1,6 +1,6 @@
 'use client';
-import { ApiException } from '@/app/apis/apiRequest';
-import userRequests from '@/app/apis/requests/user';
+import { ApiException } from '@/app/http/apiRequest';
+import userRequests from '@/app/http/requests/user';
 import type { KYCFormData } from '@/app/schema/kyc';
 import { KYCSchema } from '@/app/schema/kyc';
 import { Button } from '@/components/ui/button';

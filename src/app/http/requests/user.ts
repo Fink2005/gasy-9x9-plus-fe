@@ -1,4 +1,4 @@
-import { http } from '@/app/apis/apiRequest';
+import { http } from '@/app/http/apiRequest';
 import { USER_RANKING_LIMIT } from '@/libs/shared/constants/globals';
 import type { VerifyKycResponse } from '@/types/auth';
 import type { UserGetMe, UserRanking } from '@/types/user';

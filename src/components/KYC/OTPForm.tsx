@@ -1,6 +1,6 @@
 'use client';
 import { createCookie } from '@/app/actions/cookie';
-import userRequests from '@/app/apis/requests/user';
+import userRequests from '@/app/http/requests/user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import useTimeInterval from '@/hooks/useTimeInterval';

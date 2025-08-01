@@ -5,13 +5,16 @@ import Link from 'next/link';
 const IntroductionFooter = () => {
   return (
     <div className="w-full flex flex-col items-center justify-center pt-[0.12rem]">
-      <p className="footer-title-introduction">
-        Mọi hành động của bạn đều được ghi nhận - minh bạch -
-        <br />
+      <p className="footer-title-introduction max-w-[20.4375rem] w-full text-center">
+        👉 CẨM NĂNG
         {' '}
-        không bỏ sót - không mất đi.
+        <strong className="text-[#FFD8BF] text-[0.75rem] font-[700]">
+          9X9PLUS
+        </strong>
+        {' '}
+        là chiếc sổ tay đồng hành để mỗi khi mở ra, bạn tìm thấy niềm tin, định hướng và sức mạnh cho bước đi tiếp theo.
       </p>
-      <p className="footer-subtitle-introduction pb-[0.75rem] pt-[0.62rem]">Bạn đã sẵn sàng chia sẻ cho 9 người bạn của mình chứ?</p>
+      <p className="footer-subtitle-introduction pb-[0.75rem] pt-[0.62rem]">Hãy nhớ rằng: Kho báu lớn nhất luôn nằm trong chính bạn.</p>
       <Link href="/kyc" className="max-w-[20.9375rem] w-full">
         <Button className="button-rounded w-full">
           <HandMoney />

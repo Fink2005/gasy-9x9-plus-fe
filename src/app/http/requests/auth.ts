@@ -1,4 +1,4 @@
-import { http } from '@/app/apis/apiRequest';
+import { http } from '@/app/http/apiRequest';
 import type { LoginPayload, LoginResponse } from '@/types/auth';
 
 const authRequests = {

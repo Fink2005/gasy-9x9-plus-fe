@@ -1,4 +1,4 @@
-import { boxRequest } from '@/app/apis/requests/box';
+import { boxRequest } from '@/app/http/requests/box';
 import BoxCardDetail from '@/components/box/BoxCardDetail';
 import BoxTableDetail from '@/components/box/BoxTableDetail';
 import LeftArrowIcon from '@/libs/shared/icons/LeftArrow';

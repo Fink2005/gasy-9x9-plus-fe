@@ -1,4 +1,4 @@
-import userRequests from '@/app/apis/requests/user';
+import userRequests from '@/app/http/requests/user';
 import type { UserRanking } from '@/types/user';
 import { useInfiniteQuery } from '@tanstack/react-query';
 

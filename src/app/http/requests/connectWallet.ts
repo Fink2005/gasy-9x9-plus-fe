@@ -1,4 +1,4 @@
-import { http } from '@/app/apis/apiRequest';
+import { http } from '@/app/http/apiRequest';
 
 const connectWalletRequest = {
   async getNonce(value: string): Promise<{ nonce: string } | null> {

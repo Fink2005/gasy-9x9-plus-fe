@@ -16,15 +16,15 @@ type Props = {
   dataBoxDetail: BoxDetailRes | null;
 };
 
-const BoxCardDetail = ({ boxSlug }: Props) => {
+const BoxCardDetail = ({ boxSlug, dataBoxDetail }: Props) => {
   const data = [
-    { icon: <UserHeart />, label: 'Tổng kết nối hệ thống:', value: '230' },
-    { icon: <HeartUnlockIcon />, label: 'Hành trình mở khóa:', value: '3/9' },
+    { icon: <UserHeart />, label: 'Tổng kết nối hệ thống:', value: `${dataBoxDetail?.invitedCount}` },
+    { icon: <HeartUnlockIcon />, label: 'Hành trình mở khóa:', value: `${dataBoxDetail?.boxNumber}/9` },
   ];
 
   const details = [
-    { id: 'userHeart', icon: <UserHeart />, label: 'Người kết nối:', value: '0xB3b5...5A' },
-    { id: 'heartUnlock', icon: <HeartUnlockIcon />, label: 'Box:', value: '3/9' },
+    { id: 'userHeart', icon: <UserHeart />, label: 'Người kết nối:', value: `${dataBoxDetail?.invitedBy.slice(0, 8)}...${dataBoxDetail?.invitedBy.slice(-3)}` },
+    { id: 'heartUnlock', icon: <HeartUnlockIcon />, label: 'Box:', value: `${dataBoxDetail?.boxNumber}/9` },
     { id: 'calendar', icon: <CalendarColorIcon />, label: 'Tham gia:', value: '22/07/2025' },
     { id: 'handMoney', icon: <HandMoney2 />, label: 'Tổng giá trị gieo:', value: '130$/234$' },
     { id: 'userConnection', icon: <UserConnection />, label: 'Kết nối lan tỏa:', value: '9 người' },
@@ -33,6 +33,8 @@ const BoxCardDetail = ({ boxSlug }: Props) => {
     { id: 'moneyWallet', icon: <MoneyWalletIcon />, label: 'Cộng hưởng bền vững:', value: '45$' },
     { id: 'shield', icon: <ShieldIcon />, label: 'Giá trị tích lũy:', value: '45$' },
   ];
+
+
 
   return (
     <div className="w-full">

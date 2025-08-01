@@ -33,7 +33,7 @@ const data = [
   {
     title: 'Mời người chơi mới',
     describe: (
-      <ul className="list-none p-0 m-0">
+      <ul className="list-none p-0 m-0 space-y-[10px]">
         <li>Mời được 1 người</li>
         <li>Mời được 1/9 người</li>
         <li>Mời được 1/99 người</li>
@@ -79,9 +79,18 @@ const Page = () => {
                 <div>
                   {item.type === 'list' && Array.isArray(item.score)
                     && item.score.map((score, idx) => (
-                      <p key={idx} className="text-shadow-custom font-medium text-sm drop-shadow-sm">
-                        {score}
-                      </p>
+                      <div key={idx} className="flex items-center space-x-2">
+                        <p className="text-shadow-custom font-medium text-sm drop-shadow-sm">
+                          {score}
+                        </p>
+                        <Image
+                          src="/assets/badge-medal.png"
+                          alt="Badge Medal"
+                          width={24}
+                          height={24}
+                          className="inline-block"
+                        />
+                      </div>
                     )) }
                 </div>
               </div>
@@ -93,13 +102,15 @@ const Page = () => {
                   {item.score}
                 </p>
               )}
-              <Image
-                src="/assets/badge-medal.png"
-                alt="Badge Medal"
-                width={24}
-                height={24}
-                className="inline-block"
-              />
+              { item.type !== 'list' && (
+                <Image
+                  src="/assets/badge-medal.png"
+                  alt="Badge Medal"
+                  width={24}
+                  height={24}
+                  className="inline-block"
+                />
+              )}
             </div>
           </div>
         ))}

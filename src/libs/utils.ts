@@ -1,4 +1,4 @@
-import authRequests from '@/app/apis/requests/auth';
+import authRequests from '@/app/http/requests/auth';
 import type { TokenPayload } from '@/types/jwt';
 import type { ClassValue } from 'clsx';
 import { clsx } from 'clsx';

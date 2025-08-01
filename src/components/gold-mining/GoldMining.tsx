@@ -1,7 +1,7 @@
 'use client';
 
 import { createCookie } from '@/app/actions/cookie';
-import { goldMiningRequest } from '@/app/apis/requests/goldMining';
+import { goldMiningRequest } from '@/app/http/requests/goldMining';
 import { Button } from '@/components/ui/button';
 import { formatMsToCountdown } from '@/libs/shared/constants/globals';
 import GamePad2 from '@/libs/shared/icons/GamePad2';

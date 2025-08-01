@@ -1,4 +1,4 @@
-import userRequests from '@/app/apis/requests/user';
+import userRequests from '@/app/http/requests/user';
 import Image from 'next/image';
 import ConfirmDialog from './ConfirmDialog';
 

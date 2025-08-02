@@ -37,7 +37,7 @@ const tabBar = [
 
 export function Footer() {
   const pathName = usePathname();
-  if (pathName.includes('game')) {
+  if (pathName.includes('game') || pathName.includes('info')) {
     return;
   }
   return (

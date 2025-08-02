@@ -1,58 +1,68 @@
 /* eslint-disable react/no-array-index-key */
-import GamePad3Icon from '@/libs/shared/icons/GamePad3';
-import MultipleUserIcon from '@/libs/shared/icons/MultipleUser';
-import ShareIcon from '@/libs/shared/icons/Share';
-import WatchIcon from '@/libs/shared/icons/Watch';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const data = [
   {
     title: 'Đào đủ 9 lượt/ngày',
-    describe: 'Hoàn thành 1 vòng đào vàng trong ngày - 6/9',
-    icon: <GamePad3Icon />,
-    score: '+9'
-  },
-  {
-    title: 'Chơi liên tục 3 ngày',
-    describe: 'Không bỏ ngày nào - 3/3',
-    icon: <GamePad3Icon />,
+    describe: 'Hoàn thành 9 vòng đào vàng mỗi ngày - 9/9',
     score: '+99'
   },
   {
-    title: 'Chơi liên tục 21 ngày',
-    describe: 'Xây dựng thói quen 21 ngày - 3/21',
-    icon: <GamePad3Icon />,
-    score: '+299'
+    title: 'Kiên trì 3 ngày liên tiếp',
+    describe: 'Tham gia liên tục 3 ngày để gieo hạt thói quen - 3/3',
+    score: '+99'
   },
   {
-    title: 'Chơi liên tục 30 ngày',
-    describe: 'Bền bỉ mỗi ngày - 3/30',
-    icon: <GamePad3Icon />,
+    title: 'Xây thói quen 21 ngày',
+    describe: 'Duy trì hành trình trọn vẹn 21 ngày - 3/21',
     score: '+999'
   },
   {
-    title: 'Mời người chơi mới',
+    title: 'Bền bỉ 30 ngày',
+    describe: 'Hoàn thành hành trình 30 ngày liên tục - 3/30',
+    score: '+999'
+  },
+  {
+    title: 'Kết nối bạn mới',
     describe: (
-      <ul className="list-none p-0 m-0 space-y-[10px]">
-        <li>Mời được 1 người</li>
-        <li>Mời được 1/9 người</li>
-        <li>Mời được 1/99 người</li>
-      </ul>
+      <p>
+        Mời thêm bạn bè tham gia
+        {' '}
+        <strong>
+          9x9Plus
+        </strong>
+        {' '}
+        (Với mỗi 1 người bạn mời bạn sẽ nhận được 999 điểm thịnh vượng)
+      </p>
+
     ),
-    type: 'list',
-    icon: <ShareIcon />,
-    score: ['+99', '+999', '+9999']
+
+    score: '+999'
   },
   {
-    title: 'Like video',
-    describe: 'Like video trên nền tảng MXH',
-    icon: <WatchIcon />,
-    score: '+99'
+    title: 'Lan tỏa giá trị',
+    describe: 'Like & chia sẻ video trên mạng xã hội',
+    score: '+999'
   },
   {
-    title: 'Tham gia group',
-    describe: 'Tham gia cộng đồng 9x9 plus',
-    icon: <MultipleUserIcon />,
+    title: 'Tham gia group cộng đồng',
+    describe: 'Gia nhập cộng đồng chính thức 9x9Plus',
+    score: '+999'
+  },
+  {
+    title: 'Tìm hiểu về 9x9Plus',
+    describe: (
+      <p>
+        Đọc và hiểu rõ về dự án
+        <strong>
+          9x9Plus
+        </strong>
+        {' '}
+        để mở khóa hành trình nhanh hơn
+      </p>
+    ),
+    type: 'info',
     score: '+999'
   },
 ];
@@ -65,10 +75,17 @@ const Page = () => {
 
       <div className="w-full max-w-md h-[calc(100vh-150px)] overflow-y-auto">
         {data.map((item, index) => (
-          <div className="bg-white/10 backdrop-blur-sm my-4 rounded-lg p-4 flex items-center gap-3 border border-white/20" key={index}>
-            <div className="text-blue-300 flex-shrink-0">
-              {item.icon}
-            </div>
+          <Link href={item.type === 'info' ? '/mission/info' : '#'} className="bg-white/10 backdrop-blur-sm my-4 rounded-lg p-4 flex items-center gap-3 border border-white/20" key={index}>
+            <Image
+              style={{
+                backgroundImage: 'radial-gradient(267.72% 139.47% at 0% 2.78%, rgba(255, 255, 255, 0.30) 0%, rgba(255, 255, 255, 0.10) 100%)'
+              }}
+              src="/assets/logo-9x9.png"
+              width={80}
+              height={80}
+              className="size-18 rounded-full"
+              alt="logo"
+            />
 
             <div className="flex-grow text-left">
               <p className="font-semibold text-base drop-shadow-sm mb-1">
@@ -76,43 +93,22 @@ const Page = () => {
               </p>
               <div className="text-sm text-blue-100 drop-shadow-sm flex space-x-3">
                 {item.describe}
-                <div>
-                  {item.type === 'list' && Array.isArray(item.score)
-                    && item.score.map((score, idx) => (
-                      <div key={idx} className="flex items-center space-x-2">
-                        <p className="text-shadow-custom font-medium text-sm drop-shadow-sm">
-                          {score}
-                        </p>
-                        <Image
-                          src="/assets/badge-medal.png"
-                          alt="Badge Medal"
-                          width={24}
-                          height={24}
-                          className="inline-block"
-                        />
-                      </div>
-                    )) }
-                </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2 flex-shrink-0">
-              {item.type !== 'list' && (
-                <p className="text-shadow-custom font-medium drop-shadow-sm">
-                  {item.score}
-                </p>
-              )}
-              { item.type !== 'list' && (
-                <Image
-                  src="/assets/badge-medal.png"
-                  alt="Badge Medal"
-                  width={24}
-                  height={24}
-                  className="inline-block"
-                />
-              )}
+              <p className="text-shadow-custom font-medium drop-shadow-sm">
+                {item.score}
+              </p>
+              <Image
+                src="/assets/badge-medal.png"
+                alt="Badge Medal"
+                width={24}
+                height={24}
+                className="inline-block"
+              />
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

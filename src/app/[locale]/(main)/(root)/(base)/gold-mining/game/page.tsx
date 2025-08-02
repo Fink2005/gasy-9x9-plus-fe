@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable no-case-declarations */
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
@@ -7,10 +9,11 @@ import RobotHook from '@/components/gold-mining/RobotHook';
 import useTimeInterval from '@/hooks/useTimeInterval';
 import ClockIcon from '@/libs/shared/icons/Clock';
 import SpeakerIcon from '@/libs/shared/icons/Speaker';
+
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import type React from 'react';
-import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
 type GameItem = {
   id: number;
@@ -172,6 +175,69 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
 const SpaceshipGameOptimized = () => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
+  const audioSrc = '/sounds/bg-music.mp3';
+  const audioGetGold = '/sounds/ting.mp3';
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioRef2 = useRef<HTMLAudioElement | null>(null);
+
+  const togglePlayPause = () => {
+    const audio = audioRef.current;
+
+    if (isPlaying) {
+      audio?.pause();
+      setIsPlaying(false);
+    } else {
+      audio?.play();
+      setIsPlaying(true);
+    }
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+
+    const playAudio = async () => {
+      try {
+        await audio?.play();
+        setIsPlaying(true);
+      } catch (error) {
+        console.log('Không thể tự động phát nhạc:', error);
+        // Trình duyệt chặn autoplay, user cần click để phát
+      }
+    };
+
+    if (audio) {
+      playAudio();
+    }
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef2.current;
+
+    if (state.isUpScore) {
+      const playAudio = async () => {
+        try {
+          await audio?.play();
+          setIsPlaying(true);
+
+          // Dừng audio sau 1 giây
+          setTimeout(() => {
+            audio?.pause();
+            if (audio) {
+              audio.currentTime = 0; // Reset về đầu file
+            }
+            setIsPlaying(false);
+          }, 1000); // 1000ms = 1 giây
+        } catch (error) {
+          console.log('Không thể tự động phát nhạc:', error);
+        }
+      };
+
+      if (audio) {
+        playAudio();
+      }
+    }
+  }, [state.isUpScore]);
 
   // Refs for DOM elements and intervals
   const gameContainerRef = useRef<HTMLDivElement>(null);
@@ -668,9 +734,9 @@ const SpaceshipGameOptimized = () => {
       }}
     >
       {/* Speaker */}
-      <div className="absolute top-14 left-5">
+      <button type="button" className="absolute top-14 left-5" onClick={togglePlayPause}>
         <SpeakerIcon />
-      </div>
+      </button>
 
       {/* Clock */}
       <div className="clock-card w-[120px] h-[40px] absolute right-0 flex items-center">
@@ -722,6 +788,16 @@ const SpaceshipGameOptimized = () => {
         setBlindBoxRef={setBlindBoxRef}
         setBlueStarRef={setBlueStarRef}
         setStarRef={setStarRef}
+      />
+      <audio
+        ref={audioRef}
+        src={audioSrc}
+        onEnded={() => setIsPlaying(false)}
+      />
+      <audio
+        ref={audioRef2}
+        src={audioGetGold}
+        onEnded={() => setIsPlaying(false)}
       />
 
     </div>

@@ -104,7 +104,7 @@ export function CustomCalendar({ selected, onSelect, onCancel, onConfirm }: Cust
   };
 
   return (
-    <div className="bg-white rounded-lg p-6 w-full max-w-md mx-auto">
+    <div className="rounded-lg p-6 w-full max-w-md mx-auto">
       {/* Month and Year Selectors */}
       <div className="flex gap-4 mb-6">
         <Select value={currentMonth.toString()} onValueChange={value => setCurrentMonth(Number.parseInt(value))}>
@@ -141,23 +141,23 @@ export function CustomCalendar({ selected, onSelect, onCancel, onConfirm }: Cust
         {/* Days of Week Header */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {daysOfWeek.map(day => (
-            <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
+            <div key={day} className="text-center text-sm font-medium text-white   py-2">
               {day}
             </div>
           ))}
         </div>
 
         {/* Calendar Days */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1 ">
           {generateCalendarDays().map((dayObj, index) => (
             <button
               type="button"
               key={index}
               onClick={() => handleDateClick(dayObj.date)}
               className={`
-                h-10 w-10 text-sm rounded-lg transition-colors hover:bg-gray-100
+                h-10 w-10 text-sm text-white rounded-lg transition-colors hover:bg-gray-100 hover:text-black w-14
                 ${dayObj.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
-                ${isDateSelected(dayObj.date) ? 'bg-gray-900 text-white hover:bg-gray-800' : ''}
+                ${isDateSelected(dayObj.date) ? 'button-calendar  text-white' : ''}
               `}
             >
               {dayObj.day}
@@ -171,14 +171,14 @@ export function CustomCalendar({ selected, onSelect, onCancel, onConfirm }: Cust
         <Button
           variant="outline"
           onClick={onCancel}
-          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 bg-transparent"
+          className="px-6 py-2 border border-gray-300  bg-white rounded-lg text-gray-700 hover:bg-gray-50"
         >
           Hủy bỏ
         </Button>
         <Button
           onClick={handleConfirm}
           disabled={!selectedDate}
-          className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
+          className="px-6 py-2 button-calendar text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
         >
           Xác nhận
         </Button>

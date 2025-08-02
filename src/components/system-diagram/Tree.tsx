@@ -8,6 +8,7 @@ import { useBoxTree } from '@/app/http/queries/useBox';
 import { boxRequest } from '@/app/http/requests/box';
 import PreviousNavigation from '@/components/PreviousNavigation';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import useGetCookie from '@/hooks/useGetCookie';
 import { formatAddress2 } from '@/libs/shared/constants/globals';
 import ChevronDown2Icon from '@/libs/shared/icons/ChevronDown2';
@@ -15,6 +16,7 @@ import Connection2Icon from '@/libs/shared/icons/Connection2';
 import MinuteIcon from '@/libs/shared/icons/Minute';
 import PlusIcon from '@/libs/shared/icons/Plus';
 import SearchIcon from '@/libs/shared/icons/Search';
+import Search2Icon from '@/libs/shared/icons/Search2';
 import WalletIcon from '@/libs/shared/icons/Wallet';
 import { handleClipboardCopy, isClient } from '@/libs/utils';
 import { useQueryClient } from '@tanstack/react-query';
@@ -61,10 +63,13 @@ export default function Tree() {
   const [address, setAddress] = useState<string>('');
   const [currentFetchingAddress, setCurrentFetchingAddress] = useState<string>('');
   const [treeDataV2, setTreeDataV2] = useState<TreeData>({ lv1: [] });
-
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const searchRef = useRef<HTMLInputElement>(null);
   // State để lưu trữ dữ liệu phân trang của từng node
   const [nodePaginationState, setNodePaginationState] = useState<NodePaginationState>({});
-  console.log(nodePaginationState);
+  if (!hasFetched) {
+    console.log(nodePaginationState);
+  };
   const queryClient = useQueryClient();
   const dataCookie = useGetCookie();
 
@@ -88,6 +93,7 @@ export default function Tree() {
     isSuccess,
     isLoading: isInitialLoading,
     isFetchingNextPage,
+    isError
   } = useBoxTree(address);
 
   const urlSharing = isClient ? `${window.location.origin}/login` : '';
@@ -333,6 +339,20 @@ export default function Tree() {
     return children;
   };
 
+  const handleSearchAddress = () => {
+    if (!isSearching) {
+      setIsSearching(true);
+    } else {
+      if (!searchRef.current || !searchRef.current.value) {
+        return;
+      }
+      hasFetched.current = false;
+      setAddress(searchRef.current.value);
+      setIsSearching(false);
+      searchRef.current?.blur();
+    }
+  };
+
   // Update node với children mới
   const updateNodeChildren = (targetAddress: string, newChildren: TreeNode[]) => {
     setTreeDataV2(prevTreeData => ({
@@ -570,22 +590,44 @@ export default function Tree() {
 
   return (
     <div className="relative">
-      <div className="relative z-10 overflow-x-auto p-8">
+      <div className="relative z-10 overflow-x-auto p-8 ">
         <div className="flex flex-col items-center mb-8">
           <PreviousNavigation isReload />
-          <h2 className="text-shadow-custom text-[1rem] font-[274]">Hành trình kết nối</h2>
-          <h1 className="text-shadow-custom text-[1.25rem] font-[700]">Sơ đồ hệ thống</h1>
-          <SearchIcon className="absolute right-3" />
+          {!isSearching && (
+            <>
+              <h2 className="text-shadow-custom text-[1rem] font-[274]">Hành trình kết nối</h2>
+              <h1 className="text-shadow-custom text-[1.25rem] font-[700]">Sơ đồ hệ thống</h1>
+            </>
+          )}
+          <div className={`absolute right-3 ${isSearching ? 'w-4/5' : 'w-0'} transition-all duration-300 -translate-y-1`}>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => handleSearchAddress()}
+                className="absolute right-0 z-20"
+              >
+                {isSearching ? <Search2Icon /> : <SearchIcon />}
+              </button>
+              <Input
+                className={`absolute top-0 border ${isSearching ? 'h-11 block ' : 'h-0 hidden'} text-white rounded-full pe-10`}
+                ref={searchRef}
+                placeholder="Nhập địa chỉ ví"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(104, 218, 242, 0.50) 0%, rgba(28, 91, 185, 0.50) 95.1%)'
+                }}
+              />
+            </div>
+          </div>
         </div>
-        <div className="min-w-max">
-          <div className="space-y-2 min-w-max">
+        {!isSearching && !isError && (
+          <div className="h-[calc(100vh-170px)] overflow-y-scroll">
             {isInitialLoading ? (
               <Loader2 className="animate-spin text-white fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             ) : (
               treeDataV2.lv1.map(node => renderTreeNode(node))
             )}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -1,17 +1,20 @@
 export type NumerologyResponse = {
   name: string;
-  number: string;
+  number: {
+    body: number;
+    destiny: number;
+    lifePath: number;
+    mainNumber: number;
+    personality: number;
+    soul: number;
+  };
   meaning: {
-    personality: NumerologyItem;
-    destiny: NumerologyItem;
-    lifePath: NumerologyItem;
-    soul: NumerologyItem;
-    body: NumerologyItem;
+    content: NumerologyItem;
     description: string;
   };
 };
 
 type NumerologyItem = {
   title: string;
-  content: string;
+  value: string;
 }[];

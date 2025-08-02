@@ -115,7 +115,7 @@ const ProfileForm = () => {
                       <CalendarIcon />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent className="rounded-t-lg" side="bottom">
+                  <SheetContent className="rounded-t-lg bg-calendar" side="bottom">
                     <SheetHeader className="hidden">
                       <SheetTitle></SheetTitle>
                       <SheetDescription></SheetDescription>
@@ -153,9 +153,9 @@ const ProfileForm = () => {
                       <ChevronDown className="w-5 h-5 text-gray-600" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="bottom" className="rounded-t-lg">
+                  <SheetContent side="bottom" className="rounded-t-lg bg-calendar">
                     <SheetHeader>
-                      <SheetTitle className="text-center text-[#8C8C8C] text-[1rem] font-[510]">Giới tính</SheetTitle>
+                      <SheetTitle className="text-center text-white text-[1rem] font-[510]">Giới tính</SheetTitle>
                       <SheetDescription></SheetDescription>
                     </SheetHeader>
                     <div>
@@ -164,7 +164,7 @@ const ProfileForm = () => {
                           key={gender}
                           type="button"
                           onClick={() => handleGenderSelect(gender)}
-                          className="w-full p-5 text-center rounded-lg transition-colors border-t active:bg-gray-200 hover:bg-gray-100"
+                          className="w-full p-5 text-center text-white rounded-lg transition-colors border-t active:bg-gray-200 hover:bg-gray-100"
                         >
                           {gender}
                         </button>

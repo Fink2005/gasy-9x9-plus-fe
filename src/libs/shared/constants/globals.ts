@@ -10,7 +10,7 @@ export const formatMsToCountdown = (ms: number) => {
 
 // Example
 
-export const BOX_TREE_LIMIT = 10;
+export const BOX_TREE_LIMIT = 9;
 
 export const formatAddress = (address: string) => `${address?.slice(0, 5)}...${address?.slice(-3)}`;
 

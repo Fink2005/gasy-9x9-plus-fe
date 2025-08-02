@@ -9,6 +9,9 @@ export default function TanstackProviders({ children }: { children: React.ReactN
     defaultOptions: {
       queries: {
         // With SSR, we usually want to set some default staleTime
+        // refetchOnWindowFocus: false,
+        // refetchOnMount: false,
+        // refetchOnReconnect: false,
         // above 0 to avoid refetching immediately on the client
         staleTime: 60 * 1000, // 1 minute
       },

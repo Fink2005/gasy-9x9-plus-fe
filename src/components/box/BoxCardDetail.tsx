@@ -34,8 +34,6 @@ const BoxCardDetail = ({ boxSlug, dataBoxDetail }: Props) => {
     { id: 'shield', icon: <ShieldIcon />, label: 'Giá trị tích lũy:', value: '45$' },
   ];
 
-
-
   return (
     <div className="w-full">
       <span className="hidden">{boxSlug}</span>

@@ -14,12 +14,13 @@ export type BoxDetailRes = {
   receivedTotal: number;
 };
 
-export type boxTreeRes = {
+export type User = {
+  _id: string;
+  address: string;
+};
+export type BoxTreeRes = {
   result: {
-    users: {
-      _id: string;
-      address: string;
-    }[];
+    users: User[];
     pagination: {
       totalItems: number;
       limit: number;
@@ -27,10 +28,9 @@ export type boxTreeRes = {
       pageTotal: number;
     };
   };
-} | null;
+};
 
-export type boxTreeBody = {
+export type BoxTreeBody = {
   address: string;
-  limit: number;
   page: number;
 };

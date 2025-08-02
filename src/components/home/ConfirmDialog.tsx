@@ -9,12 +9,12 @@ import { toast } from 'sonner';
 import Web3 from 'web3';
 import { Button } from '../ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from '../ui/dialog';
 // Minimal USDT ABI for approval
 import BoxDistributor from '@/contracts/BoxDistributor.json';

@@ -1,5 +1,6 @@
 import { http } from '@/app/http/apiRequest';
-import type { BoxDetailRes, BoxRes, boxTreeBody, boxTreeRes } from '@/types/box';
+import { BOX_TREE_LIMIT } from '@/libs/shared/constants/globals';
+import type { BoxDetailRes, BoxRes, BoxTreeBody, BoxTreeRes } from '@/types/box';
 
 export const boxRequest = {
   async boxApprove(txHash: string, boxNumber: number): Promise<BoxRes | null> {
@@ -16,8 +17,8 @@ export const boxRequest = {
   async boxDetail(boxNumber: number): Promise<BoxDetailRes | null> {
     return await http.get<BoxDetailRes | null>(`/box/${boxNumber}`);
   },
-  async boxTree(boxTree: boxTreeBody): Promise<boxTreeRes> {
-    const { address, limit, page } = boxTree;
-    return await http.get<boxTreeRes>(`/box/tree?address=${address}&limit=${limit}&page=${page}`);
+  async boxTree(boxTree: BoxTreeBody): Promise<BoxTreeRes | null> {
+    const { address, page } = boxTree;
+    return await http.get<BoxTreeRes | null>(`/box/tree?address=${address}&limit=${BOX_TREE_LIMIT}&page=${page}`);
   }
 };

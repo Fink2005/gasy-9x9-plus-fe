@@ -1,9 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import { getCookie } from '@/app/actions/cookie';
 import { useBoxTree } from '@/app/http/queries/useBox';
+import { boxRequest } from '@/app/http/requests/box';
 import PreviousNavigation from '@/components/PreviousNavigation';
 import { Button } from '@/components/ui/button';
+import useGetCookie from '@/hooks/useGetCookie';
 import { formatAddress2 } from '@/libs/shared/constants/globals';
 import ChevronDown2Icon from '@/libs/shared/icons/ChevronDown2';
 import Connection2Icon from '@/libs/shared/icons/Connection2';
@@ -12,8 +14,14 @@ import PlusIcon from '@/libs/shared/icons/Plus';
 import SearchIcon from '@/libs/shared/icons/Search';
 import WalletIcon from '@/libs/shared/icons/Wallet';
 import { handleClipboardCopy, isClient } from '@/libs/utils';
+import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+type User = {
+  _id: string;
+  address: string;
+};
 
 type TreeNode = {
   id: string;
@@ -30,126 +38,207 @@ type TreeData = {
 };
 
 export default function Tree() {
+  const hasFetched = useRef(false);
   const [address, setAddress] = useState<string>('');
-  const [treeDataV2, setTreeDataV2] = useState<TreeData>({
-    lv1: []
-  });
-  // console.log(treeDataV2);
-  const { data, isSuccess, isLoading } = useBoxTree(address);
-  console.log(data);
-  const urlSharing = isClient ? `${window.location.origin}/login` : '';
+
+  const [currentFetchingAddress, setCurrentFetchingAddress] = useState<string>('');
+
+  const queryClient = useQueryClient();
+
+  // ✅ Now this will be reactive
+  const isFetching
+   = queryClient.isFetching({ queryKey: ['boxTree', currentFetchingAddress] }) > 0 || false;
+
+  const [treeDataV2, setTreeDataV2] = useState<TreeData>({ lv1: [] });
+  const dataCookie = useGetCookie();
 
   useEffect(() => {
     (async () => {
-      const authData = await getCookie('authData');
+      const authData = await dataCookie('authData');
       if (authData) {
-        const addressParsed = JSON.parse(authData).address;
-        setAddress(addressParsed);
+        setAddress(authData.address);
       }
     })();
   }, []);
 
+  const { data, isSuccess, isLoading: isInitialLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useBoxTree(address);
+
+  const urlSharing = isClient ? `${window.location.origin}/login` : '';
+
+  const fetchInitialTreeData = () => {
+    const treeLength = data.length || 0;
+    const treeDataV2Initial: TreeNode[] = [];
+
+    for (let i = 0; i < 9; i++) {
+      if (i < treeLength) {
+        treeDataV2Initial.push({
+          id: data[i]?._id || `root-${i}`,
+          level: 1,
+          originalAddress: data[i]?.address || '',
+          address: formatAddress2(data[i]?.address || ''),
+          type: 'folder',
+          children: [],
+        });
+      } else {
+        treeDataV2Initial.push({
+          id: `root-share-${i}`,
+          level: 1,
+          originalAddress: address,
+          address: 'Chia sẻ',
+          type: 'share',
+        });
+      }
+    }
+    hasFetched.current = true;
+    setTreeDataV2({
+      lv1: treeDataV2Initial
+    });
+  };
+
+  const fetchChildrenTreeData = async (childrenAddress: string, initialPage = 1): Promise<User[]> => {
+    try {
+      // ✅ Set loading state before fetch
+      setCurrentFetchingAddress(childrenAddress);
+
+      const childrenData = await queryClient.fetchInfiniteQuery({
+        queryKey: ['boxTree', childrenAddress],
+        queryFn: async ({ pageParam = initialPage }) => {
+          const response = await boxRequest.boxTree({
+            address: childrenAddress,
+            page: pageParam as number,
+          });
+
+          if (response instanceof Error) {
+            throw response;
+          }
+
+          return response;
+        },
+        initialPageParam: initialPage,
+        getNextPageParam: (lastPage: any) => {
+          const currentPage = lastPage?.result.pagination.page;
+          const totalPages = lastPage?.result.pagination.pageTotal;
+          if (!currentPage || !totalPages) {
+            return undefined;
+          }
+          if (currentPage < totalPages) {
+            return currentPage + 1;
+          }
+          return undefined;
+        },
+      });
+
+      const childrenDataList = childrenData?.pages.flatMap((page: any) => page.result.users) || [];
+      return childrenDataList;
+    } catch (error) {
+      console.error('Error fetching children:', error);
+      return [];
+    } finally {
+      // ✅ Clear loading state after fetch
+      setCurrentFetchingAddress('');
+    }
+  };
+
   useEffect(() => {
-    if (isSuccess && data) {
-      const treeDataList = data?.pages.flatMap(item => item.result.users);
-      const treeLength = treeDataList.length || 0;
-      const treeDataV2Initial: TreeNode[] = [];
+    if (isSuccess && data && !hasFetched.current) {
+      fetchInitialTreeData();
+    }
+  }, [address, isSuccess]);
+
+  const generateChildNode = (parentLevel: number, parentId: string, childData: User, index: number): TreeNode => {
+    return {
+      id: childData._id || `${parentId}-child-${index}`,
+      level: parentLevel + 1,
+      originalAddress: childData.address,
+      address: formatAddress2(childData.address),
+      type: 'folder',
+      children: [],
+      isExpanded: false,
+    };
+  };
+
+  const updateNodeRecursively = (nodes: TreeNode[], targetAddress: string, newChildren: TreeNode[]): TreeNode[] => {
+    return nodes.map((node) => {
+      if (node.originalAddress === targetAddress) {
+        return {
+          ...node,
+          isExpanded: !node.isExpanded,
+          children: node.isExpanded ? [] : newChildren,
+        };
+      }
+
+      if (node.children && node.children.length > 0) {
+        return {
+          ...node,
+          children: updateNodeRecursively(node.children, targetAddress, newChildren),
+        };
+      }
+
+      return node;
+    });
+  };
+
+  const expandNode = async (nodeAddress: string) => {
+    const findNode = (nodes: TreeNode[]): TreeNode | null => {
+      for (const node of nodes) {
+        if (node.originalAddress === nodeAddress) {
+          return node;
+        }
+        if (node.children) {
+          const found = findNode(node.children);
+          if (found) {
+            return found;
+          }
+        }
+      }
+      return null;
+    };
+
+    const targetNode = findNode(treeDataV2.lv1);
+
+    if (!targetNode) {
+      console.error('Node not found:', nodeAddress);
+      return;
+    }
+
+    if (targetNode.isExpanded) {
+      setTreeDataV2(prevTreeData => ({
+        ...prevTreeData,
+        lv1: updateNodeRecursively(prevTreeData.lv1, nodeAddress, [])
+      }));
+      return;
+    }
+
+    if (!targetNode.children || targetNode.children.length === 0) {
+      const nodeData = await fetchChildrenTreeData(nodeAddress);
+      const newChildren: TreeNode[] = [];
 
       for (let i = 0; i < 9; i++) {
-        if (i < treeLength) {
-          treeDataV2Initial.push({
-            id: treeDataList[i]?._id || `node-${i}`,
-            level: 1,
-            originalAddress: treeDataList[i]?.address || '',
-            address: formatAddress2(treeDataList[i]?.address || ''),
-            type: 'folder',
-            children: [],
-          });
-        } else if (i === 8) { // Fixed the condition here
-          treeDataV2Initial.push({
-            id: `node-${i}`,
-            level: 1,
-            originalAddress: address,
-            address: 'Xem thêm',
-            type: 'more',
-          });
+        if (i < nodeData.length) {
+          const childNode = generateChildNode(targetNode.level, targetNode.id, nodeData[i] ?? { _id: '', address: '' }, i);
+          newChildren.push(childNode);
         } else {
-          treeDataV2Initial.push({
-            id: `node-${i}`,
-            level: 1,
-            originalAddress: address,
+          newChildren.push({
+            id: `${targetNode.id}-share-${i}`,
+            level: targetNode.level + 1,
+            originalAddress: nodeAddress,
             address: 'Chia sẻ',
             type: 'share',
+            children: [],
           });
         }
       }
 
-      setTreeDataV2({
-        lv1: treeDataV2Initial
-      });
+      setTreeDataV2(prevTreeData => ({
+        ...prevTreeData,
+        lv1: updateNodeRecursively(prevTreeData.lv1, nodeAddress, newChildren)
+      }));
+    } else {
+      setTreeDataV2(prevTreeData => ({
+        ...prevTreeData,
+        lv1: updateNodeRecursively(prevTreeData.lv1, nodeAddress, targetNode.children!)
+      }));
     }
-  }, [address, isSuccess, data?.pages]); // Fixed dependency
-
-  const generateChildNode = (parentLevel: number, parentId: string, index: number): TreeNode => {
-    const childLevel = parentLevel + 1;
-    return {
-      id: `${parentId}-${index}`,
-      level: childLevel,
-      originalAddress: '',
-      address: '0x51...7A',
-      type: 'folder',
-      children: [],
-    };
-  };
-
-  const expandNode = (nodeId: string) => {
-    const updateNode = (nodes: TreeNode[]): TreeNode[] => {
-      return nodes.map((node) => {
-        if (node.id === nodeId && node.level < 9) {
-          const newChildren = node.children || [];
-          if (newChildren.length === 0) {
-            // Add multiple children when expanding
-            for (let i = 1; i <= 7; i++) {
-              newChildren.push(generateChildNode(node.level, node.id, i));
-            }
-            // Add share and more options
-            newChildren.push({
-              id: `${node.id}-share`,
-              level: node.level + 1,
-              originalAddress: '',
-              address: 'Chia sẻ link',
-              type: 'share',
-              children: [],
-            });
-            newChildren.push({
-              id: `${node.id}-more`,
-              originalAddress: '',
-              level: node.level + 1,
-              address: 'Xem tiếp',
-              type: 'more',
-              children: [],
-            });
-          }
-          return {
-            ...node,
-            isExpanded: !node.isExpanded,
-            children: newChildren,
-          };
-        }
-        if (node.children) {
-          return {
-            ...node,
-            children: updateNode(node.children),
-          };
-        }
-        return node;
-      });
-    };
-
-    setTreeDataV2(prevTreeData => ({
-      ...prevTreeData,
-      lv1: updateNode(prevTreeData.lv1)
-    }));
   };
 
   const renderIcon = (type: string) => {
@@ -176,21 +265,16 @@ export default function Tree() {
 
   const renderTreeNode = (node: TreeNode, _isLast = false) => {
     const marginLeft = (node.level - 1) * 50;
-
     return (
       <div key={node.id} className="relative">
-        {/* Connecting lines */}
         <div className="flex items-center gap-3 mb-3" style={{ marginLeft: `${marginLeft}px` }}>
-          {/* Level indicator */}
           <span className="text-white text-sm font-medium min-w-[1px] w-[15px]">
             Lv.
             {node.level}
           </span>
 
-          {/* Connecting line */}
           <div className="w-5 h-px bg-white translate-x-1" />
 
-          {/* Node content */}
           <Button
             className={`${getButtonColor(node.type)} rounded-lg py-2 flex items-center min-w-[100px] w-[105px]`}
             onClick={() => node.type === 'share' && handleClipboardCopy(`${urlSharing}?invitedBy=${node.originalAddress}`)}
@@ -199,45 +283,40 @@ export default function Tree() {
             <span className="text-white text-[0.625rem] font-[700] -translate-x-4">{node.address}</span>
           </Button>
 
-          {/* Expand button */}
-          {node.level < 9 && (node.type !== 'share' && node.type !== 'more') && (
+          {/* ✅ Show loading state for individual nodes */}
+          {node.level < 9 && node.type === 'folder' && (
             <Button
-              onClick={() => expandNode(node.id)} // Fixed to use node.id instead of originalAddress
+              onClick={() => expandNode(node.originalAddress)}
               className="tree-button-3 size-10"
+              disabled={isFetching} // ✅ Disable when loading
             >
-              {!node.isExpanded ? <PlusIcon className="translate-y-1" /> : <MinuteIcon className="translate-y-1" />}
+              {isFetching ? (
+                <Loader2 className="animate-spin size-4" />
+              ) : (
+                !node.isExpanded ? <PlusIcon className="translate-y-1" /> : <MinuteIcon className="translate-y-1" />
+              )}
             </Button>
           )}
         </div>
 
-        {/* Render children */}
-        {node.isExpanded && node.children && (
+        {node.isExpanded && node.children && node.children.length > 0 && (
           <div className="relative">
-            {/* Vertical line for children */}
-            {node.children.length > 0 && (
-              <div
-                className="absolute w-px bg-white"
-                style={{
-                  left: `${marginLeft + 40}px`,
-                  top: '8px',
-                  height: `${node.children.length * 48 + 8}px`,
-                }}
-              />
+            <div
+              className="absolute w-px bg-white"
+              style={{
+                left: `${marginLeft + 40}px`,
+                top: '8px',
+                height: `${node.children.length * 48 + 8}px`,
+              }}
+            />
+            {node.children.map((child, index) =>
+              renderTreeNode(child, index === node.children!.length - 1)
             )}
-            {node.children.map((child, index) => renderTreeNode(child, index === node.children!.length - 1))}
           </div>
         )}
       </div>
     );
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="animate-spin text-white" />
-      </div>
-    );
-  }
 
   return (
     <div className="relative">
@@ -250,7 +329,12 @@ export default function Tree() {
         </div>
         <div className="min-w-max">
           <div className="space-y-2 min-w-max">
-            {treeDataV2?.lv1?.map((node, index) => renderTreeNode(node, index === treeDataV2.lv1.length - 1))}
+            {/* ✅ Show global loader only for initial loading */}
+            {isInitialLoading ? (
+              <Loader2 className="animate-spin text-white fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            ) : (
+              treeDataV2.lv1.map((node, index) => renderTreeNode(node, index === treeDataV2.lv1.length - 1))
+            )}
           </div>
         </div>
       </div>

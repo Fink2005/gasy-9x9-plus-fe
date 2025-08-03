@@ -3,11 +3,10 @@ import type { NumerologyResponse } from '@/types/numberology';
 
 export const numerologyRequest = {
   async getNumerology(name: string, birth: string): Promise<NumerologyResponse | null> {
-    return await http.post<NumerologyResponse | null> (
-      '/numerology/meanings',
+    return await http.get<NumerologyResponse | null> (
+      `/numerology/meanings?name=${name}&birth=${birth}`,
       {
-        name,
-        birth
+        cache: 'force-cache'
       }
     );
   }

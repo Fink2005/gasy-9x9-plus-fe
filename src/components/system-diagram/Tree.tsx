@@ -534,6 +534,7 @@ export default function Tree() {
     const marginLeft = (node.level - 1) * 50;
     const isLoading = isCurrentFetching(node.originalAddress)
       || (node.type === 'more' && isFetchingNextPage);
+    console.log(isError);
 
     return (
       <div key={node.id} className="relative">
@@ -619,6 +620,17 @@ export default function Tree() {
             </div>
           </div>
         </div>
+        {isError && (
+          <div className="text-white text-center h-[calc(100vh-170px)] flex flex-col items-center justify-center gap-4">
+            <p className="text-lg font-bold">Không tìm thấy dữ liệu</p>
+            <p className="text-sm">Vui lòng thử lại sau.</p>
+            <div>
+              <Button className="button-base" onClick={() => window.location.reload()}>
+                Quay lại
+              </Button>
+            </div>
+          </div>
+        )}
         {!isSearching && !isError && (
           <div className="h-[calc(100vh-170px)] overflow-y-scroll">
             {isInitialLoading ? (

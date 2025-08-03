@@ -1,6 +1,8 @@
+import { ApiException } from '@/app/http/apiRequest';
 import { boxRequest } from '@/app/http/requests/box';
 import type { BoxTreeRes } from '@/types/box';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 export const useBoxTree = (address: string, initialPage = 1) => {
   return useInfiniteQuery<BoxTreeRes, Error>({
@@ -22,8 +24,16 @@ export const useBoxTree = (address: string, initialPage = 1) => {
 
       return response;
     },
+    retry: 0,
     enabled: !!address,
     initialPageParam: initialPage,
+    throwOnError(error) {
+      if (error instanceof ApiException) {
+        toast.error(error.message);
+        return false;
+      }
+      return false;
+    },
 
     getNextPageParam: (lastPage: BoxTreeRes) => {
       const currentPage = lastPage.result.pagination.page;

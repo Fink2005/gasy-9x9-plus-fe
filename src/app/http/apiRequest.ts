@@ -96,10 +96,10 @@ const apiRequest = async <T>(
           if (error instanceof ApiException) {
             throw error; // Re-throw known ApiException
           }
-          throw new ApiException(`Error ${response.status}`, response.status);
+          console.log(`Error ${response.status}`, response.status);
         }
       } else {
-        throw new ApiException(`Request failed with status ${response.status}`, response.status);
+        console.log(`Request failed with status ${response.status}`, response.status);
       }
     }
 

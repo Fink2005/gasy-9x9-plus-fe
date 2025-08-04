@@ -534,7 +534,6 @@ export default function Tree() {
     const marginLeft = (node.level - 1) * 50;
     const isLoading = isCurrentFetching(node.originalAddress)
       || (node.type === 'more' && isFetchingNextPage);
-    console.log(isError);
 
     return (
       <div key={node.id} className="relative">

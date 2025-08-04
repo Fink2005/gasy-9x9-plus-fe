@@ -21,7 +21,14 @@ const page = async ({ params }: PageProps) => {
       </Link>
       <span className="hidden">{locale}</span>
       <div className="flex flex-col items-center mb-6">
-        <h1 className="text-shadow-custom text-[1.25rem] font-[700]">Box 1 - Sao thức tỉnh</h1>
+        <h1 className="text-shadow-custom text-[1.25rem] font-[700]">
+          Box
+          {' '}
+
+          {boxSlug}
+          {' '}
+          - Sao thức tỉnh
+        </h1>
         <h2 className="text-shadow-custom text-[0.75rem] font-[400] text-center">
           Khởi động hành trình - Gặp sao đầu tiên
           <br />

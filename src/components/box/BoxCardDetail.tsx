@@ -8,6 +8,7 @@ import MoneyWalletIcon from '@/libs/shared/icons/MoneyWallet';
 import ShieldIcon from '@/libs/shared/icons/Shield';
 import UserConnection from '@/libs/shared/icons/UserConnection';
 import UserHeart from '@/libs/shared/icons/UserHeart';
+import { formatAddress } from '@/libs/utils';
 import type { BoxDetailRes } from '@/types/box';
 import Image from 'next/image';
 
@@ -23,7 +24,7 @@ const BoxCardDetail = ({ boxSlug, dataBoxDetail }: Props) => {
   ];
 
   const details = [
-    { id: 'userHeart', icon: <UserHeart />, label: 'Người kết nối:', value: `${dataBoxDetail?.invitedBy.slice(0, 8)}...${dataBoxDetail?.invitedBy.slice(-3)}` },
+    { id: 'userHeart', icon: <UserHeart />, label: 'Người kết nối:', value: `${formatAddress(dataBoxDetail?.invitedBy || '', 8)}` },
     { id: 'heartUnlock', icon: <HeartUnlockIcon />, label: 'Box:', value: `${dataBoxDetail?.boxNumber}/9` },
     { id: 'calendar', icon: <CalendarColorIcon />, label: 'Tham gia:', value: '22/07/2025' },
     { id: 'handMoney', icon: <HandMoney2 />, label: 'Tổng giá trị gieo:', value: '130$/234$' },

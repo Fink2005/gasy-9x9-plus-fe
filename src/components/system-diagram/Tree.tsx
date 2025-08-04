@@ -10,7 +10,6 @@ import PreviousNavigation from '@/components/PreviousNavigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import useGetCookie from '@/hooks/useGetCookie';
-import { formatAddress2 } from '@/libs/shared/constants/globals';
 import ChevronDown2Icon from '@/libs/shared/icons/ChevronDown2';
 import Connection2Icon from '@/libs/shared/icons/Connection2';
 import MinuteIcon from '@/libs/shared/icons/Minute';
@@ -18,7 +17,7 @@ import PlusIcon from '@/libs/shared/icons/Plus';
 import SearchIcon from '@/libs/shared/icons/Search';
 import Search2Icon from '@/libs/shared/icons/Search2';
 import WalletIcon from '@/libs/shared/icons/Wallet';
-import { handleClipboardCopy, isClient } from '@/libs/utils';
+import { formatAddress, handleClipboardCopy, isClient } from '@/libs/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -168,7 +167,7 @@ export default function Tree() {
         id: users[i]?._id || `root-${i}`,
         level: 1,
         originalAddress: users[i]?.address || '',
-        address: formatAddress2(users[i]?.address || ''),
+        address: formatAddress(users[i]?.address || '', 2),
         type: 'folder',
         children: [],
         isExpanded: false
@@ -299,7 +298,7 @@ export default function Tree() {
         id: users[i]?._id || `${parentId}-child-${i}`,
         level: parentLevel + 1,
         originalAddress: users[i]?.address || '',
-        address: formatAddress2(users[i]?.address || ''),
+        address: formatAddress(users[i]?.address || '', 2),
         type: 'folder',
         children: [],
         isExpanded: false

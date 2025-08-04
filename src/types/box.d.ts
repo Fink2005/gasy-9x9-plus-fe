@@ -5,6 +5,7 @@ export type BoxRes = {
 };
 
 export type BoxDetailRes = {
+  title: string;
   invitedCount: number;
   boxNumber: number;
   invitedBy: string;

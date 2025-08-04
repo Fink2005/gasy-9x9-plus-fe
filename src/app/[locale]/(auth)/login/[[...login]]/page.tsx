@@ -1,6 +1,7 @@
 import Loading from '@/app/[locale]/loading';
 import { Button } from '@/components/ui/button';
 import SafePal from '@/components/wallet/SafePal';
+import { formatAddress } from '@/libs/utils';
 import Image from 'next/image';
 import { Suspense } from 'react';
 
@@ -27,7 +28,7 @@ const login = async ({ searchParams }: Props) => {
             <p className="text-white text-[1.375rem] font-[510] text-center">Người mời</p>
             <Button className="button-login w-full">
               {' '}
-              {`${invitedBy?.slice(0, 26)}...${invitedBy?.slice(-3)}`}
+              {formatAddress(invitedBy, 26)}
             </Button>
           </div>
         )}

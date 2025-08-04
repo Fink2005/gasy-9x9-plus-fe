@@ -24,10 +24,11 @@ const page = async ({ params }: PageProps) => {
         <h1 className="text-shadow-custom text-[1.25rem] font-[700]">
           Box
           {' '}
-
           {boxSlug}
           {' '}
-          - Sao thức tỉnh
+          -
+          {' '}
+          {resBoxDetail?.title}
         </h1>
         <h2 className="text-shadow-custom text-[0.75rem] font-[400] text-center">
           Khởi động hành trình - Gặp sao đầu tiên

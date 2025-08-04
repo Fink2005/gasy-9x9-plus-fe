@@ -1,7 +1,7 @@
 import { getCookie } from '@/app/actions/cookie';
 import PreviousNavigation from '@/components/PreviousNavigation';
-import { formatAddress } from '@/libs/shared/constants/globals';
 import User2Icon from '@/libs/shared/icons/User2';
+import { formatAddress } from '@/libs/utils';
 
 const page = async () => {
   let address = await getCookie('authData');
@@ -17,7 +17,7 @@ const page = async () => {
       <div className="pt-20 flex flex-col items-center">
         <User2Icon />
         <h2 className="text-shadow-custom -translate-y-6">
-          {formatAddress(address || '')}
+          {formatAddress(address || '', 5)}
         </h2>
         <h3 className="text-shadow-custom -translate-y-5">
           NGƯỜI TRUYỀN LỬA

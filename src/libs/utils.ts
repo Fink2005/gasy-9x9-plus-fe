@@ -24,6 +24,15 @@ export function NumberFormat(number: number): string {
   return formatted;
 }
 
+export const formatAddress = (address: string, end: number) => `${address?.slice(0, end)}...${address?.slice(-3)}`;
+
+export const formatMsToCountdown = (ms: number) => {
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+  const seconds = String(totalSeconds % 60).padStart(2, '0');
+  return `${minutes}:${seconds}`;
+};
+
 export const handleClipboardCopy = (data: string | number) => {
   navigator.clipboard.writeText(data.toString());
   toast.success('Đã sao chép địa chỉ ví');

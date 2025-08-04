@@ -3,10 +3,10 @@
 import { createCookie } from '@/app/actions/cookie';
 import { goldMiningRequest } from '@/app/http/requests/goldMining';
 import { Button } from '@/components/ui/button';
-import { formatMsToCountdown } from '@/libs/shared/constants/globals';
 import GamePad2 from '@/libs/shared/icons/GamePad2';
 import QuestionCircleIcon from '@/libs/shared/icons/QuestionCircle';
 import UnknowAvatarIcon from '@/libs/shared/icons/UnknowAvatar';
+import { formatMsToCountdown } from '@/libs/utils';
 import type { GoldMiningRestTimesResponse } from '@/types/game';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';

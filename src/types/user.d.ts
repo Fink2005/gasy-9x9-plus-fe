@@ -12,8 +12,13 @@ export type UserRanking = {
     _id: string;
     address: string;
     score: string;
-    name: string;
   }[];
+  pagination: {
+    page: number;
+    pageTotal: number;
+    limit: number;
+    totalItems: number;
+  };
 };
 
 export type UserScore = {
@@ -35,7 +40,10 @@ type BoxHistoryItems = {
 
 export type UserGetMe = {
   _id: string;
+  badges: string[];
   address: string;
+  continiousPlayDay: number;
+  mainNumber: number;
   invitedBy: string;
   inviterChain: string[];
   isKyc: boolean;

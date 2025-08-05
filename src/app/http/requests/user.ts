@@ -24,7 +24,7 @@ const userRequests = {
   },
   async userRanking(page: number): Promise<UserRanking | null> {
     return await http.get<UserRanking | null>(
-      `/user/ranking?page=${page}?limit=${USER_RANKING_LIMIT}`
+      `/user/ranking?page=${page}&limit=${USER_RANKING_LIMIT}`
     );
   },
   async userGetMe(): Promise<UserGetMe | null> {

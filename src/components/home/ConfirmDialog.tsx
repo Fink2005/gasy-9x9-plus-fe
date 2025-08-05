@@ -197,7 +197,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
           <Button
             className="w-1/2 button-custom"
             onClick={() => {
-              !isConfirm ? handleConfirm() : router.push('box/123');
+              !isConfirm ? handleConfirm() : router.push(`box/${boxNumber}`);
             }}
             disabled={loading}
           >

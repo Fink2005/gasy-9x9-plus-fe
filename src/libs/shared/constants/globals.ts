@@ -1,4 +1,5 @@
-export const USER_RANKING_LIMIT = 15;
+export const COUNT_ITEM_TO_BOTTOM = 3;
+export const USER_RANKING_LIMIT = 10;
 
 export const BOX_TREE_LIMIT = 9;
 

@@ -1,4 +1,3 @@
-import { Footer } from '@/components/header-footer/Footer';
 import RankingList from '@/components/ranking/RankingList';
 
 const page = () => {
@@ -7,7 +6,6 @@ const page = () => {
       <h2 className="text-[#BAE7FF] text-shadow-custom text-[1.25rem] font-[274]">Bảng xếp hạng</h2>
       <h1 className="text-[#BAE7FF] text-shadow-custom text-[1.25rem] font-[590]">Điểm hạt thịnh vượng</h1>
       <RankingList />
-      <Footer />
     </div>
   );
 };

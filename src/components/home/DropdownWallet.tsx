@@ -171,7 +171,7 @@ const DropdownWallet = ({ address }: Props) => {
           {formatAddress(address, 5)}
         </DropdownMenuTrigger>
         <DropdownMenuContent className="dropdown-address text-white">
-          <DropdownMenuItem className="w-full" onClick={() => router.push(`/profile/${address}`)}>
+          <DropdownMenuItem className="w-full" onClick={() => router.push(`/profile`)}>
             <UserIcon className="absolute left-1 -top-[1px]" />
             <span className="w-full translate-x-8">
               Profile

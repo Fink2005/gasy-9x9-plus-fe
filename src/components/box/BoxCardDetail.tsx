@@ -75,7 +75,7 @@ const BoxCardDetail = ({ boxSlug, dataBoxDetail }: Props) => {
           width={100}
           height={100}
           alt="robot-hello"
-          className="absolute bottom-4 right-1"
+          className="absolute bottom-4 right-2 w-26"
         />
       </div>
       <BoxDetailController />

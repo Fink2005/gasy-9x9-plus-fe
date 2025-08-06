@@ -193,7 +193,8 @@ export default function Tree() {
 
     // Padding với Share buttons
     const currentLength = treeDataV2Initial.length;
-    for (let i = currentLength; i < 10; i++) {
+    const isPreviousButton = treeDataV2Initial[0]?.type === 'previous';
+    for (let i = isPreviousButton ? currentLength - 1 : currentLength; i < 9; i++) {
       treeDataV2Initial.push({
         id: `root-share-${i}`,
         level: 1,
@@ -324,7 +325,7 @@ export default function Tree() {
 
     // Padding với share buttons
     const currentLength = children.length;
-    const maxItems = hasPrevious || hasNext ? 11 : 10;
+    const maxItems = hasPrevious || hasNext ? 10 : 9;
     for (let i = currentLength; i < maxItems; i++) {
       children.push({
         id: `${parentId}-share-${i}`,

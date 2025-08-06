@@ -27,13 +27,13 @@ export const metadata: Metadata = {
       rel: 'icon',
       type: 'image/png',
       sizes: '32x32',
-      url: '/icon0.svg',
+      url: '/favicon.ico',
     },
     {
       rel: 'icon',
       type: 'image/png',
       sizes: '16x16',
-      url: '/icon0.svg',
+      url: '/favicon.ico',
     },
     {
       rel: 'icon',

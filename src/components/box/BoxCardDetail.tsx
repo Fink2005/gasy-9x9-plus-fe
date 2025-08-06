@@ -8,31 +8,31 @@ import MoneyWalletIcon from '@/libs/shared/icons/MoneyWallet';
 import ShieldIcon from '@/libs/shared/icons/Shield';
 import UserConnection from '@/libs/shared/icons/UserConnection';
 import UserHeart from '@/libs/shared/icons/UserHeart';
-import { formatAddress } from '@/libs/utils';
+import { formatAddress, formatDate } from '@/libs/utils';
 import type { BoxDetailRes } from '@/types/box';
 import Image from 'next/image';
 
 type Props = {
   boxSlug: string;
-  dataBoxDetail: BoxDetailRes | null;
+  dataBoxDetail: BoxDetailRes;
 };
 
 const BoxCardDetail = ({ boxSlug, dataBoxDetail }: Props) => {
   const data = [
-    { icon: <UserHeart />, label: 'Tổng kết nối hệ thống:', value: `${dataBoxDetail?.invitedCount}` },
-    { icon: <HeartUnlockIcon />, label: 'Hành trình mở khóa:', value: `${dataBoxDetail?.boxNumber}/9` },
+    { icon: <UserHeart />, label: 'Tổng kết nối hệ thống:', value: `${dataBoxDetail.invitedCount}` },
+    { icon: <HeartUnlockIcon />, label: 'Hành trình mở khóa:', value: `${dataBoxDetail.boxNumber}/9` },
   ];
 
   const details = [
-    { id: 'userHeart', icon: <UserHeart />, label: 'Người kết nối:', value: `${formatAddress(dataBoxDetail?.invitedBy || '', 8)}` },
-    { id: 'heartUnlock', icon: <HeartUnlockIcon />, label: 'Box:', value: `${dataBoxDetail?.boxNumber}/9` },
-    { id: 'calendar', icon: <CalendarColorIcon />, label: 'Tham gia:', value: '22/07/2025' },
-    { id: 'handMoney', icon: <HandMoney2 />, label: 'Tổng giá trị gieo:', value: `${26 * (dataBoxDetail?.boxNumber || 0)}` },
-    { id: 'userConnection', icon: <UserConnection />, label: 'Kết nối lan tỏa:', value: `${dataBoxDetail?.invitedCount}$` },
-    { id: 'moneyMessage', icon: <MoneyMessageIcon />, label: 'Đã nhận tri ân:', value: `${dataBoxDetail?.directedAmount}$` },
-    { id: 'moneySuitcase', icon: <MoneySuitcaseIcon />, label: 'Cộng hưởng lan tỏa:', value: `${dataBoxDetail?.distributedAmount}$` },
-    { id: 'moneyWallet', icon: <MoneyWalletIcon />, label: 'Cộng hưởng bền vững:', value: `${dataBoxDetail?.referralChainAmount}$` },
-    { id: 'shield', icon: <ShieldIcon />, label: 'Giá trị tích lũy:', value: `${dataBoxDetail?.receivedTotal}$` },
+    { id: 'userHeart', icon: <UserHeart />, label: 'Người kết nối:', value: `${formatAddress(dataBoxDetail.invitedBy || '', 8)}` },
+    { id: 'heartUnlock', icon: <HeartUnlockIcon />, label: 'Box:', value: `${dataBoxDetail.boxNumber}/9` },
+    { id: 'calendar', icon: <CalendarColorIcon />, label: 'Tham gia:', value: `${formatDate(new Date(dataBoxDetail.openTime || ''))}` },
+    { id: 'handMoney', icon: <HandMoney2 />, label: 'Tổng giá trị gieo:', value: `${26 * (dataBoxDetail.boxNumber || 0)}` },
+    { id: 'userConnection', icon: <UserConnection />, label: 'Kết nối lan tỏa:', value: `${dataBoxDetail.invitedCount}$` },
+    { id: 'moneyMessage', icon: <MoneyMessageIcon />, label: 'Đã nhận tri ân:', value: `${dataBoxDetail.directedAmount}$` },
+    { id: 'moneySuitcase', icon: <MoneySuitcaseIcon />, label: 'Cộng hưởng lan tỏa:', value: `${dataBoxDetail.distributedAmount}$` },
+    { id: 'moneyWallet', icon: <MoneyWalletIcon />, label: 'Cộng hưởng bền vững:', value: `${dataBoxDetail.referralChainAmount}$` },
+    { id: 'shield', icon: <ShieldIcon />, label: 'Giá trị tích lũy:', value: `${dataBoxDetail.receivedTotal}$` },
   ];
 
   return (

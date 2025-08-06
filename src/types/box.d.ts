@@ -7,6 +7,7 @@ export type BoxRes = {
 export type BoxDetailRes = {
   title: string;
   invitedCount: number;
+  openTime: string;
   boxNumber: number;
   invitedBy: string;
   directedAmount: number;

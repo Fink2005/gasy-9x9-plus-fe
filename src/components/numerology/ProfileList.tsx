@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/sheet';
 import CalendarIcon from '@/libs/shared/icons/Calendar';
 import ChevronDown from '@/libs/shared/icons/ChevronDown';
+import { formatDate } from '@/libs/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
@@ -45,14 +46,6 @@ const ProfileForm = () => {
     }
   });
   const router = useRouter();
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  };
 
   const handleGenderSelect = async (gender: 'Nam' | 'Nữ' | 'Khác') => {
     setValue('gender', gender);

@@ -41,6 +41,7 @@ type BoxHistoryItems = {
 export type UserGetMe = {
   _id: string;
   badges: string[];
+  rank: number;
   address: string;
   continiousPlayDay: number;
   mainNumber: number;

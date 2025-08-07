@@ -8,6 +8,7 @@ import QuestionCircleIcon from '@/libs/shared/icons/QuestionCircle';
 import UnknowAvatarIcon from '@/libs/shared/icons/UnknowAvatar';
 import { formatMsToCountdown } from '@/libs/utils';
 import type { GoldMiningRestTimesResponse } from '@/types/game';
+import type { UserGetMe } from '@/types/user';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -16,9 +17,10 @@ import { toast } from 'sonner';
 
 type Props = {
   address: string | undefined;
+  userRes: UserGetMe;
 };
 
-const GoldMining = ({ address }: Props) => {
+const GoldMining = ({ address, userRes }: Props) => {
   const [isDisplayQuestion, setIsDisplayQuestion] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [dataRestTimes, setDataRestTimes] = useState<GoldMiningRestTimesResponse>({
@@ -145,14 +147,14 @@ const GoldMining = ({ address }: Props) => {
 
       <div className="user-card flex justify-around items-center max-w-[360px] w-full mt-[1rem] z-10">
         <div className="flex items-center">
-          <span className="text-shadow-custom font-[500] text-[1rem]">4</span>
+          <span className="text-shadow-custom font-[500] text-[1rem]">{userRes.rank}</span>
           <UnknowAvatarIcon className="size-12" />
         </div>
         <span className="text-shadow-custom text-[1rem] font-[400]">
           {address ? `${address.slice(0, 8)}...${address.slice(-3)}` : 'Không có địa chỉ'}
         </span>
         <div className="flex items-center">
-          <span className="text-shadow-custom text-[0.875rem] font-[590]">7000</span>
+          <span className="text-shadow-custom text-[0.875rem] font-[590]">{userRes.score}</span>
           <Image
             src="/assets/badge-medal.png"
             alt="Badge Medal"

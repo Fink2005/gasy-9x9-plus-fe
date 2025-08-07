@@ -2,6 +2,7 @@
 import { createCookie } from '@/app/actions/cookie';
 import authRequests from '@/app/http/requests/auth';
 import connectWalletRequest from '@/app/http/requests/connectWallet';
+import { ADMIN_SYSTEM_ADDRESS } from '@/libs/shared/constants/globals';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -39,7 +40,7 @@ const useSafePalWallet = () => {
               method: 'personal_sign',
               params: [responseNonce.nonce, response[0]]
             });
-            const authData = await authRequests.login({ address: response[0], signature, message: responseNonce.nonce, ...(invitedBy && { invitedBy }) });
+            const authData = await authRequests.login({ address: response[0], signature, message: responseNonce.nonce, ...(invitedBy ? { invitedBy } : { invitedBy: ADMIN_SYSTEM_ADDRESS }), });
             if (authData) {
               createCookie({
                 name: 'authData',

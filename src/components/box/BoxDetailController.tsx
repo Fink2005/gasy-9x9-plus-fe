@@ -25,8 +25,6 @@ const BoxDetailController = () => {
         <ConnectionIcon className="translate-y-[2px] w-10" />
         <p className="text-shadow-custom text-[1rem] font-[590]">
           Chia sẻ link
-          {' '}
-          <span className="font-[860]">9/9</span>
         </p>
         <CopyIcon2 className="absolute right-0 top-0 size-14" />
       </button>

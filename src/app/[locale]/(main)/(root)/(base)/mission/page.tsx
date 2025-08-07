@@ -73,7 +73,7 @@ const Page = () => {
       <h1 className="font-light text-xl text-blue-200 mb-2">9x9Plus</h1>
       <h2 className="font-semibold text-base mb-6 drop-shadow-lg">Nhiệm vụ</h2>
 
-      <div className="w-full max-w-md h-[calc(100vh-150px)] overflow-y-auto">
+      <div className="w-full max-w-md h-[calc(100vh-180px)] overflow-y-auto">
         {data.map((item, index) => (
           <Link href={item.type === 'info' ? '/mission/info' : '#'} className="bg-white/10 backdrop-blur-sm my-4 rounded-lg p-4 flex items-center gap-3 border border-white/20" key={index}>
             <Image

@@ -610,6 +610,7 @@ export default function Tree() {
               </button>
               <Input
                 className={`absolute top-0 border ${isSearching ? 'h-11 block ' : 'h-0 hidden'} text-white rounded-full pe-10`}
+                onKeyDown={e => e.key === 'Enter' && handleSearchAddress()}
                 ref={searchRef}
                 placeholder="Nhập địa chỉ ví"
                 style={{

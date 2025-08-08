@@ -87,12 +87,12 @@ export default async function middleware(request: NextRequest) {
   }
 
   // Redirect unauthenticated users from protected routes
-  // if (isProtectedPage(pathname)) {
-  //   if (!isAuthenticated) {
-  //     const loginUrl = new URL('/login', request.url);
-  //     return NextResponse.redirect(loginUrl);
-  //   }
-  // }
+  if (isProtectedPage(pathname)) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL('/login', request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
 
   // Redirect authenticated users away from login/welcome pages
   if ((isAuthPage(pathname) && isAuthenticated) || (isWelcomePage(pathname) && isAuthenticated)) {

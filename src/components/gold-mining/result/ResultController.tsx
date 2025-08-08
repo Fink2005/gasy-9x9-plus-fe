@@ -2,11 +2,13 @@
 import { deleteCookie, getCookie } from '@/app/actions/cookie';
 import { Button } from '@/components/ui/button';
 import GamePad2 from '@/libs/shared/icons/GamePad2';
+import { useQueryClient } from '@tanstack/react-query';
 import { redirect } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const ResultController = () => {
   const [playLeft, setPlayLeft] = useState<string | undefined>('0');
+  const queryClient = useQueryClient();
   const handleSubmit = async () => {
     await deleteCookie('goldMiningScore');
     redirect('/gold-mining');
@@ -14,6 +16,7 @@ const ResultController = () => {
   useEffect(() => {
     (async () => {
       const playTimes = await getCookie('playLeft');
+      queryClient.invalidateQueries({ queryKey: ['userRanking'] });
       setPlayLeft(playTimes);
     })();
   }, []);

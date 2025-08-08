@@ -97,7 +97,6 @@ const GoldMining = ({ address, userRes }: Props) => {
 
     return () => clearInterval(timer);
   }, [dataRestTimes.restTimes, dataRestTimes.timeRestore]);
-
   return (
     <>
       <div className="flex space-x-2 z-10">
@@ -147,7 +146,7 @@ const GoldMining = ({ address, userRes }: Props) => {
 
       <div className="user-card flex justify-around items-center max-w-[360px] w-full mt-[1rem] z-10">
         <div className="flex items-center">
-          <span className="text-shadow-custom font-[500] text-[1rem]">{userRes.rank}</span>
+          <span className="text-shadow-custom font-[500] text-[1rem]">{!userRes.score ? '+999' : userRes.rank}</span>
           <UnknowAvatarIcon className="size-12" />
         </div>
         <span className="text-shadow-custom text-[1rem] font-[400]">

@@ -157,7 +157,7 @@ const ProfileForm = () => {
                           key={gender}
                           type="button"
                           onClick={() => handleGenderSelect(gender)}
-                          className="w-full p-5 text-center text-white rounded-lg transition-colors border-t active:bg-gray-200 hover:bg-gray-100"
+                          className="w-full p-5 text-center text-white rounded-lg transition-colors border-t active:bg-gray-200 hover:bg-gray-500"
                         >
                           {gender}
                         </button>

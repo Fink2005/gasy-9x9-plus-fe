@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 export const useUserRanking = (address: string, initialPage = 1) => {
   return useInfiniteQuery<UserRanking, Error>({
-    queryKey: ['userRanking', address],
+    queryKey: ['userRanking'],
     queryFn: async ({ pageParam = initialPage }): Promise<UserRanking> => {
       const response = await userRequests.userRanking(
         pageParam as number,

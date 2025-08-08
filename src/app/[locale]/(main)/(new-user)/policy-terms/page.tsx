@@ -85,10 +85,9 @@ const page = async () => {
     <div className="flex flex-col items-center">
 
       <h1 className={`${montserrat.variable} title-introduction`}>
-        ĐIỀU KHOẢN SỬ DỤNG VÀ
+        NGUYÊN TẮC VÀ CAM KẾT
         <br />
-        {' '}
-        CHÍNH SÁCH NGƯỜI THAM GIA
+        CỘNG ĐỒNG
       </h1>
       <div className={`${montserrat.variable} layout-policy`}>
         <ol className="text-policy">
@@ -98,8 +97,9 @@ const page = async () => {
               {item.subtitle && <div className="policy-subtitle">{item.subtitle}</div>}
             </li>
           ))}
-          <p className="-translate-x-4 mt-1">
+          <p className="-translate-x-4 mt-1 text-center">
             Bằng việc tiếp tục sử dụng
+            {' '}
             <strong>9x9Plus</strong>
             , bạn đã đồng ý và tuân thủ các điều khoản nêu trên
           </p>

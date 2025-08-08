@@ -5,10 +5,10 @@ import Link from 'next/link';
 const IntroductionFooter = () => {
   return (
     <div className="w-full flex flex-col items-center justify-center pt-[0.12rem]">
-      <p className="footer-title-introduction max-w-[20.4375rem] w-full text-center">
-        👉 CẨM NĂNG
+      <p className="footer-title-introduction text-shadow-custom max-w-[20.4375rem] w-full text-center">
+        👉 CẨM NANG
         {' '}
-        <strong className="text-[#FFD8BF] text-[0.75rem] font-[700]">
+        <strong className="text-[0.75rem] font-[700]">
           9X9PLUS
         </strong>
         {' '}

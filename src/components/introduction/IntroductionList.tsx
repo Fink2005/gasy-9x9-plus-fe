@@ -9,7 +9,7 @@ import RocketIcon from '@/libs/shared/icons/Rocket';
 const dataIntro = [
   {
     icon: RocketIcon,
-    title: 'Tầm nhìn',
+    title: 'TẦM NHÌN',
     des: (
       <p>
         Mỗi con người đều mang trong mình một kho báu tiềm ẩn.
@@ -22,7 +22,7 @@ const dataIntro = [
   },
   {
     icon: HeartLockIcon,
-    title: 'Sứ mệnh',
+    title: 'SỨ MỆNH',
     des: (
       <ul className="list-inside space-y-1">
         <li>

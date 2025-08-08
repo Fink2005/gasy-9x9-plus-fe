@@ -7,11 +7,11 @@ const page = () => {
   return (
     <div className="flex flex-col items-center">
       <div className="title-welcome flex flex-col">
-        <h1 className={`${montserrat.variable} w-full max-w-[19rem] text-title-welcome`}>HÀNH TRÌNH LAN TOẢ GIÁ TRỊ BẮT ĐẦU TỪ ĐÂY</h1>
+        <h1 className={`${montserrat.variable} w-full max-w-[19rem] text-center text-title-welcome`}>KHO BÁU BÊN TRONG BẠN</h1>
       </div>
-      <p className="subtitle-welcome pt-[0.75rem]">Tấm vé mở ra hành trình kết nối thịnh vượng toàn cầu</p>
+      <p className="subtitle-welcome text-shadow-custom pt-[0.75rem]">Tấm vé mở ra hành trình kết nối thịnh vượng toàn cầu</p>
       <div className="layout-welcome-list">
-        <div className={`${montserrat.variable} welcome-list-items space-y-[0.38rem] mb-6`}>
+        <div className={`${montserrat.variable} welcome-list-items space-y-[0.30rem] mb-6`}>
           <WelcomeList1 />
           <div className="font-[700] text-white text-[0.6875rem] flex items-center h-4 -translate-x-3">
             <Shield2Icon className="size-9 translate-y-[3px]" />
@@ -33,13 +33,12 @@ const page = () => {
             </li>
           </ul>
           <div className="footer-layout-welcome mt-3">
-            <p className="footer-text-welcome">
+            <p className="footer-text-welcome text-shadow-custom">
               Bắt đầu hành trình mở Kho báu bên trong bạn ngay
               <br />
               hôm nay
             </p>
           </div>
-
         </div>
         <WelcomeFooter />
       </div>

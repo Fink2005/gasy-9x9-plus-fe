@@ -1,8 +1,6 @@
 import Profile from '@/app/[locale]/(main)/(root)/(base-without-footer)/profile/Profile';
 import Loading from '@/app/[locale]/loading';
 import PreviousNavigation from '@/components/PreviousNavigation';
-import ConnectionIcon from '@/libs/shared/icons/Connection';
-import TelegramIcon from '@/libs/shared/icons/Telegram';
 import { Suspense } from 'react';
 
 const page = async () => {
@@ -15,14 +13,6 @@ const page = async () => {
       <Suspense fallback={<Loading />}>
         <Profile />
       </Suspense>
-      <button type="button" className="rounded-md bg-[rgba(255,255,255,0.20)] flex items-center h-12 my-4 w-full">
-        <ConnectionIcon />
-        <p className="text-shadow-custom">Chia sẻ hành trình của bạn</p>
-      </button>
-      <div className="rounded-md bg-[rgba(255,255,255,0.20)] flex items-center h-12 my-4 space-x-2">
-        <TelegramIcon className="ms-4" />
-        <p className="text-shadow-custom">Tổng đài</p>
-      </div>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import userRequests from '@/app/http/requests/user';
+import ProfileController from '@/components/profile/ProfileController';
 import Arrow3Icon from '@/libs/shared/icons/Arrow3';
 import DiamonIcon from '@/libs/shared/icons/Diamon';
 import GamePad4 from '@/libs/shared/icons/GamePad4';
@@ -58,6 +59,7 @@ const Profile = async () => {
           ))
         }
       </div>
+      <ProfileController address={userRes?.address || ''} />
     </>
 
   );

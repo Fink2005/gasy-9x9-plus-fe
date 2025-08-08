@@ -15,8 +15,8 @@ type Props = {
   address: string;
 };
 
-// const USDT_CONTRACT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
-const USDT_CONTRACT_ADDRESS = '0xc45D0156553e000eBcdFc05B08Ea5184911e13De'; // Sepolia testnet USDT
+const USDT_CONTRACT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+// const USDT_CONTRACT_ADDRESS = '0xc45D0156553e000eBcdFc05B08Ea5184911e13De'; // Sepolia testnet USDT
 const USDT_DECIMALS = 6;
 const ERC20_ABI = [
   {
@@ -58,18 +58,21 @@ const DropdownWallet = ({ address }: Props) => {
         throw new Error('Web3 or Ethereum provider not available');
       }
 
+      // await window.ethereum.request({
+      //   method: 'wallet_switchEthereumChain',
+      //   params: [{ chainId: '0xaa36a7' }], // Sepolia chain ID
+      // });
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0xaa36a7' }], // Sepolia chain ID
+        params: [{ chainId: '0x1' }], // 0x1 = Ethereum mainnet chain ID in hex
       });
-
       const contract = new web3.eth.Contract(ERC20_ABI, USDT_CONTRACT_ADDRESS);
       if (!contract || !contract.methods.balanceOf) {
         throw new Error('Failed to create contract instance');
       }
 
       const rawBalance: string | undefined = await contract.methods.balanceOf(address).call();
-
+      // console.log(rawBalance);
       // Check again if component is still mounted before setting state
       if (!isMountedRef.current) {
         return undefined;

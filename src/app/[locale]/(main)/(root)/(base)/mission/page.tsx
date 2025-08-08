@@ -8,21 +8,21 @@ const data = [
     describe: 'Hoàn thành 9 vòng đào vàng mỗi ngày - 9/9',
     score: '+99'
   },
-  {
-    title: 'Kiên trì 3 ngày liên tiếp',
-    describe: 'Tham gia liên tục 3 ngày để gieo hạt thói quen - 3/3',
-    score: '+99'
-  },
-  {
-    title: 'Xây thói quen 21 ngày',
-    describe: 'Duy trì hành trình trọn vẹn 21 ngày - 3/21',
-    score: '+999'
-  },
-  {
-    title: 'Bền bỉ 30 ngày',
-    describe: 'Hoàn thành hành trình 30 ngày liên tục - 3/30',
-    score: '+999'
-  },
+  // {
+  //   title: 'Kiên trì 3 ngày liên tiếp',
+  //   describe: 'Tham gia liên tục 3 ngày để gieo hạt thói quen - 3/3',
+  //   score: '+99'
+  // },
+  // {
+  //   title: 'Xây thói quen 21 ngày',
+  //   describe: 'Duy trì hành trình trọn vẹn 21 ngày - 3/21',
+  //   score: '+999'
+  // },
+  // {
+  //   title: 'Bền bỉ 30 ngày',
+  //   describe: 'Hoàn thành hành trình 30 ngày liên tục - 3/30',
+  //   score: '+999'
+  // },
   {
     title: 'Kết nối bạn mới',
     describe: (

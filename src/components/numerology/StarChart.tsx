@@ -42,7 +42,7 @@ const StarChart = ({ numerologyResult }: Props) => {
         <p className="text-shadow-custom font-[590] text-[2.5rem] bg-number size-16">
           {numerologyResult?.soul}
         </p>
-        <p className="text-shadow-custom text-medium-custom-2">TÂM HỒN</p>
+        <p className="text-shadow-custom text-medium-custom-2">NHÂN CÁCH</p>
       </button>
 
       {/* Physical */}
@@ -50,7 +50,7 @@ const StarChart = ({ numerologyResult }: Props) => {
         <p className="text-shadow-custom font-[590] text-[2.5rem] bg-number size-16">
           {numerologyResult?.body}
         </p>
-        <p className="text-shadow-custom text-medium-custom-2">THỂ CHẤT</p>
+        <p className="text-shadow-custom text-medium-custom-2">LINH HỒN</p>
       </button>
 
       <p className="absolute top-1/2 left-1/2 -translate-1/2 text-shadow-custom font-[590] text-[4.5rem]">

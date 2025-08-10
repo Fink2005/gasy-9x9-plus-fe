@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
 /* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable no-case-declarations */
@@ -9,6 +10,7 @@ import RobotHook from '@/components/gold-mining/RobotHook';
 import useTimeInterval from '@/hooks/useTimeInterval';
 import ClockIcon from '@/libs/shared/icons/Clock';
 import SpeakerIcon from '@/libs/shared/icons/Speaker';
+import SpeakerMutedIcon from '@/libs/shared/icons/SpeakerMuted';
 
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
@@ -178,10 +180,12 @@ const SpaceshipGameOptimized = () => {
   const audioSrc = '/sounds/bg-music.mp3';
   const audioGetGold = '/sounds/ting.mp3';
   const [isPlaying, setIsPlaying] = useState(false);
+  const [_, setIsPlaying2] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioRef2 = useRef<HTMLAudioElement | null>(null);
 
-  const togglePlayPause = () => {
+  const togglePlayPause = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
     const audio = audioRef.current;
 
     if (isPlaying) {
@@ -218,7 +222,7 @@ const SpaceshipGameOptimized = () => {
       const playAudio = async () => {
         try {
           await audio?.play();
-          setIsPlaying(true);
+          setIsPlaying2(true);
 
           // Dừng audio sau 1 giây
           setTimeout(() => {
@@ -226,7 +230,7 @@ const SpaceshipGameOptimized = () => {
             if (audio) {
               audio.currentTime = 0; // Reset về đầu file
             }
-            setIsPlaying(false);
+            setIsPlaying2(false);
           }, 1000); // 1000ms = 1 giây
         } catch (error) {
           console.log('Không thể tự động phát nhạc:', error);
@@ -735,7 +739,7 @@ const SpaceshipGameOptimized = () => {
     >
       {/* Speaker */}
       <button type="button" className="absolute top-14 left-5" onClick={togglePlayPause}>
-        <SpeakerIcon />
+        {isPlaying ? <SpeakerIcon /> : <SpeakerMutedIcon />}
       </button>
 
       {/* Clock */}
@@ -797,7 +801,7 @@ const SpaceshipGameOptimized = () => {
       <audio
         ref={audioRef2}
         src={audioGetGold}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={() => setIsPlaying2(false)}
       />
 
     </div>

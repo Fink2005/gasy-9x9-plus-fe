@@ -1,14 +1,18 @@
 'use client';
+import { deleteCookie } from '@/app/actions/cookie';
 import authRequests from '@/app/http/requests/auth';
+import { Button } from '@/components/ui/button';
+import { DialogHeader } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CopyIcon from '@/libs/shared/icons/Copy';
 import ExitIcon from '@/libs/shared/icons/Exit';
 import LoadingDots from '@/libs/shared/icons/LoadingDots';
 import UserIcon from '@/libs/shared/icons/User';
 import { formatAddress, handleClipboardCopy, NumberFormat } from '@/libs/utils';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
+import { Loader2, TriangleAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import Web3 from 'web3';
 
 type Props = {
@@ -34,10 +38,10 @@ let web3Instance: Web3 | null = null;
 const DropdownWallet = ({ address }: Props) => {
   const [balance, setBalance] = useState<string | undefined>(undefined);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isWarningEth, setWarningEth] = useState<boolean>(false);
   const router = useRouter();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true); // Track component mount status
-
   // Initialize Web3 instance only once
   const getWeb3Instance = useCallback(() => {
     if (!web3Instance && typeof window !== 'undefined' && window.ethereum) {
@@ -84,37 +88,33 @@ const DropdownWallet = ({ address }: Props) => {
       console.error('Balance fetch error:', error);
       // Only show toast if component is still mounted
       if (isMountedRef.current) {
-        toast.error('Failed to fetch balance');
+        setWarningEth(true);
+        isMountedRef.current = false; // Mark component as unmounted
+        intervalRef.current = null;
+        clearInterval(intervalRef.current as unknown as number);
       }
       return undefined;
     }
   }, [address, getWeb3Instance]);
 
   const handleLogout = useCallback(async () => {
-    if (isLoggingOut || !isMountedRef.current) {
-      return;
-    }
-
     setIsLoggingOut(true);
     try {
       await authRequests.logout();
-
-      // Only proceed if component is still mounted
-      if (isMountedRef.current) {
-        window.localStorage.removeItem('isDisplayTutorial');
-        router.replace('/login');
-      }
-    } catch (error) {
-      console.error('Logout failed:', error);
-      if (isMountedRef.current) {
-        toast.error('Error disconnecting wallet');
-      }
+      window.location.href = '/login';
+    } catch {
+      Promise.allSettled([
+        deleteCookie('authData'),
+        deleteCookie('accessToken9x9'),
+        deleteCookie('refreshToken9x9'),
+      ]);
+      window.location.href = '/login';
     } finally {
       if (isMountedRef.current) {
         setIsLoggingOut(false);
       }
     }
-  }, [isLoggingOut, router]);
+  }, []);
 
   const fetchBalance = useCallback(async () => {
     if (!isMountedRef.current) {
@@ -198,6 +198,24 @@ const DropdownWallet = ({ address }: Props) => {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <Dialog open={isWarningEth}>
+        <DialogContent className="fixed top-1/2 left-1/2 -translate-1/2 confirm-dialog gap-3 max-w-[512px] h-[331px] w-full flex flex-col justify-center">
+          <DialogHeader className="flex flex-col items-center">
+            <DialogTitle className="text-shadow-custom font-semibold text-2xl">Đổi mạng sang Ethereum</DialogTitle>
+            <TriangleAlert className="size-[100px] text-shadow-custom" />
+            <DialogDescription className="text-shadow-custom">
+              Vui lòng kết nối mạng Ethereum để sử dụng app
+            </DialogDescription>
+          </DialogHeader>
+          <Button
+            className="w-1/2 button-custom"
+            onClick={() => handleLogout()}
+          >
+            {isLoggingOut ? <Loader2 className="animate-spin" /> : 'OK'}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

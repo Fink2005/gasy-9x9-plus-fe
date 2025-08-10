@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 'use client';
 import { getCookie } from '@/app/actions/cookie';
 import { useUserRanking } from '@/app/http/queries/useRanking';
@@ -24,9 +25,28 @@ const RankingList = () => {
 
   const { ref, inView } = useInView();
 
-  const user = useUserRanking(address);
+  const user = useUserRanking(!!address);
   const { data, isSuccess, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = user;
   const dataRanking = data?.pages.flatMap(item => item.users);
+  const dataUserTotal = data?.pages.flatMap(item => item.pagination.totalItems) || 0;
+
+  const RankingWithMeIndex = dataRanking?.findIndex(playerAddress => playerAddress.address === address);
+  if (RankingWithMeIndex && RankingWithMeIndex !== -1) {
+    if (dataRanking && RankingWithMeIndex !== undefined && dataRanking[RankingWithMeIndex]) {
+      dataRanking.unshift({
+        ...dataRanking[RankingWithMeIndex],
+        address: 'Tôi',
+        myRanking: RankingWithMeIndex + 1
+      });
+    }
+  } else {
+    dataRanking?.unshift({
+      address: 'Tôi',
+      score: '0',
+      myRanking: '999+',
+      _id: 'my-ranking-placeholder'
+    });
+  }
   const totalUserRanking = dataRanking?.length || 0;
   const indexItemShouldLoadMore = totalUserRanking - COUNT_ITEM_TO_BOTTOM;
   useEffect(() => {
@@ -43,23 +63,36 @@ const RankingList = () => {
       fetchNextPage();
     }
   }, [hasNextPage, inView, fetchNextPage, totalUserRanking]);
-
   return (
     <div className="mt-[1rem] w-full overflow-y-auto h-[calc(100vh-11rem)] relative">
       <div className="flex flex-col justify-center px-5 w-full space-y-[0.88rem] absolute top-0">
+        <div className="flex items-center justify-between px-3">
+          <p className="text-shadow-custom text-xs">
+            {dataUserTotal.toLocaleString()}
+            {' '}
+            người chơi
+          </p>
+          <p className="text-shadow-custom text-xs">Tổng số điểm nhận được</p>
+        </div>
         {
-          isSuccess && dataRanking?.map((player, index) => {
+          address && isSuccess && dataRanking?.map((player, index) => {
             const isSetRef = (index === indexItemShouldLoadMore) || (index === totalUserRanking);
             return (
-              // eslint-disable-next-line react/no-array-index-key
-              <div key={`${player._id}-${index}`} className={`ranking-list-items flex items-center justify-around ${(dataRanking.length - 1) === index ? 'mb-4' : ''}`} ref={isSetRef ? ref : null}>
-                <div className={`flex items-center ${index < 3 ? '' : 'translate-x-[2px] space-x-2'} `}>
+              <div
+                key={`${player._id}-${index}`}
+                className={`ranking-list-items flex items-center justify-around ${(dataRanking.length - 1) === index ? 'mb-4' : ''} ${index === 0 ? '!bg-gradient-to-b from-[#68daf2] to-[#1c5bb9]'
+                  : ''
+                }`}
+                ref={isSetRef ? ref : null}
+              >
+                <div className={`flex items-center ${(index !== 0 && index < 4) ? '' : 'translate-x-[2px] space-x-2'} `}>
                   <span className="text-shadow-custom font-[500] text-[1rem]">
-                    {index < 3 ? top3Ranking[index] : index + 1}
+                    {index === 0 && player.myRanking}
+                    {index < 4 ? top3Ranking[index - 1] : index}
                   </span>
                   <UnknowAvatarIcon className="size-12" />
                 </div>
-                <span className="text-shadow-custom text-[1rem] font-[400]">{formatAddress(player.address, 8)}</span>
+                <span className="text-shadow-custom text-[1rem] font-[400] w-[120px] text-center">{index !== 0 ? formatAddress(player.address, 8) : player.address}</span>
                 <div className="flex items-center">
                   <span className="text-shadow-custom text-[0.875rem] font-[590]">
                     {player.score.toLocaleString()}

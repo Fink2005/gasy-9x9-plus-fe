@@ -6,7 +6,6 @@ import GoodSign from '@/libs/shared/icons/GoodSign';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import Web3 from 'web3';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -19,6 +18,7 @@ import {
 // Minimal USDT ABI for approval
 import BoxDistributor from '@/contracts/BoxDistributor.json';
 import { Loader2 } from 'lucide-react';
+import { default as Web3 } from 'web3';
 
 const usdtAbi = [
   {
@@ -35,7 +35,7 @@ const usdtAbi = [
 
 // Constants
 // const usdtAddress = '0xc45D0156553e000eBcdFc05B08Ea5184911e13De'; // this is for Sepolia testnet USDT
-// const contractAddress = '0x3A87e9E8616957eA2F4b8960CFa333fCF5887589'; for Sepolia testnet
+// const contractAddress = '0x3A87e9E8616957eA2F4b8960CFa333fCF5887589';
 const usdtAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
 const contractAddress = '0x670Ec3544786843b9B207cC274968e2B58489fF1';
 const approveAmount = 26 * 10 ** 6; // 26 USDT (6 decimals)
@@ -136,6 +136,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
           ...txObject,
           from: fromAddress
         });
+        // alert(response.transactionHash);
 
         const receiptRes = await web3.eth.getTransactionReceipt(response.transactionHash);
 
@@ -155,6 +156,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
       setIsOpen(false);
       console.error('Approve error:', err);
       toast.error('Giao dịch thất bại hoặc bị huỷ.');
+      return;
     } finally {
       setLoading(false);
       setIsOpen(true);

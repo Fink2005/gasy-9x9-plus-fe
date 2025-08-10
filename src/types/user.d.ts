@@ -11,6 +11,7 @@ export type UserRanking = {
   users: {
     _id: string;
     address: string;
+    myRanking?: number | string;
     score: string;
   }[];
   pagination: {
@@ -34,7 +35,10 @@ type BoxHistoryItems = {
   open: boolean;
   time: Date;
   title: string;
-  description: string;
+  description: {
+    content: string;
+    title: string;
+  };
 
 };
 

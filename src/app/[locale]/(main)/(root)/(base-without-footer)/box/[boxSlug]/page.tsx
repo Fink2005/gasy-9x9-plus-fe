@@ -40,11 +40,8 @@ const page = async ({ params }: PageProps) => {
           {' '}
           {resBoxDetail?.title}
         </h1>
-        <h2 className="text-shadow-custom text-[0.75rem] font-[400] text-center">
-          Khởi động hành trình - Gặp sao đầu tiên
-          <br />
-          {' '}
-          & nhận thông điệp khai sáng.
+        <h2 className="text-shadow-custom text-[0.75rem] font-[400] text-center w-[200px]">
+          {resBoxDetail?.content}
         </h2>
       </div>
       <BoxCardDetail boxSlug={boxSlug} dataBoxDetail={resBoxDetail} />

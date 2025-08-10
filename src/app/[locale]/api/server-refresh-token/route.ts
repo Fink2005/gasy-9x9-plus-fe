@@ -20,7 +20,7 @@ export async function POST() {
     return NextResponse.json({ error: 'Refresh token invalid' }, { status: 401 });
   }
   try {
-    await Promise.all([
+    Promise.all([
       createCookie({
         name: 'accessToken9x9',
         value: data.accessToken,

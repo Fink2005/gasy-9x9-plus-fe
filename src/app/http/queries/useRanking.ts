@@ -4,7 +4,7 @@ import type { UserRanking } from '@/types/user';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-export const useUserRanking = (address: string, initialPage = 1) => {
+export const useUserRanking = (address = false, initialPage = 1) => {
   return useInfiniteQuery<UserRanking, Error>({
     queryKey: ['userRanking'],
     queryFn: async ({ pageParam = initialPage }): Promise<UserRanking> => {
@@ -21,8 +21,7 @@ export const useUserRanking = (address: string, initialPage = 1) => {
       }
       return response;
     },
-    retry: 0,
-    enabled: !!address,
+    enabled: !!address, // Disable by default, enable manually
     initialPageParam: initialPage,
     throwOnError(error) {
       if (error instanceof ApiException) {
@@ -31,7 +30,7 @@ export const useUserRanking = (address: string, initialPage = 1) => {
       }
       return false;
     },
-
+    refetchOnMount: 'always',
     getNextPageParam: (lastPage: UserRanking) => {
       const currentPage = lastPage.pagination.page;
       const totalPages = lastPage.pagination.pageTotal;
@@ -41,7 +40,8 @@ export const useUserRanking = (address: string, initialPage = 1) => {
       }
       return undefined;
     },
-    staleTime: 30 * 60 * 1000, // 30 phút
-    gcTime: 40 * 60 * 1000, // 40 phút (trước là cacheTime)
+    staleTime: 0,
+    gcTime: 0
+
   });
 };

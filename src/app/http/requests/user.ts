@@ -29,7 +29,13 @@ const userRequests = {
   },
   async userGetMe(): Promise<UserGetMe | null> {
     return await http.get<UserGetMe | null>(
-      '/user/get-me'
+      '/user/get-me',
+      {
+        next: {
+          revalidate: 300,
+          tags: ['get-me'],
+        },
+      }
     );
   }
 };

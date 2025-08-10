@@ -1,6 +1,7 @@
 import { sfPro } from '@/app/fonts/sfPro';
 import TanstackProviders from '@/components/providers/TanstackProvider';
 import RefreshToken from '@/components/refresh-token';
+import TransactionHash from '@/components/TransactionHash';
 import { Toaster } from '@/components/ui/sonner';
 import { routing } from '@/libs/i18nRouting';
 import '@/styles/global.css';
@@ -72,6 +73,7 @@ export default async function RootLayout(props: {
   }
 
   setRequestLocale(locale);
+
   return (
     <html lang={locale} className={sfPro.variable}>
       <body className="min-h-screen">
@@ -80,6 +82,7 @@ export default async function RootLayout(props: {
         </head>
         <NextIntlClientProvider>
           <RefreshToken />
+          <TransactionHash />
           <TanstackProviders>
             <RootTemplate>
               {props.children}

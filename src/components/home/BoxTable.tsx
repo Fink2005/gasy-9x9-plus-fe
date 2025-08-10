@@ -1,9 +1,11 @@
 import userRequests from '@/app/http/requests/user';
+
 import Image from 'next/image';
 import ConfirmDialog from './ConfirmDialog';
 
 const BoxTable = async () => {
   const userData = await userRequests.userGetMe();
+
   return (
     <div className="grid grid-cols-3 gap-3 w-full px-6 mt-6 pb-20">
       {
@@ -19,7 +21,7 @@ const BoxTable = async () => {
               {' '}
               {index + 1}
             </p>
-            <p className="text-shadow-custom text-nowrap font-[590] text-[10px]">{item.description}</p>
+            <p className="text-shadow-custom text-nowrap font-[590] text-[10px]">{item.description.title}</p>
             <ConfirmDialog boxNumber={item.boxNumber} isOpenBox={item.open} currentBox={userData.currentBox} />
           </div>
         ))

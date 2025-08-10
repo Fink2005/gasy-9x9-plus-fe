@@ -66,7 +66,6 @@ const TransactionHash = () => {
     (async () => {
       if (MethodId()) {
         const tx = await getLatestOpenBoxTransaction();
-        console.log(tx);
         if (tx) {
           await boxRequest.boxOpen(tx?.transactionHash as string);
         }

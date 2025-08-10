@@ -4,6 +4,7 @@
 
 import { boxRequest } from '@/app/http/requests/box';
 import useGetCookie from '@/hooks/useGetCookie';
+import { isClient } from '@/libs/utils';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import web3 from 'web3';
@@ -21,7 +22,7 @@ const TransactionHash = () => {
   };
 
   const getLatestOpenBoxTransaction = async () => {
-    const API_KEY = 'R77H27MWUSI5JAWSX7GAZ69QXFNP763KCN';
+    const API_KEY = process.env.ETHERSCAN_API_KEY;
     const baseURL = 'https://api.etherscan.io/api';
     const openBoxMethodId = MethodId();
     const authData = await handleGetCookie('authData');
@@ -64,7 +65,7 @@ const TransactionHash = () => {
   const pathname = usePathname();
   useEffect(() => {
     (async () => {
-      if (MethodId()) {
+      if (MethodId() && isClient && JSON.parse(localStorage.getItem('isOpenBox') || 'false') && pathname === '/box') {
         const tx = await getLatestOpenBoxTransaction();
         if (tx) {
           await boxRequest.boxOpen(tx?.transactionHash as string);

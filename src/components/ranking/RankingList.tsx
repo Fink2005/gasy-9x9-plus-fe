@@ -28,7 +28,7 @@ const RankingList = () => {
   const user = useUserRanking(!!address);
   const { data, isSuccess, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = user;
   const dataRanking = data?.pages.flatMap(item => item.users);
-  const dataUserTotal = data?.pages.flatMap(item => item.pagination.totalItems) || 0;
+  const dataUserTotal = data?.pages[0]?.pagination.totalItems || 0;
 
   const RankingWithMeIndex = dataRanking?.findIndex(playerAddress => playerAddress.address === address);
   if (RankingWithMeIndex && RankingWithMeIndex !== -1) {
@@ -65,9 +65,7 @@ const RankingList = () => {
   }, [hasNextPage, inView, fetchNextPage, totalUserRanking]);
   return (
     <div className="mt-[1rem] w-full overflow-y-auto h-[calc(100vh-11rem)] relative">
-
       <div className="flex flex-col justify-center px-5 w-full space-y-[0.88rem] absolute top-0">
-
         <div className="flex items-center justify-between px-3">
           <p className="text-shadow-custom text-xs">
             {dataUserTotal.toLocaleString()}

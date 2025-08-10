@@ -16,9 +16,9 @@ import {
   DialogTrigger
 } from '../ui/dialog';
 // Minimal USDT ABI for approval
+import { handleRevalidateTag } from '@/app/actions/revalidation';
 import BoxDistributor from '@/contracts/BoxDistributor.json';
 import { Loader2 } from 'lucide-react';
-import { revalidateTag } from 'next/cache';
 import Web3 from 'web3';
 
 const usdtAbi = [
@@ -147,7 +147,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
         } else {
           toast.error('Giao dịch thất bại hoặc bị huỷ.');
         }
-        revalidateTag('get-me');
+        handleRevalidateTag('get-me');
         router.refresh();
       } else {
         throw new Error('approve method is undefined on the contract');

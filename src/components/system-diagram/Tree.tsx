@@ -70,7 +70,7 @@ export default function Tree() {
     console.log(nodePaginationState);
   };
   const queryClient = useQueryClient();
-  const dataCookie = useGetCookie();
+  const { handleGetCookie } = useGetCookie();
 
   const isFetching = queryClient.isFetching({ queryKey: ['boxTree', currentFetchingAddress] }) > 0 || false;
 
@@ -80,9 +80,9 @@ export default function Tree() {
 
   useEffect(() => {
     (async () => {
-      const authData = await dataCookie('authData');
+      const authData = await handleGetCookie('authData');
       if (authData) {
-        setAddress(authData.address);
+        setAddress((authData as { address: string })?.address);
       }
     })();
   }, []);

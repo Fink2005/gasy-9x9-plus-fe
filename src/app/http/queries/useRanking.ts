@@ -21,7 +21,7 @@ export const useUserRanking = (address = false, initialPage = 1) => {
       }
       return response;
     },
-    enabled: !!address, // Disable by default, enable manually
+    enabled: !!address,
     initialPageParam: initialPage,
     throwOnError(error) {
       if (error instanceof ApiException) {
@@ -40,8 +40,6 @@ export const useUserRanking = (address = false, initialPage = 1) => {
       }
       return undefined;
     },
-    staleTime: 0,
-    gcTime: 0
 
   });
 };

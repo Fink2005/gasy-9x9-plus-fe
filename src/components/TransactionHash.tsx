@@ -1,16 +1,18 @@
-/* eslint-disable no-console */
 /* eslint-disable react-hooks/exhaustive-deps */
 
 'use client';
 
+import { boxRequest } from '@/app/http/requests/box';
+import useGetCookie from '@/hooks/useGetCookie';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import web3 from 'web3';
 
-const address = '0xbccb4e1aeb3ac505783b9c744d4623ebd1467561';
 const contractAddress = '0x670Ec3544786843b9B207cC274968e2B58489fF1';
+// const address = '0xbccb4e1aeb3ac505783b9c744d4623ebd1467561';
 
 const TransactionHash = () => {
+  const { handleGetCookie } = useGetCookie();
   const MethodId = () => {
     // Your openBox function signature from the ABI
     const functionSignature = 'openBox(address[],uint256[],bytes)';
@@ -22,6 +24,8 @@ const TransactionHash = () => {
     const API_KEY = 'R77H27MWUSI5JAWSX7GAZ69QXFNP763KCN';
     const baseURL = 'https://api.etherscan.io/api';
     const openBoxMethodId = MethodId();
+    const authData = await handleGetCookie('authData');
+    const address = (authData as { address: string })?.address;
 
     try {
       const response = await fetch(
@@ -48,11 +52,12 @@ const TransactionHash = () => {
 
         return null; // No openBox transaction found
       } else {
-        throw new Error(data.message || 'Failed to fetch transactions');
+        console.error(data.message || 'Failed to fetch transactions');
+        return null; // Explicitly return null in case of failure
       }
     } catch (error) {
       console.error('Error fetching latest openBox transaction:', error);
-      throw error;
+      return null; // Explicitly return null in case of an error
     }
   };
 
@@ -60,7 +65,11 @@ const TransactionHash = () => {
   useEffect(() => {
     (async () => {
       if (MethodId()) {
-        console.log(await getLatestOpenBoxTransaction()); ;
+        const tx = await getLatestOpenBoxTransaction();
+        console.log(tx);
+        if (tx) {
+          await boxRequest.boxOpen(tx?.transactionHash as string);
+        }
       }
     })();
   }, [pathname]);

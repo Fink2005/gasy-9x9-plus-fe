@@ -27,7 +27,7 @@ export class ApiException extends Error {
 const baseURLBe = typeof window === 'undefined'
   ? process.env.API_BASE_SERVER // server-side
   : process.env.NEXT_PUBLIC_API_BASE_CLIENT; // client-side
-console.log(baseURLBe, 'baseURLBe');
+console.log(process.env.API_BASE_SERVER, 'baseURLBe');
 
 const apiRequest = async <T>(
   endpoint: string,

@@ -13,7 +13,6 @@ export default function SafePal({ invitedBy }: { invitedBy: string | null }) {
 
         onClick={
           async () => await safePalMethods.onConnectWallet(invitedBy)
-
         }
         disabled={isConnecting}
       >

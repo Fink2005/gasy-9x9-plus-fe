@@ -1,14 +1,14 @@
 import { ApiException } from '@/app/http/apiRequest';
-import userRequests from '@/app/http/requests/user';
+import userRequest from '@/app/http/requests/user';
 import type { UserRanking } from '@/types/user';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-export const useUserRanking = (address = false, initialPage = 1) => {
+export const useUserRanking = (initialPage = 1) => {
   return useInfiniteQuery<UserRanking, Error>({
-    queryKey: ['userRanking'],
+    queryKey: ['user-ranking'],
     queryFn: async ({ pageParam = initialPage }): Promise<UserRanking> => {
-      const response = await userRequests.userRanking(
+      const response = await userRequest.userRanking(
         pageParam as number,
       );
 
@@ -21,7 +21,6 @@ export const useUserRanking = (address = false, initialPage = 1) => {
       }
       return response;
     },
-    enabled: !!address,
     initialPageParam: initialPage,
     throwOnError(error) {
       if (error instanceof ApiException) {
@@ -30,7 +29,7 @@ export const useUserRanking = (address = false, initialPage = 1) => {
       }
       return false;
     },
-    refetchOnMount: 'always',
+    refetchOnMount: false,
     getNextPageParam: (lastPage: UserRanking) => {
       const currentPage = lastPage.pagination.page;
       const totalPages = lastPage.pagination.pageTotal;

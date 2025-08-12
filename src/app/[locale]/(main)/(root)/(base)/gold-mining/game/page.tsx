@@ -13,7 +13,7 @@ import SpeakerIcon from '@/libs/shared/icons/Speaker';
 import SpeakerMutedIcon from '@/libs/shared/icons/SpeakerMuted';
 
 import Image from 'next/image';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
@@ -676,7 +676,7 @@ const SpaceshipGameOptimized = () => {
       }
     };
   }, [state.isSwinging]);
-
+  const router = useRouter();
   // Save score to cookie
   useEffect(() => {
     if (state.score && timeLeft >= 0) {
@@ -690,7 +690,7 @@ const SpaceshipGameOptimized = () => {
       } else {
         localStorage.setItem('inspiration', '1');
       }
-      redirect('/gold-mining/result');
+      router.push('/gold-mining/result');
     }
   }, [state.score, timeLeft]);
 
@@ -704,10 +704,12 @@ const SpaceshipGameOptimized = () => {
       });
 
       // Redirect to result page
-      redirect('/gold-mining/result');
+      router.push('/gold-mining/result');
     }
   }, [timeLeft, isCounting, state.score.original]);
-
+  useEffect(() => {
+    router.prefetch('/gold-mining/result');
+  }, []);
   // Memoized ref callbacks
   const createRefCallback = useCallback((refMap: React.RefObject<Map<number, HTMLDivElement>>) => {
     return (id: number) => (element: HTMLDivElement | null) => {

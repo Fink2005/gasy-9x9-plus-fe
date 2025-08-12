@@ -1,15 +1,14 @@
-import userRequests from '@/app/http/requests/user';
+import userRequest from '@/app/http/requests/user';
+import InputName from '@/components/profile/InputName';
 import ProfileController from '@/components/profile/ProfileController';
 import Arrow3Icon from '@/libs/shared/icons/Arrow3';
 import DiamonIcon from '@/libs/shared/icons/Diamon';
 import GamePad4 from '@/libs/shared/icons/GamePad4';
-import TeleScopeIcon from '@/libs/shared/icons/telescope';
-import User2Icon from '@/libs/shared/icons/User2';
 import UserConnection from '@/libs/shared/icons/UserConnection';
-import { formatAddress } from '@/libs/utils';
+import Image from 'next/image';
 
 const Profile = async () => {
-  const userRes = await userRequests.userGetMe();
+  const userRes = await userRequest.userGetMe();
   const userData = [
     {
       id: 1,
@@ -26,19 +25,25 @@ const Profile = async () => {
       title: `Cộng đồng của bạn: ${userRes?.amount}  thành viên`,
       icon: UserConnection,
     },
-    {
-      id: 4,
-      title: `Con số chủ đạo: ${userRes?.mainNumber || 0}`,
-      icon: TeleScopeIcon,
-    },
+    // {
+    //   id: 4,
+    //   title: `Con số chủ đạo: ${userRes?.mainNumber || 0}`,
+    //   icon: TeleScopeIcon,
+    // },
   ];
   return (
     <>
       <div className="pt-20 flex flex-col items-center">
-        <User2Icon />
-        <h2 className="text-shadow-custom -translate-y-6">
-          {formatAddress(userRes?.address || '', 5)}
-        </h2>
+        <div className="size-24 rounded-full flex items-center justify-center bg-[#000C36] border">
+          <Image
+            src="/assets/logo-9x9.png"
+            width={80}
+            height={80}
+            className="size-18 rounded-full"
+            alt="logo"
+          />
+        </div>
+        <InputName name={userRes?.name} />
         <h3 className="text-shadow-custom -translate-y-5">
           {userRes?.badges?.length !== 0 && userRes?.badges[userRes?.badges?.length - 1]}
         </h3>
@@ -52,14 +57,14 @@ const Profile = async () => {
           userData.map(item => (
             <div key={item.id} className="flex items-center justify-between  border-b border-white/10">
               <div className="flex items-center gap-2">
-                <item.icon className="w-20 h-14 text-white" />
+                <item.icon className="w-20 h-14 text-white translate-y-1" />
                 <span className="text-shadow-custom text-[1rem] font-[860]">{item.title}</span>
               </div>
             </div>
           ))
         }
       </div>
-      <ProfileController address={userRes?.address || ''} />
+      <ProfileController address={userRes?.name || ''} />
     </>
 
   );

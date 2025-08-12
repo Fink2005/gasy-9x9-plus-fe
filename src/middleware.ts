@@ -13,14 +13,7 @@ const isProtectedPage = (pathname: string): boolean => {
 const isAuthPage = (pathname: string): boolean => {
   return pathname.startsWith('/login')
     || pathname.startsWith('/verify-email')
-    || pathname.startsWith('/verified')
     || pathname.startsWith('/kyc');
-};
-
-const isWelcomePage = (pathname: string): boolean => {
-  return pathname.startsWith('/welcome')
-    || pathname.startsWith('/introduction')
-    || pathname.startsWith('/policy-terms');
 };
 
 // Arcjet security setup
@@ -95,8 +88,8 @@ export default async function middleware(request: NextRequest) {
   }
 
   // Redirect authenticated users away from login/welcome pages
-  if ((isAuthPage(pathname) && isAuthenticated) || (isWelcomePage(pathname) && isAuthenticated)) {
-    const homeUrl = new URL('/', request.url);
+  if ((isAuthPage(pathname) && isAuthenticated)) {
+    const homeUrl = new URL('/welcome', request.url);
     return NextResponse.redirect(homeUrl);
   }
 

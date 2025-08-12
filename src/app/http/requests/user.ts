@@ -1,9 +1,9 @@
 import { http } from '@/app/http/apiRequest';
 import { USER_RANKING_LIMIT } from '@/libs/shared/constants/globals';
 import type { VerifyKycResponse } from '@/types/auth';
-import type { UserGetMe, UserRanking } from '@/types/user';
+import type { UserGetMe, UserRanking, UserUpdateMeRes } from '@/types/user';
 
-const userRequests = {
+const userRequest = {
   async userKyc(body: { email: string }): Promise<{ message: string } | null> {
     return await http.patch<{ message: string } | null>(
       '/user/kyc',
@@ -18,8 +18,7 @@ const userRequests = {
   },
   async resendOtp(): Promise<{ message: string } | null> {
     return await http.patch<{ message: string } | null>(
-      '/user/resend-otp',
-      'PATCH'
+      '/user/resend-otp'
     );
   },
   async userRanking(page: number): Promise<UserRanking | null> {
@@ -32,12 +31,19 @@ const userRequests = {
       '/user/get-me',
       {
         next: {
-          revalidate: 300,
+          revalidate: 10 * 60,
           tags: ['get-me'],
         },
       }
     );
+  },
+  async userUpdateMe(name: string): Promise<UserUpdateMeRes | null> {
+    return await http.patch<UserUpdateMeRes | null>(
+      '/user/update',
+      { name },
+    );
   }
+
 };
 
-export default userRequests;
+export default userRequest;

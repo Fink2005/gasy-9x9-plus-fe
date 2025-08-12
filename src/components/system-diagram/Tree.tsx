@@ -72,7 +72,7 @@ export default function Tree() {
   const queryClient = useQueryClient();
   const { handleGetCookie } = useGetCookie();
 
-  const isFetching = queryClient.isFetching({ queryKey: ['boxTree', currentFetchingAddress] }) > 0 || false;
+  const isFetching = queryClient.isFetching({ queryKey: ['box-tree', currentFetchingAddress] }) > 0 || false;
 
   const isCurrentFetching = (address: string) => {
     return currentFetchingAddress === address;

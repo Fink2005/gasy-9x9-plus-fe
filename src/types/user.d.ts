@@ -8,6 +8,11 @@ export type User = {
 };
 
 export type UserRanking = {
+  user: {
+    me: string;
+    rank: string;
+    score: string;
+  };
   users: {
     _id: string;
     address: string;
@@ -45,6 +50,7 @@ type BoxHistoryItems = {
 export type UserGetMe = {
   _id: string;
   badges: string[];
+  name: string;
   rank: number;
   address: string;
   continiousPlayDay: number;
@@ -64,3 +70,5 @@ export type UserGetMe = {
   email: string;
   openedBox: number;
 };
+
+export type UserUpdateMeRes = Pick<UserGetMe, 'name' | 'address' | 'email' | 'isKyc' | 'score'>;

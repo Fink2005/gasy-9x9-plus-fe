@@ -1,10 +1,10 @@
-import userRequests from '@/app/http/requests/user';
+import userRequest from '@/app/http/requests/user';
 
 import Image from 'next/image';
 import ConfirmDialog from './ConfirmDialog';
 
 const BoxTable = async () => {
-  const userData = await userRequests.userGetMe();
+  const userData = await userRequest.userGetMe();
 
   return (
     <div className="grid grid-cols-3 gap-3 w-full px-6 mt-6 pb-20">

@@ -1,6 +1,7 @@
 'use client';
 
 import { createCookie } from '@/app/actions/cookie';
+import { useGetRestTime } from '@/app/http/queries/useGame';
 import { goldMiningRequest } from '@/app/http/requests/goldMining';
 import { Button } from '@/components/ui/button';
 import GamePad2 from '@/libs/shared/icons/GamePad2';
@@ -13,7 +14,6 @@ import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 
 type Props = {
   address: string | undefined;
@@ -22,7 +22,6 @@ type Props = {
 
 const GoldMining = ({ address, userRes }: Props) => {
   const [isDisplayQuestion, setIsDisplayQuestion] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [dataRestTimes, setDataRestTimes] = useState<GoldMiningRestTimesResponse>({
     restTimes: 0,
     totalTimes: 9,
@@ -31,45 +30,26 @@ const GoldMining = ({ address, userRes }: Props) => {
   });
   const router = useRouter();
 
-  const handlePlayGame = async () => {
-    setIsLoading(true);
-    try {
-      const result = await goldMiningRequest.GoldMiningStart();
-      const sessionId = result?.sessionId || '';
-      Promise.allSettled([
-        createCookie({
-          name: 'sessionId',
-          value: sessionId,
-        }),
-        createCookie({
-          name: 'playLeft',
-          value: (dataRestTimes.restTimes - 1).toString(),
-        })
-      ]);
-      router.push('/gold-mining/game');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchRestTimes = async () => {
-    try {
-      setIsLoading(true);
-      const result = await goldMiningRequest.GoldMiningRestTimes();
-      if (result) {
-        setDataRestTimes(result);
-      }
-    } catch (error) {
-      console.error('Error fetching rest times:', error);
-      toast.error('Đã có lỗi xảy ra, vui lòng thử lại sau.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  const { data, isSuccess, isLoading, refetch } = useGetRestTime();
   useEffect(() => {
-    fetchRestTimes();
-  }, []);
+    if (isSuccess && data) {
+      setDataRestTimes(data);
+    }
+  }, [isSuccess, data]);
+
+  const handlePlayGame = async () => {
+    const result = await goldMiningRequest.GoldMiningStart();
+    const sessionId = result?.sessionId || '';
+    createCookie({
+      name: 'sessionId',
+      value: sessionId,
+    });
+    createCookie({
+      name: 'playLeft',
+      value: (dataRestTimes.restTimes - 1).toString(),
+    });
+    router.push('/gold-mining/game');
+  };
 
   useEffect(() => {
     if (dataRestTimes.restTimes > 0 || dataRestTimes.timeRestore <= 0) {
@@ -81,7 +61,7 @@ const GoldMining = ({ address, userRes }: Props) => {
         const nextTime = prev.timeRestore - 1000;
         if (nextTime <= 0) {
           clearInterval(timer);
-          fetchRestTimes(); // Gọi lại API khi hết thời gian
+          refetch();
           return {
             ...prev,
             timeRestore: 0,
@@ -96,7 +76,7 @@ const GoldMining = ({ address, userRes }: Props) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [dataRestTimes.restTimes, dataRestTimes.timeRestore]);
+  }, [dataRestTimes.restTimes, dataRestTimes.timeRestore, refetch]);
   return (
     <>
       <div className="flex space-x-2 z-10">

@@ -20,16 +20,14 @@ export async function POST() {
     return NextResponse.json({ error: 'Refresh token invalid' }, { status: 401 });
   }
   try {
-    Promise.all([
-      createCookie({
-        name: 'accessToken9x9',
-        value: data.accessToken,
-      }),
-      createCookie({
-        name: 'refreshToken9x9',
-        value: data.refreshToken,
-      })
-    ]);
+    createCookie({
+      name: 'accessToken9x9',
+      value: data.accessToken,
+    });
+    createCookie({
+      name: 'refreshToken9x9',
+      value: data.refreshToken,
+    });
   } catch (error) {
     console.error('Failed to set cookies:', error);
     return NextResponse.json({ error: 'Failed to set cookies' }, { status: 500 });

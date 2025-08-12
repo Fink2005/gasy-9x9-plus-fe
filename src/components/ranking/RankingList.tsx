@@ -6,7 +6,6 @@ import { COUNT_ITEM_TO_BOTTOM } from '@/libs/shared/constants/globals';
 import BronzeMedalIcon from '@/libs/shared/icons/BronzeMedal';
 import GoldMedalIcon from '@/libs/shared/icons/GoldMedal';
 import SilverMedalIcon from '@/libs/shared/icons/SilverMedal';
-import UnknowAvatarIcon from '@/libs/shared/icons/UnknowAvatar';
 import { formatAddress } from '@/libs/utils';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
@@ -25,26 +24,19 @@ const RankingList = () => {
 
   const { ref, inView } = useInView();
 
-  const user = useUserRanking(!!address);
+  const user = useUserRanking();
   const { data, isSuccess, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = user;
+
   const dataRanking = data?.pages.flatMap(item => item.users);
   const dataUserTotal = data?.pages[0]?.pagination.totalItems || 0;
+  const me = data?.pages[0]?.user;
 
-  const RankingWithMeIndex = dataRanking?.findIndex(playerAddress => playerAddress.address === address);
-  if (RankingWithMeIndex && RankingWithMeIndex !== -1) {
-    if (dataRanking && RankingWithMeIndex !== undefined && dataRanking[RankingWithMeIndex]) {
-      dataRanking.unshift({
-        ...dataRanking[RankingWithMeIndex],
-        address: 'Tôi',
-        myRanking: RankingWithMeIndex + 1
-      });
-    }
-  } else {
+  if (me) {
     dataRanking?.unshift({
+      _id: 'my-ranking-placeholder',
       address: 'Tôi',
-      score: '0',
-      myRanking: '999+',
-      _id: 'my-ranking-placeholder'
+      score: me.score,
+      myRanking: !me.score ? '999+' : me.rank,
     });
   }
   const totalUserRanking = dataRanking?.length || 0;
@@ -90,7 +82,15 @@ const RankingList = () => {
                     {index === 0 && player.myRanking}
                     {index < 4 ? top3Ranking[index - 1] : index}
                   </span>
-                  <UnknowAvatarIcon className="size-12" />
+                  <div className="size-8 rounded-full ms-4 flex items-center justify-center bg-[#000C36]">
+                    <Image
+                      src="/assets/logo-9x9.png"
+                      width={80}
+                      height={80}
+                      className="size-6 rounded-full "
+                      alt="logo"
+                    />
+                  </div>
                 </div>
                 <span className="text-shadow-custom text-[1rem] font-[400] w-[120px] text-center">{index !== 0 ? formatAddress(player.address, 8) : player.address}</span>
                 <div className="flex items-center">

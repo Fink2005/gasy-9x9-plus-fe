@@ -1,6 +1,6 @@
 'use client';
 import { ApiException } from '@/app/http/apiRequest';
-import userRequests from '@/app/http/requests/user';
+import userRequest from '@/app/http/requests/user';
 import type { KYCFormData } from '@/app/schema/kyc';
 import { KYCSchema } from '@/app/schema/kyc';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,7 @@ const KYCForm = () => {
 
   const onSubmit = async (data: KYCFormData) => {
     try {
-      const response = await userRequests.userKyc(data);
+      const response = await userRequest.userKyc(data);
       toast.success(response?.message || 'Yêu cầu KYC đã được gửi thành công!');
       router.push(`/verify-email?name=${encodeURIComponent(data.email)}`);
     } catch (err: unknown) {

@@ -13,7 +13,8 @@ export default function TanstackProviders({ children }: { children: React.ReactN
         refetchOnMount: false,
         refetchOnReconnect: false,
         // above 0 to avoid refetching immediately on the client
-        staleTime: 60 * 1000, // 1 minute
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        gcTime: 1000 * 60 * 10,
       },
     },
   }));

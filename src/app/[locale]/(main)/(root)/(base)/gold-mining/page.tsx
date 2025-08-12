@@ -1,12 +1,12 @@
 import { getCookie } from '@/app/actions/cookie';
-import userRequests from '@/app/http/requests/user';
+import userRequest from '@/app/http/requests/user';
 import GoldMining from '@/components/gold-mining/GoldMining';
 import Image from 'next/image';
 
 const page = async () => {
   const authData = await getCookie('authData');
   const address = authData ? JSON.parse(authData)?.address : undefined;
-  const userRes = await userRequests.userGetMe();
+  const userRes = await userRequest.userGetMe();
   if (!userRes) {
     return;
   }

@@ -1,6 +1,6 @@
 'use client';
 import { createCookie } from '@/app/actions/cookie';
-import userRequests from '@/app/http/requests/user';
+import userRequest from '@/app/http/requests/user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import useTimeInterval from '@/hooks/useTimeInterval';
@@ -70,8 +70,8 @@ const OTPForm = ({ email }: Props) => {
     }
   };
 
-  const handleResend = async () => {
-    await userRequests.resendOtp();
+  const handleResend = () => {
+    userRequest.resendOtp();
     toast.success('Mã OTP đã được gửi lại. Vui lòng kiểm tra email của bạn.');
     handleTimeInterval(60, true);
   };
@@ -85,18 +85,17 @@ const OTPForm = ({ email }: Props) => {
 
     setIsLoading(true);
     try {
-      const responseKyc = await userRequests.verifyKyc({ kycOtp: countFormated });
-
+      const responseKyc = await userRequest.verifyKyc({ kycOtp: countFormated });
       await Promise.all([
+        createCookie({
+          name: 'accessToken9x9',
+          value: responseKyc?.accessToken,
+        }),
         createCookie({
           name: 'authData',
           value: JSON.stringify(
             responseKyc?.user,
           ),
-        }),
-        createCookie({
-          name: 'accessToken9x9',
-          value: responseKyc?.accessToken,
         })
       ]);
       router.push('/verified');

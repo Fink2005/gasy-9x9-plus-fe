@@ -43,17 +43,17 @@ const useSafePalWallet = () => {
             const authData = await authRequests.login({ address: response[0], signature, message: responseNonce.nonce, ...(invitedBy ? { invitedBy } : { invitedBy: ADMIN_SYSTEM_ADDRESS }), });
             if (authData) {
               createCookie({
-                name: 'authData',
-                value: JSON.stringify(authData.user),
-              });
-              createCookie({
                 name: 'accessToken9x9',
                 value: authData.accessToken
+              });
+              createCookie({
+                name: 'authData',
+                value: JSON.stringify(authData.user),
               });
               toast.success('Kết nối ví thành công!', {
                 duration: 1000,
                 onAutoClose: () => {
-                  authData.user.isKyc ? router.replace('/') : router.replace('/policy-terms');
+                  authData.user.isKyc ? router.replace('/welcome') : router.replace('/policy-terms');
                 }
               });
             }

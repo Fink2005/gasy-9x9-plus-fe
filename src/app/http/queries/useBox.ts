@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 export const useBoxTree = (address: string, initialPage = 1) => {
   return useInfiniteQuery<BoxTreeRes, Error>({
-    queryKey: ['boxTree', address],
+    queryKey: ['box-tree', address],
 
     queryFn: async ({ pageParam = initialPage }): Promise<BoxTreeRes> => {
       const response = await boxRequest.boxTree({

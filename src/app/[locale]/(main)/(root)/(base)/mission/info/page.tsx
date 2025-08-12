@@ -118,7 +118,7 @@ const page = () => {
       <div className="h-[calc(100vh-100px)] overflow-y-auto w-full flex flex-col items-center justify-start">
         {/* Render all sections */}
         {Object.values(DataInfo).map((section, sectionIndex) => (
-          <div key={sectionIndex} className="w-full max-w-[21.4375rem] mb-3">
+          <div key={sectionIndex} className="w-full max-w-[24.4375rem] mb-3">
             {/* Section Title */}
             <h2 className="text-shadow-custom font-[700] text-[1.1rem] mb-4 text-left  text-yellow-200">
               {section.title}

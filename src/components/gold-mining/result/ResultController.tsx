@@ -17,7 +17,13 @@ const ResultController = () => {
   };
   useEffect(() => {
     queryClient.removeQueries({
-      queryKey: ['userRanking'],
+      queryKey: ['user-ranking'],
+    });
+    queryClient.removeQueries({
+      queryKey: ['get-mission',],
+    });
+    queryClient.removeQueries({
+      queryKey: ['get-rest-time'],
     });
     (async () => {
       const playTimes = await getCookie('playLeft');

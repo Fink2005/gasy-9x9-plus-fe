@@ -4,21 +4,18 @@ import { ApiException } from '@/app/http/apiRequest';
 import { goldMiningRequest } from '@/app/http/requests/goldMining';
 import ResultController from '@/components/gold-mining/result/ResultController';
 import LoadingDots from '@/libs/shared/icons/LoadingDots';
-import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const ResultMiningGold = () => {
   const score = (typeof window !== 'undefined' && localStorage.getItem('goldMiningScore')) || '';
-  const queryClient = useQueryClient();
 
   const inspirationNumber = (typeof window !== 'undefined' && localStorage.getItem('inspiration')) || '';
   const [data, setData] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ['userRanking'] });
     const fetchInspiration = async () => {
       setIsLoading(true);
       try {
@@ -27,7 +24,7 @@ const ResultMiningGold = () => {
           getCookie('sessionId'),
         ]);
         setData(res?.content);
-        await goldMiningRequest.GoldMiningResult(sessionId || '', Number(score) || 0);
+        goldMiningRequest.GoldMiningResult(sessionId || '', Number(score) || 0);
       } catch (error) {
         if (error instanceof ApiException) {
           toast.error(error.message);
@@ -40,7 +37,7 @@ const ResultMiningGold = () => {
       }
     };
     fetchInspiration();
-  }, [inspirationNumber, queryClient, score]);
+  }, [inspirationNumber, score]);
 
   return (
     <div className="bg-gold-mining-game min-h-screen flex flex-col items-center pt-40 px-4">

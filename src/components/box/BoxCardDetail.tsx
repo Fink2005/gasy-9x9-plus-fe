@@ -19,7 +19,7 @@ type Props = {
 
 const BoxCardDetail = ({ boxSlug, dataBoxDetail }: Props) => {
   const data = [
-    { icon: <UserHeart />, label: 'Tổng kết nối hệ thống:', value: `${dataBoxDetail.invitedCount}` },
+    { icon: <UserHeart />, label: 'Tổng kết nối hệ thống:', value: `${dataBoxDetail.totalUserSystem}` },
     { icon: <HeartUnlockIcon />, label: 'Hành trình mở khóa:', value: `${dataBoxDetail.boxNumber}/9` },
   ];
 
@@ -28,7 +28,7 @@ const BoxCardDetail = ({ boxSlug, dataBoxDetail }: Props) => {
     { id: 'heartUnlock', icon: <HeartUnlockIcon />, label: 'Box:', value: `${dataBoxDetail.boxNumber}/9` },
     { id: 'calendar', icon: <CalendarColorIcon />, label: 'Tham gia:', value: `${formatDate(new Date(dataBoxDetail.openTime || ''))}` },
     { id: 'handMoney', icon: <HandMoney2 />, label: 'Tổng giá trị gieo:', value: `${26 * (dataBoxDetail.boxNumber || 0)}` },
-    { id: 'userConnection', icon: <UserConnection />, label: 'F1 trực tiếp', value: `${dataBoxDetail.invitedCount}` },
+    { id: 'userConnection', icon: <UserConnection />, label: 'F1 trực tiếp', value: `${dataBoxDetail.invitedBy}` },
     { id: 'moneyMessage', icon: <MoneyMessageIcon />, label: 'Đã nhận tri ân:', value: `${dataBoxDetail.directedAmount}$` },
     { id: 'moneySuitcase', icon: <MoneySuitcaseIcon />, label: 'Cộng hưởng lan tỏa:', value: `${dataBoxDetail.distributedAmount}$` },
     { id: 'moneyWallet', icon: <MoneyWalletIcon />, label: 'Cộng hưởng bền vững:', value: `${dataBoxDetail.referralChainAmount}$` },

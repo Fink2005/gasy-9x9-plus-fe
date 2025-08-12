@@ -7,6 +7,7 @@ export type BoxRes = {
 export type BoxDetailRes = {
   title: string;
   invitedCount: number;
+  totalUserSystem: number;
   levelUsers: {
     _id: number;
     userCount: number;

@@ -25,7 +25,7 @@ export class ApiException extends Error {
 }
 
 const baseURLBe = typeof window === 'undefined'
-  ? 'https://api.9x9plus.com/api/' // server-side
+  ? `${process.env.NEXT_PUBLIC_API_BASE_SERVER}` // server-side
   : '/request'; // client-side
 
 const apiRequest = async <T>(

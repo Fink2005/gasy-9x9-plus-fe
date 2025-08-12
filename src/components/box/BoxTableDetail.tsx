@@ -54,7 +54,7 @@ export default function BoxTableDetail({ totalUser, levelUsers }: Props) {
         <TableHeader>
           <TableRow>
             <TableHead className="text-shadow-custom font-[700] text-[1rem] text-center">Mở khóa</TableHead>
-            <TableHead className="text-shadow-custom font-[700] text-[1rem] text-center">F1 trực tiếp</TableHead>
+            <TableHead className="text-shadow-custom font-[700] text-[1rem] text-center">Thống kê</TableHead>
             <TableHead className="text-shadow-custom font-[700] text-[1rem] text-center">Kết nối lan tỏa</TableHead>
           </TableRow>
         </TableHeader>

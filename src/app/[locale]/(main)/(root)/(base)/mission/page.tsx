@@ -22,7 +22,7 @@ const Page = () => {
   const data: Mission[] = [
     {
       title: 'Đào đủ 9 lượt/ngày',
-      describe: `Hoàn thành 9 vòng đào vàng mỗi ngày - ${dataMission?.miningTimes || 0}/9`,
+      describe: `Hoàn thành 9 vòng đào vàng mỗi ngày - ${(dataMission?.miningTimes ?? 9) >= 9 ? 9 : dataMission?.miningTimes || 0}/9`,
       score: '+99',
       isCompleted: dataMission?.miningTimes === 9
     },

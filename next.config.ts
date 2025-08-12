@@ -20,7 +20,7 @@ const finalConfig = {
     return [
       {
         source: '/request/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_SERVER}:path*`,
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_SERVER}/:path*`,
       },
     ];
   },

@@ -28,10 +28,10 @@ const BoxCardDetail = ({ boxSlug, dataBoxDetail }: Props) => {
     { id: 'heartUnlock', icon: <HeartUnlockIcon />, label: 'Box:', value: `${dataBoxDetail.boxNumber}/9` },
     { id: 'calendar', icon: <CalendarColorIcon />, label: 'Tham gia:', value: `${formatDate(new Date(dataBoxDetail.openTime || ''))}` },
     { id: 'handMoney', icon: <HandMoney2 />, label: 'Tổng giá trị gieo:', value: `${26 * (dataBoxDetail.boxNumber || 0)}` },
-    { id: 'userConnection', icon: <UserConnection />, label: 'F1 trực tiếp', value: `${dataBoxDetail.invitedBy}` },
+    { id: 'userConnection', icon: <UserConnection />, label: 'F1 trực tiếp', value: `${dataBoxDetail.invitedCount || '...'}` },
     { id: 'moneyMessage', icon: <MoneyMessageIcon />, label: 'Đã nhận tri ân:', value: `${dataBoxDetail.directedAmount}$` },
     { id: 'moneySuitcase', icon: <MoneySuitcaseIcon />, label: 'Cộng hưởng lan tỏa:', value: `${dataBoxDetail.distributedAmount}$` },
-    { id: 'moneyWallet', icon: <MoneyWalletIcon />, label: 'Cộng hưởng bền vững:', value: `${dataBoxDetail.referralChainAmount}$` },
+    { id: 'moneyWallet', icon: <MoneyWalletIcon />, label: 'Cộng hưởng bền vững:', value: `${dataBoxDetail.referralChainAmount.toFixed(2)}$` },
     { id: 'shield', icon: <ShieldIcon />, label: 'Giá trị tích lũy:', value: `${dataBoxDetail.receivedTotal}$` },
   ];
 

@@ -25,7 +25,7 @@ export class ApiException extends Error {
 }
 
 const baseURLBe = typeof window === 'undefined'
-  ? process.env.API_BASE_SERVER // server-side
+  ? process.env.NEXT_PUBLIC_API_BASE_SERVER // server-side
   : process.env.NEXT_PUBLIC_API_BASE_CLIENT; // client-side
 console.log(process.env.API_BASE_SERVER, 'baseURLBe');
 console.log(process.env.BASE_URL_PRODUCTION, 'BASE_URL_PRODUCTION');

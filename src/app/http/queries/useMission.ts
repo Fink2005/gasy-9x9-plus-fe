@@ -21,7 +21,7 @@ export const useUpdateMission = () => {
           duration: 3000,
         }
       );
-      queryClient.invalidateQueries({ queryKey: ['get-mission'] });
+      queryClient.removeQueries({ queryKey: ['get-mission'] });
     },
   });
 };

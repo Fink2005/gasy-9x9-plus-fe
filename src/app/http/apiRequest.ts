@@ -91,7 +91,9 @@ const apiRequest = async <T>(
         try {
           const errorBody = await response.json();
           const message = errorBody.message || `Error ${response.status}`;
-          throw new ApiException(message, response.status);
+          // throw new ApiException(message, response.status);
+          console.warn(message, response.status);
+          return null; // Return null for 400 and 403 errors
         } catch (error) {
           if (error instanceof ApiException) {
             throw error; // Re-throw known ApiException

@@ -6,6 +6,6 @@ export const missionRequest = {
     return await http.get<MissionRes | null>('/task');
   },
   async updateTasks(query: 'shareLink' | 'joinGroup' | 'readTerms'): Promise<MissionRes | null> {
-    return await http.get<MissionRes | null>(`/task/update?shareLink=${false}&joinGroup=${false}&readTerms=${query === 'readTerms'}`);
+    return await http.get<MissionRes | null>(`/task/update?shareLink=${query === 'shareLink'}&joinGroup=${query === 'joinGroup'}&readTerms=${query === 'readTerms'}`);
   }
 };

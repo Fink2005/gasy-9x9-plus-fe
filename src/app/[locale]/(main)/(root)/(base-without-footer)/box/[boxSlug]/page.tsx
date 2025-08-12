@@ -45,7 +45,7 @@ const page = async ({ params }: PageProps) => {
         </h2>
       </div>
       <BoxCardDetail boxSlug={boxSlug} dataBoxDetail={resBoxDetail} />
-      <BoxTableDetail totalUser={resBoxDetail.invitedCount} />
+      <BoxTableDetail totalUser={resBoxDetail.invitedCount} levelUsers={resBoxDetail.levelUsers} />
     </div>
   );
 };

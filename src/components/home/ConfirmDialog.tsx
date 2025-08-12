@@ -18,6 +18,8 @@ import {
 // Minimal USDT ABI for approval
 import { handleRevalidateTag } from '@/app/actions/revalidation';
 import BoxDistributor from '@/contracts/BoxDistributor.json';
+import { isClient } from '@/libs/utils';
+import useBox from '@/store/useBox';
 import { Loader2 } from 'lucide-react';
 import Web3 from 'web3';
 
@@ -35,10 +37,10 @@ const usdtAbi = [
 ];
 
 // Constants
-// const usdtAddress = '0xc45D0156553e000eBcdFc05B08Ea5184911e13De'; // this is for Sepolia testnet USDT
-// const contractAddress = '0x3A87e9E8616957eA2F4b8960CFa333fCF5887589';
-const usdtAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
-const contractAddress = '0x670Ec3544786843b9B207cC274968e2B58489fF1';
+const usdtAddress = '0xc45D0156553e000eBcdFc05B08Ea5184911e13De'; // this is for Sepolia testnet USDT
+const contractAddress = '0x3A87e9E8616957eA2F4b8960CFa333fCF5887589';
+// const usdtAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+// const contractAddress = '0x670Ec3544786843b9B207cC274968e2B58489fF1';
 const approveAmount = 26 * 10 ** 6; // 26 USDT (6 decimals)
 
 type Props = {
@@ -49,9 +51,10 @@ type Props = {
 
 const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
   const [isConfirm, setIsConfirm] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const router = useRouter();
+  const { loadingItems, setLoading } = useBox();
+
   const handleOpenChange = (open: boolean) => {
     if ((!isOpenBox && boxNumber !== 1) && currentBox !== boxNumber) {
       toast.warning(`Bạn cần phải mở hộp ${currentBox}`);
@@ -66,7 +69,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
   const handleCancel = () => {
     setIsOpen(false);
     setIsConfirm(false);
-    setLoading(false);
+    setLoading(false, boxNumber);
   };
 
   const handleConfirm = async () => {
@@ -75,19 +78,28 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
       return;
     }
 
+    if (isClient) {
+      const boxData = localStorage.getItem('boxData') ? JSON.parse(localStorage.getItem('boxData')!) : null;
+
+      localStorage.setItem('boxData', JSON.stringify({
+        ...(boxData && boxData),
+        currentBox
+      }));
+    }
+
     try {
-      setLoading(true);
+      setLoading(true, boxNumber);
       setIsOpen(false);
       const web3 = new Web3(window.ethereum);
 
-      // await window.ethereum.request({
-      //   method: 'wallet_switchEthereumChain',
-      //   params: [{ chainId: '0xaa36a7' }], // 0xaa36a7 = Sepolia chain ID in hex
-      // });
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x1' }], // 0x1 = Ethereum mainnet chain ID in hex
+        params: [{ chainId: '0xaa36a7' }], // 0xaa36a7 = Sepolia chain ID in hex
       });
+      // await window.ethereum.request({
+      //   method: 'wallet_switchEthereumChain',
+      //   params: [{ chainId: '0x1' }], // 0x1 = Ethereum mainnet chain ID in hex
+      // });
 
       const accounts = await web3.eth.getAccounts();
       const sender = accounts[0];
@@ -95,12 +107,23 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
       const usdtContract = new web3.eth.Contract(usdtAbi as any, usdtAddress);
 
       if (usdtContract.methods.approve) {
-        const hax = await usdtContract.methods.approve(contractAddress, approveAmount).send({ from: sender });
+        let hax;
 
-        const res = await boxRequest.boxApprove(hax.transactionHash, boxNumber);
+        const txHashStored = JSON.parse(localStorage.getItem('boxData') || '')?.txHash;
+        if (!txHashStored) {
+          hax = await usdtContract.methods.approve(contractAddress, approveAmount).send({ from: sender });
+        }
+
+        const transactionHash = hax?.transactionHash || txHashStored;
+
+        const res = await boxRequest.boxApprove(transactionHash, boxNumber);
+
         if (!res) {
           throw new Error('Box approval failed');
         }
+        localStorage.setItem('boxData', JSON.stringify({
+          currentBox: boxNumber
+        }));
         const { signature, addresses, amounts } = res;
 
         // Encode data cho openBox
@@ -144,33 +167,31 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
         if (receiptRes.status) {
           await boxRequest.boxOpen(response.transactionHash as string);
           toast.success('Mở box thành công!');
+          localStorage.removeItem('boxData');
         } else {
           toast.error('Giao dịch thất bại hoặc bị huỷ.');
         }
-        handleRevalidateTag('get-me');
-        router.refresh();
       } else {
         throw new Error('approve method is undefined on the contract');
       }
-
       setIsConfirm(true);
-    } catch (err) {
+      handleRevalidateTag('get-me');
+      router.refresh();
+      setIsOpen(true);
+    } catch {
       setIsOpen(false);
-      console.error('Approve error:', err);
-      toast.error('Giao dịch thất bại hoặc bị huỷ.');
+      window.location.reload();
       return;
     } finally {
-      setLoading(false);
-      setIsOpen(true);
+      setLoading(false, boxNumber);
     }
   };
-
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger
         className={`${(boxNumber === 1 || isOpenBox || currentBox === boxNumber) ? 'button-base' : 'button-base-disabled'} text-white !py-1 font-[700] text-[11px] text-nowrap w-20`}
       >
-        {loading ? <Loader2 className="animate-spin size-4" /> : !isOpenBox ? 'Mở khóa' : 'Chi tiết'}
+        { loadingItems[boxNumber] ? <Loader2 className="animate-spin size-4" /> : !isOpenBox ? 'Mở khóa' : 'Chi tiết'}
       </DialogTrigger>
       <DialogContent className="confirm-dialog gap-3">
         <DialogHeader>
@@ -212,9 +233,9 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
             onClick={() => {
               !isConfirm ? handleConfirm() : router.push(`box/${boxNumber}`);
             }}
-            disabled={loading}
+            disabled={loadingItems[boxNumber]}
           >
-            {loading ? 'Đang xử lý...' : isConfirm ? 'Chi tiết' : 'Xác nhận'}
+            { loadingItems[boxNumber] ? 'Đang xử lý...' : isConfirm ? 'Chi tiết' : 'Xác nhận'}
           </Button>
         </div>
       </DialogContent>

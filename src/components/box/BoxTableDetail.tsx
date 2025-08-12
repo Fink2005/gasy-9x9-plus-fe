@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
+import type { BoxDetailRes } from '@/types/box';
 
 type BoxData = {
   box: string;
@@ -16,8 +17,8 @@ type BoxData = {
 };
 
 // You can remove this and use your own value from props or context
-
-export default function BoxTableDetail({ totalUser }: { totalUser: number }) {
+type Props = { totalUser: number; levelUsers: BoxDetailRes['levelUsers'] };
+export default function BoxTableDetail({ totalUser, levelUsers }: Props) {
   const calculateBoxData = (f1: number): BoxData[] => {
     const boxes: BoxData[] = [];
     let remainingF1: number = f1;
@@ -35,7 +36,7 @@ export default function BoxTableDetail({ totalUser }: { totalUser: number }) {
       boxes.push({
         box: `Box ${boxIndex}`,
         f1: f1Value,
-        connection: connectionValue.toLocaleString('vi-VN'),
+        connection: levelUsers[i]?.userCount.toLocaleString('vi-VN') || '0',
       });
     }
 

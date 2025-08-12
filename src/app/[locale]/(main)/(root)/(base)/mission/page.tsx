@@ -79,6 +79,7 @@ const Page = () => {
       describe: (
         <p>
           Đọc và hiểu rõ về dự án
+          {' '}
           <strong>
             9x9Plus
           </strong>

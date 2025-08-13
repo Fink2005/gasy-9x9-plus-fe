@@ -27,7 +27,7 @@ const BoxCardDetail = ({ boxSlug, dataBoxDetail }: Props) => {
     { id: 'userHeart', icon: <UserHeart />, label: 'Người kết nối:', value: `${formatAddress(dataBoxDetail.invitedBy || '', 8)}` },
     { id: 'heartUnlock', icon: <HeartUnlockIcon />, label: 'Box:', value: `${dataBoxDetail.boxNumber}/9` },
     { id: 'calendar', icon: <CalendarColorIcon />, label: 'Tham gia:', value: `${formatDate(new Date(dataBoxDetail.openTime || ''))}` },
-    { id: 'handMoney', icon: <HandMoney2 />, label: 'Tổng giá trị gieo:', value: `0/${26 * (dataBoxDetail.boxNumber || 0)}$` },
+    { id: 'handMoney', icon: <HandMoney2 />, label: 'Tổng giá trị gieo:', value: `${26 * (dataBoxDetail.boxNumber || 0)}/234$` },
     { id: 'userConnection', icon: <UserConnection />, label: 'F1 trực tiếp', value: `${dataBoxDetail.invitedCount || '...'}` },
     { id: 'moneyMessage', icon: <MoneyMessageIcon />, label: 'Đã nhận tri ân:', value: `${dataBoxDetail.directedAmount}$` },
     { id: 'moneySuitcase', icon: <MoneySuitcaseIcon />, label: 'Cộng hưởng lan tỏa:', value: `${dataBoxDetail.distributedAmount}$` },

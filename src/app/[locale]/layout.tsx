@@ -10,6 +10,7 @@ import type { Metadata, Viewport } from 'next';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import NextTopLoader from 'nextjs-toploader';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -82,6 +83,7 @@ export default async function RootLayout(props: {
         </head>
         <NextIntlClientProvider>
           <RefreshToken />
+          <NextTopLoader color="#317FCA" showSpinner={false} height={5} />
           <TransactionHash />
           <TanstackProviders>
             <RootTemplate>

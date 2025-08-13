@@ -3,7 +3,8 @@ import { deleteCookie, getCookie } from '@/app/actions/cookie';
 import { Button } from '@/components/ui/button';
 import GamePad2 from '@/libs/shared/icons/GamePad2';
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'nextjs-toploader/app';
+
 import { useEffect, useState } from 'react';
 
 const ResultController = () => {

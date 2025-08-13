@@ -46,6 +46,13 @@ export const formatDate = (date: Date) => {
     year: 'numeric',
   });
 };
+
+export const delay = (ms: number) => {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
+
 export const checkAndRefreshToken = async (param?: {
   onError?: () => void;
   onSuccess?: () => void;

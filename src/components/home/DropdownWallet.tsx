@@ -10,8 +10,10 @@ import LoadingDots from '@/libs/shared/icons/LoadingDots';
 import UserIcon from '@/libs/shared/icons/User';
 import { formatAddress, handleClipboardCopy, NumberFormat } from '@/libs/utils';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
+import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, TriangleAlert } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'nextjs-toploader/app';
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Web3 from 'web3';
 
@@ -42,6 +44,7 @@ const DropdownWallet = ({ address }: Props) => {
   const router = useRouter();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true); // Track component mount status
+  const queryClient = useQueryClient();
   // Initialize Web3 instance only once
   const getWeb3Instance = useCallback(() => {
     if (!web3Instance && typeof window !== 'undefined' && window.ethereum) {
@@ -98,10 +101,11 @@ const DropdownWallet = ({ address }: Props) => {
   }, [address, getWeb3Instance]);
 
   const handleLogout = useCallback(async () => {
+    queryClient.clear();
     setIsLoggingOut(true);
     try {
       await authRequests.logout();
-      window.location.href = '/login';
+      router.replace('/login');
     } catch {
       Promise.allSettled([
         deleteCookie('authData'),
@@ -114,7 +118,7 @@ const DropdownWallet = ({ address }: Props) => {
         setIsLoggingOut(false);
       }
     }
-  }, []);
+  }, [queryClient, router]);
 
   const fetchBalance = useCallback(async () => {
     if (!isMountedRef.current) {

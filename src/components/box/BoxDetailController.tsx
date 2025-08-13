@@ -6,7 +6,8 @@ import ConnectionIcon from '@/libs/shared/icons/Connection';
 import CopyIcon2 from '@/libs/shared/icons/Copy2';
 import RightArrowIcon from '@/libs/shared/icons/RightArrow';
 import { handleClipboardCopy, isClient } from '@/libs/utils';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'nextjs-toploader/app';
+
 import { useEffect, useState } from 'react';
 
 const BoxDetailController = () => {

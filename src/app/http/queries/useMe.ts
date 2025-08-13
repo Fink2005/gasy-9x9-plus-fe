@@ -1,7 +1,8 @@
 import { handleRevalidateTag } from '@/app/actions/revalidation';
 import userRequest from '@/app/http/requests/user';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'nextjs-toploader/app';
+
 import { toast } from 'sonner';
 
 export const useGetMe = () => {

@@ -3,11 +3,13 @@
 import { useGetMission, useUpdateMission } from '@/app/http/queries/useMission';
 import GoodSign2Icon from '@/libs/shared/icons/GoodSign2';
 import RightArrowIcon from '@/libs/shared/icons/RightArrow2';
+import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 /* eslint-disable react/no-array-index-key */
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'nextjs-toploader/app';
 import type { ReactNode } from 'react';
+import { toast } from 'sonner';
 
 type Mission = {
   title: string;
@@ -93,16 +95,32 @@ const Page = () => {
       isCompleted: dataMission?.readTerms === true
     },
   ];
+  const queryClient = useQueryClient();
   const router = useRouter();
-  const { mutate } = useUpdateMission();
-  const handleMission = (type?: 'shareLink' | 'joinGroup' | 'readTerms', to?: string) => {
+  const { mutateAsync } = useUpdateMission();
+  const handleMission = async ({
+    type,
+    to,
+    isCompleted
+  }: {
+    type?: 'shareLink' | 'joinGroup' | 'readTerms';
+    to?: string;
+    isCompleted: boolean;
+  }) => {
     if (type) {
-      mutate(type);
+      await mutateAsync(type);
       if (type === 'shareLink' || type === 'joinGroup') {
         window.open(to, '_blank');
       } else if (type === 'readTerms' && to) {
         router.push(to);
       }
+      !isCompleted && toast.success(
+        'Chúc mừng bạn đã nhận được phần thưởng từ nhiệm vụ này!',
+        {
+          duration: 3000,
+        }
+      );
+      queryClient.removeQueries({ queryKey: ['get-mission'] });
     }
   };
 
@@ -115,7 +133,11 @@ const Page = () => {
         {isSuccess && data.map((item, index) => (
           <button
             type="button"
-            onClick={() => item.type && handleMission(item.type, item.to)}
+            onClick={() => item.type && handleMission({
+              type: item.type,
+              to: item.to,
+              isCompleted: item.isCompleted
+            })}
             className={`relative my-4 rounded-[0.75rem] p-4 flex border items-center gap-3 ${item.isCompleted ? 'border-[#52C41A] bg-[rgba(82,196,26,0.25)]' : 'border-[#68DAF2] bg-[rgba(0,39,102,0.25)]'}`}
             key={index}
 

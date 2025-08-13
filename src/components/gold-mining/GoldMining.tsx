@@ -12,7 +12,8 @@ import type { GoldMiningRestTimesResponse } from '@/types/game';
 import type { UserGetMe } from '@/types/user';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'nextjs-toploader/app';
+
 import { useEffect, useState } from 'react';
 
 type Props = {
@@ -30,7 +31,7 @@ const GoldMining = ({ address, userRes }: Props) => {
   });
   const router = useRouter();
 
-  const { data, isSuccess, isLoading, refetch } = useGetRestTime();
+  const { data, isSuccess, isLoading, refetch, isFetching } = useGetRestTime();
   useEffect(() => {
     if (isSuccess && data) {
       setDataRestTimes(data);
@@ -85,7 +86,7 @@ const GoldMining = ({ address, userRes }: Props) => {
           onClick={handlePlayGame}
           disabled={dataRestTimes.restTimes <= 0 || isLoading}
         >
-          {isLoading ? (
+          {isLoading || isFetching ? (
             <Loader2 className="animate-spin w-4 h-4" />
           ) : dataRestTimes.restTimes > 0 ? (
             <>

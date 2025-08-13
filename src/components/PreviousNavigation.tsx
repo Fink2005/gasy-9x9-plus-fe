@@ -1,6 +1,6 @@
 'use client';
 import LeftArrowIcon from '@/libs/shared/icons/LeftArrow';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'nextjs-toploader/app';
 
 const PreviousNavigation = ({
   baseUrl,

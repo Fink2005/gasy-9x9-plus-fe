@@ -3,7 +3,8 @@
 import { usePathname } from '@/libs/i18nNavigation';
 import { routing } from '@/libs/i18nRouting';
 import { useLocale } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'nextjs-toploader/app';
+
 import type { ChangeEventHandler } from 'react';
 
 export const LocaleSwitcher = () => {

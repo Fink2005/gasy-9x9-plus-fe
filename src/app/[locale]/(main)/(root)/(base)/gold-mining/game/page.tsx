@@ -13,7 +13,8 @@ import SpeakerIcon from '@/libs/shared/icons/Speaker';
 import SpeakerMutedIcon from '@/libs/shared/icons/SpeakerMuted';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'nextjs-toploader/app';
+
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 

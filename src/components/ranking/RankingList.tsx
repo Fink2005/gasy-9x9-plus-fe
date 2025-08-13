@@ -1,6 +1,5 @@
 /* eslint-disable react/no-array-index-key */
 'use client';
-import { getCookie } from '@/app/actions/cookie';
 import { useUserRanking } from '@/app/http/queries/useRanking';
 import { COUNT_ITEM_TO_BOTTOM } from '@/libs/shared/constants/globals';
 import BronzeMedalIcon from '@/libs/shared/icons/BronzeMedal';
@@ -9,7 +8,7 @@ import SilverMedalIcon from '@/libs/shared/icons/SilverMedal';
 import { formatAddress } from '@/libs/utils';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 const top3Ranking = [
@@ -20,8 +19,6 @@ const top3Ranking = [
 //
 
 const RankingList = () => {
-  const [address, setAddress] = useState<string>('');
-
   const { ref, inView } = useInView();
 
   const user = useUserRanking();
@@ -42,15 +39,6 @@ const RankingList = () => {
   const totalUserRanking = dataRanking?.length || 0;
   const indexItemShouldLoadMore = totalUserRanking - COUNT_ITEM_TO_BOTTOM;
   useEffect(() => {
-    (async () => {
-      const authData = await getCookie('authData');
-      if (authData) {
-        const parsedData = JSON.parse(authData);
-        setAddress(parsedData.address);
-      }
-    })();
-  }, []);
-  useEffect(() => {
     if (inView && totalUserRanking > 0) {
       fetchNextPage();
     }
@@ -67,7 +55,7 @@ const RankingList = () => {
           <p className="text-shadow-custom text-xs">Tổng số điểm nhận được</p>
         </div>
         {
-          address && isSuccess && dataRanking?.map((player, index) => {
+          isSuccess && dataRanking?.map((player, index) => {
             const isSetRef = (index === indexItemShouldLoadMore) || (index === totalUserRanking);
             return (
               <div

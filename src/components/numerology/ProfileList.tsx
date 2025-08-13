@@ -18,7 +18,7 @@ import ChevronDown from '@/libs/shared/icons/ChevronDown';
 import { formatDate } from '@/libs/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'nextjs-toploader/app';
 
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';

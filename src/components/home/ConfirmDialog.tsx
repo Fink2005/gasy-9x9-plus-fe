@@ -3,7 +3,8 @@
 import { boxRequest } from '@/app/http/requests/box';
 import CoinIcon from '@/libs/shared/icons/Coin';
 import GoodSign from '@/libs/shared/icons/GoodSign';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'nextjs-toploader/app';
+
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
@@ -21,6 +22,7 @@ import BoxDistributor from '@/contracts/BoxDistributor.json';
 import { isClient } from '@/libs/utils';
 import useBox from '@/store/useBox';
 import { Loader2 } from 'lucide-react';
+import { useTopLoader } from 'nextjs-toploader';
 import Web3 from 'web3';
 
 const usdtAbi = [
@@ -54,7 +56,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const router = useRouter();
   const { loadingItems, setLoading } = useBox();
-
+  const loader = useTopLoader();
   const handleOpenChange = (open: boolean) => {
     if ((!isOpenBox && boxNumber !== 1) && currentBox !== boxNumber) {
       toast.warning(`Bạn cần phải mở hộp ${currentBox}`);
@@ -89,6 +91,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
 
     try {
       setLoading(true, boxNumber);
+      loader.trickle();
       setIsOpen(false);
       const web3 = new Web3(window.ethereum);
 
@@ -167,7 +170,6 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
         if (receiptRes.status) {
           await boxRequest.boxOpen(response.transactionHash as string);
           toast.success('Mở box thành công!');
-          localStorage.removeItem('boxData');
         } else {
           toast.error('Giao dịch thất bại hoặc bị huỷ.');
         }
@@ -179,10 +181,10 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
       router.refresh();
       setIsOpen(true);
     } catch {
-      setIsOpen(false);
       window.location.reload();
-      return;
     } finally {
+      loader.done();
+      localStorage.removeItem('boxData');
       setLoading(false, boxNumber);
     }
   };

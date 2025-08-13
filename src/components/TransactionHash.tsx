@@ -136,10 +136,10 @@ const TransactionHash = () => {
     const timer = setTimeout(async () => {
       const boxDataString = localStorage.getItem('boxData');
       const isOnValidRoute = TRANSACTION_CHECKING_ROUTE.includes(pathname);
-      console.log('boxDataString:', boxDataString, typeof boxDataString);
-      console.log('isOnValidRoute:', isOnValidRoute, typeof isOnValidRoute);
-      console.log('pathname:', pathname);
-      console.log('condition result:', !!(boxDataString && isOnValidRoute));
+      // console.log('boxDataString:', boxDataString, typeof boxDataString);
+      // console.log('isOnValidRoute:', isOnValidRoute, typeof isOnValidRoute);
+      // console.log('pathname:', pathname);
+      // console.log('condition result:', !!(boxDataString && isOnValidRoute));
       if (boxDataString && isOnValidRoute) {
         const { userAddress: address } = await getAddress();
         const web3 = new Web3(window.ethereum); // or your provider
@@ -173,11 +173,8 @@ const TransactionHash = () => {
                   localStorage.removeItem('boxData');
                 } catch (error) {
                   if (error instanceof ApiException) {
-                    if (error.status === 400) {
-                      handleRefreshOpenBox();
-                    } else {
-                      clearInterval(intervalId as unknown as number);
-                    }
+                    clearInterval(intervalId as unknown as number);
+                    localStorage.removeItem('boxData');
                   }
                 } finally {
                   setLoading(false, boxData?.currentBox);

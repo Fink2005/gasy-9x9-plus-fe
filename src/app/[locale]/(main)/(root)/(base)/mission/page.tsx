@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'nextjs-toploader/app';
 import type { ReactNode } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 type Mission = {
@@ -126,6 +127,9 @@ const Page = () => {
     }
   };
 
+  useEffect(() => {
+    router.prefetch('/mission/info');
+  }, [router]);
   return (
     <div className="bg-9x9 min-h-screen flex flex-col items-center text-center p-4 text-white">
       <h1 className="font-light text-xl text-blue-200 mb-2">9x9Plus</h1>

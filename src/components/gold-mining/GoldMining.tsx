@@ -6,6 +6,7 @@ import { useGetMe } from '@/app/http/queries/useMe';
 import { goldMiningRequest } from '@/app/http/requests/goldMining';
 import { Button } from '@/components/ui/button';
 import GamePad2 from '@/libs/shared/icons/GamePad2';
+import LoadingDots from '@/libs/shared/icons/LoadingDots';
 import QuestionCircleIcon from '@/libs/shared/icons/QuestionCircle';
 import UnknowAvatarIcon from '@/libs/shared/icons/UnknowAvatar';
 import { formatAddress, formatMsToCountdown } from '@/libs/utils';
@@ -122,23 +123,28 @@ const GoldMining = () => {
       )}
 
       <div className="user-card flex justify-around items-center max-w-[360px] w-full mt-[1rem] z-10">
-        <div className="flex items-center">
-          <span className="text-shadow-custom font-[500] text-[1rem]">{!dataMe?.score ? '999+' : dataMe?.rank}</span>
-          <UnknowAvatarIcon className="size-12" />
-        </div>
-        <span className="text-shadow-custom text-[1rem] font-[400]">
-          {isDataMeSuccess ? `${formatAddress(dataMe?.address || '0', 8)}` : 'Không có địa chỉ'}
-        </span>
-        <div className="flex items-center">
-          <span className="text-shadow-custom text-[0.875rem] font-[590]">{dataMe?.score}</span>
-          <Image
-            src="/assets/badge-medal.png"
-            alt="Badge Medal"
-            width={24}
-            height={24}
-            className="inline-block ml-1"
-          />
-        </div>
+        {isDataMeSuccess ? (
+          <>
+            <div className="flex items-center">
+              <span className="text-shadow-custom font-[500] text-[1rem]">{!dataMe?.score ? '999+' : dataMe?.rank}</span>
+              <UnknowAvatarIcon className="size-12" />
+            </div>
+            <span className="text-shadow-custom text-[1rem] font-[400]">
+              { `${formatAddress(dataMe?.address || '0', 8)}` }
+            </span>
+            <div className="flex items-center">
+              <span className="text-shadow-custom text-[0.875rem] font-[590]">{dataMe?.score}</span>
+              <Image
+                src="/assets/badge-medal.png"
+                alt="Badge Medal"
+                width={24}
+                height={24}
+                className="inline-block ml-1"
+              />
+            </div>
+          </>
+        ) : <LoadingDots />}
+
       </div>
     </>
   );

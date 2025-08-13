@@ -9,6 +9,7 @@ export const useGetMe = () => {
   return useQuery({
     queryKey: ['get-me'],
     queryFn: async () => await userRequest.userGetMe(),
+    placeholderData: prevData => prevData
   });
 };
 

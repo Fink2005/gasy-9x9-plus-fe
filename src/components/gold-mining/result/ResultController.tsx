@@ -34,6 +34,9 @@ const ResultController = () => {
       setPlayLeft(playTimes);
     })();
   }, [queryClient]);
+  useEffect(() => {
+    router.prefetch('/gold-mining');
+  }, [router]);
   return (
     <div className="w-full flex flex-col items-center space-y-3 fixed bottom-26">
       <Button

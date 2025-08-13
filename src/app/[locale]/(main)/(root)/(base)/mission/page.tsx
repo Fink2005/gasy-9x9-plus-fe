@@ -3,7 +3,6 @@
 import { useGetMission, useUpdateMission } from '@/app/http/queries/useMission';
 import GoodSign2Icon from '@/libs/shared/icons/GoodSign2';
 import RightArrowIcon from '@/libs/shared/icons/RightArrow2';
-import { delay } from '@/libs/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 /* eslint-disable react/no-array-index-key */
@@ -100,31 +99,30 @@ const Page = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { mutateAsync } = useUpdateMission();
-  const handleMission = async ({
-    type,
-    to,
-    isCompleted
-  }: {
-    type?: 'shareLink' | 'joinGroup' | 'readTerms';
-    to?: string;
-    isCompleted: boolean;
+  const handleMission = async ({ type, to, isCompleted }: {
+    type: Mission['type'];
+    to?: Mission['to'];
+    isCompleted: Mission['isCompleted'];
   }) => {
-    if (type) {
-      await mutateAsync(type);
-      if (type === 'shareLink' || type === 'joinGroup') {
-        window.open(to, '_blank');
-      } else if (type === 'readTerms' && to) {
-        router.push(to);
-      }
-      await delay(3000);
+    if (!type) {
+      return;
+    }
+
+    // Điều hướng ngay lập tức
+    if (type === 'shareLink' || type === 'joinGroup') {
+      window.open(to, '_blank');
+    } else if (type === 'readTerms' && to) {
+      router.push(to);
+    }
+
+    // Xử lý async sau khi điều hướng (nếu vẫn ở cùng trang)
+    mutateAsync(type).then(() => {
       !isCompleted && toast.success(
         'Chúc mừng bạn đã nhận được phần thưởng từ nhiệm vụ này!',
-        {
-          duration: 3000,
-        }
+        { duration: 3000 }
       );
       queryClient.removeQueries({ queryKey: ['get-mission'] });
-    }
+    });
   };
 
   useEffect(() => {

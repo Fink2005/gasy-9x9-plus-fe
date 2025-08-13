@@ -20,7 +20,7 @@ const ResultNumerology = async ({ searchParams }: { searchParams: Promise<Record
     );
   }
   return (
-    <div className="min-h-screen bg-numerology pt-10 relative overflow-x-hidden  ">
+    <div className="min-h-screen bg-numerology pt-6 relative overflow-x-hidden">
       <Numerology baseUrl={baseUrl} numerologyResult={numerologyResult?.number ?? null} />
     </div>
   );

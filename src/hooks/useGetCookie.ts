@@ -1,3 +1,4 @@
+'use client';
 /* eslint-disable react-hooks-extra/no-unnecessary-use-prefix */
 import { getCookie } from '@/app/actions/cookie';
 

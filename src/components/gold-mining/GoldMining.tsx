@@ -2,26 +2,21 @@
 
 import { createCookie } from '@/app/actions/cookie';
 import { useGetRestTime } from '@/app/http/queries/useGame';
+import { useGetMe } from '@/app/http/queries/useMe';
 import { goldMiningRequest } from '@/app/http/requests/goldMining';
 import { Button } from '@/components/ui/button';
 import GamePad2 from '@/libs/shared/icons/GamePad2';
 import QuestionCircleIcon from '@/libs/shared/icons/QuestionCircle';
 import UnknowAvatarIcon from '@/libs/shared/icons/UnknowAvatar';
-import { formatMsToCountdown } from '@/libs/utils';
+import { formatAddress, formatMsToCountdown } from '@/libs/utils';
 import type { GoldMiningRestTimesResponse } from '@/types/game';
-import type { UserGetMe } from '@/types/user';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'nextjs-toploader/app';
 
 import { useEffect, useState } from 'react';
 
-type Props = {
-  address: string | undefined;
-  userRes: UserGetMe;
-};
-
-const GoldMining = ({ address, userRes }: Props) => {
+const GoldMining = () => {
   const [isDisplayQuestion, setIsDisplayQuestion] = useState(false);
   const [dataRestTimes, setDataRestTimes] = useState<GoldMiningRestTimesResponse>({
     restTimes: 0,
@@ -37,6 +32,7 @@ const GoldMining = ({ address, userRes }: Props) => {
       setDataRestTimes(data);
     }
   }, [isSuccess, data]);
+  const { data: dataMe, isSuccess: isDataMeSuccess } = useGetMe();
 
   const handlePlayGame = async () => {
     const result = await goldMiningRequest.GoldMiningStart();
@@ -127,14 +123,14 @@ const GoldMining = ({ address, userRes }: Props) => {
 
       <div className="user-card flex justify-around items-center max-w-[360px] w-full mt-[1rem] z-10">
         <div className="flex items-center">
-          <span className="text-shadow-custom font-[500] text-[1rem]">{!userRes.score ? '999+' : userRes.rank}</span>
+          <span className="text-shadow-custom font-[500] text-[1rem]">{!dataMe?.score ? '999+' : dataMe?.rank}</span>
           <UnknowAvatarIcon className="size-12" />
         </div>
         <span className="text-shadow-custom text-[1rem] font-[400]">
-          {address ? `${address.slice(0, 8)}...${address.slice(-3)}` : 'Không có địa chỉ'}
+          {isDataMeSuccess ? `${formatAddress(dataMe?.address || '0', 8)}` : 'Không có địa chỉ'}
         </span>
         <div className="flex items-center">
-          <span className="text-shadow-custom text-[0.875rem] font-[590]">{userRes.score}</span>
+          <span className="text-shadow-custom text-[0.875rem] font-[590]">{dataMe?.score}</span>
           <Image
             src="/assets/badge-medal.png"
             alt="Badge Medal"

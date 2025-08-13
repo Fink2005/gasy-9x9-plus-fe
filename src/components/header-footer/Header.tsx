@@ -1,3 +1,4 @@
+'use client';
 import { getCookie } from '@/app/actions/cookie';
 import DropdownWallet from '@/components/home/DropdownWallet';
 import Image from 'next/image';

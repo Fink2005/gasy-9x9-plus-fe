@@ -3,6 +3,7 @@
 import { useGetMission, useUpdateMission } from '@/app/http/queries/useMission';
 import GoodSign2Icon from '@/libs/shared/icons/GoodSign2';
 import RightArrowIcon from '@/libs/shared/icons/RightArrow2';
+import { delay } from '@/libs/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 /* eslint-disable react/no-array-index-key */
@@ -114,6 +115,7 @@ const Page = () => {
       } else if (type === 'readTerms' && to) {
         router.push(to);
       }
+      await delay(3000);
       !isCompleted && toast.success(
         'Chúc mừng bạn đã nhận được phần thưởng từ nhiệm vụ này!',
         {

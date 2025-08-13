@@ -1,3 +1,4 @@
+'use client';
 import authRequests from '@/app/http/requests/auth';
 import type { TokenPayload } from '@/types/jwt';
 import type { ClassValue } from 'clsx';

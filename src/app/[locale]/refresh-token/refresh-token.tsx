@@ -14,6 +14,7 @@ export default function RefreshToken({ refreshToken }: Props) {
   const searchParams = useSearchParams();
   const refreshTokenFromUrl = searchParams.get('refreshToken');
   const redirectPathname = searchParams.get('redirect');
+
   useEffect(() => {
     router.prefetch('/');
     if (

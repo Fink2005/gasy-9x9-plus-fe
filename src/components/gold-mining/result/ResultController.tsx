@@ -26,6 +26,9 @@ const ResultController = () => {
     queryClient.removeQueries({
       queryKey: ['get-rest-time'],
     });
+    queryClient.removeQueries({
+      queryKey: ['get-me'],
+    });
     (async () => {
       const playTimes = await getCookie('playLeft');
       setPlayLeft(playTimes);

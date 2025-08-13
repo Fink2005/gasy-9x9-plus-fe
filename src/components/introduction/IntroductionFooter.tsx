@@ -15,7 +15,7 @@ const IntroductionFooter = () => {
         là chiếc sổ tay đồng hành để mỗi khi mở ra, bạn tìm thấy niềm tin, định hướng và sức mạnh cho bước đi tiếp theo.
       </p>
       <p className="footer-subtitle-introduction pb-[0.75rem] pt-[0.62rem]">Hãy nhớ rằng: Kho báu lớn nhất luôn nằm trong chính bạn.</p>
-      <Link href="/kyc" className="max-w-[20.9375rem] w-full mb-4">
+      <Link href="/kyc" className="max-w-[20.9375rem] w-full mb-4" prefetch>
         <Button className="button-rounded w-full">
           <HandMoney />
           <span className="-translate-x-4">

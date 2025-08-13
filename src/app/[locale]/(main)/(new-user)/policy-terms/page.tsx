@@ -105,7 +105,7 @@ const page = async () => {
           </p>
         </ol>
 
-        <Link href="/welcome">
+        <Link href="/welcome" prefetch>
           <Button className="button-rounded mt-[1.13rem]">
             <CheckCircle className="size-6" />
             <span

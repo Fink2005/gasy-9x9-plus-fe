@@ -28,7 +28,7 @@ const WelcomeFooter = () => {
 
   return (
     <>
-      <Link href={isKyc ? '/' : 'introduction'}>
+      <Link href={isKyc ? '/' : 'introduction'} prefetch>
         <Button className="button-rounded py-[1rem]">
           <span className="text-wrap">BẮT ĐẦU HÀNH TRÌNH CỦA BẠN NGAY</span>
         </Button>

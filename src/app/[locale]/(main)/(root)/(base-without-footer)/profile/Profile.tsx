@@ -7,6 +7,8 @@ import GamePad4 from '@/libs/shared/icons/GamePad4';
 import UserConnection from '@/libs/shared/icons/UserConnection';
 import Image from 'next/image';
 
+export const dynamic = 'force-dynamic';
+
 const Profile = async () => {
   const userRes = await userRequest.userGetMe();
   const userData = [

@@ -1,5 +1,5 @@
 import { missionRequest } from '@/app/http/requests/mission';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 export const useGetMission = () => {
   return useQuery({
@@ -10,7 +10,6 @@ export const useGetMission = () => {
 };
 
 export const useUpdateMission = () => {
-  const queryClient = useQueryClient();
   return useMutation({
 
     mutationFn: async (query: 'shareLink' | 'joinGroup' | 'readTerms') =>

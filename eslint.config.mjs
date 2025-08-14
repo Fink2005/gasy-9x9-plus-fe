@@ -72,6 +72,7 @@ export default antfu(
       'no-lonely-if': 1,
       'prefer-const': 'warn',
       'jsonc/object-curly-spacing': 'off',
+      'eslint-comments/no-unlimited-disable': 'off',
       'operator-linebreak': 'off',
       'react-web-api/no-leaked-timeout': 'off',
       'no-unused-vars': 1,

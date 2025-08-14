@@ -1,5 +1,4 @@
-/* eslint-disable no-console */
-
+/* eslint-disable */
 /* eslint-disable ts/no-use-before-define */
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
@@ -21,11 +20,18 @@ import WalletIcon from '@/libs/shared/icons/Wallet';
 import { formatAddress, handleClipboardCopy, isClient } from '@/libs/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type User = {
   _id: string;
   address: string;
+};
+
+type PaginationData = {
+  currentPage: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
 };
 
 type TreeNode = {
@@ -36,237 +42,445 @@ type TreeNode = {
   type: 'folder' | 'share' | 'more' | 'previous';
   children?: TreeNode[];
   isExpanded?: boolean;
-  // Thêm metadata phân trang cho mỗi node
-  paginationData?: {
-    currentPage: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrevious: boolean;
-  };
+  paginationData?: PaginationData;
+};
+
+type BoxData = {
+  nodes: TreeNode[];
+  isLoading: boolean;
+  error: string | null;
+  pagination?: PaginationData;
+  totalUsers?: number;
 };
 
 type TreeData = {
-  lv1: TreeNode[];
+  [key: string]: BoxData;
 };
 
-// Thêm type để quản lý state phân trang của từng node
-type NodePaginationState = {
-  [nodeId: string]: {
-    currentPage: number;
-    pages: { [pageNumber: number]: User[] };
-    totalPages: number;
-  };
-};
+// Constants
+const BOX_COUNT = 9;
+const ITEMS_PER_BOX = 9;
+const MAX_LEVEL = 9;
+
+// Tính toán limit cho mỗi box
+const getBoxLimit = (boxNumber: number) => 9 ** boxNumber;
 
 export default function Tree() {
-  const hasFetched = useRef(false);
+  // State management
   const [address, setAddress] = useState<string>('');
   const [currentFetchingAddress, setCurrentFetchingAddress] = useState<string>('');
-  const [treeDataV2, setTreeDataV2] = useState<TreeData>({ lv1: [] });
+  const [treeData, setTreeData] = useState<TreeData>({});
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [isDataLoaded, setIsDataLoaded] = useState<boolean>(false);
+
+  // Refs
   const searchRef = useRef<HTMLInputElement>(null);
-  // State để lưu trữ dữ liệu phân trang của từng node
-  const [nodePaginationState, setNodePaginationState] = useState<NodePaginationState>({});
-  if (!hasFetched) {
-    console.log(nodePaginationState);
-  };
+  const loadingRef = useRef<{ [key: string]: boolean }>({});
+
+  // Hooks
   const queryClient = useQueryClient();
   const { handleGetCookie } = useGetCookie();
 
-  const isFetching = queryClient.isFetching({ queryKey: ['box-tree', currentFetchingAddress] }) > 0 || false;
+  // Computed values
+  const isFetching = useMemo(() =>
+    queryClient.isFetching({ queryKey: ['box-tree', currentFetchingAddress] }) > 0, [queryClient, currentFetchingAddress]);
 
-  const isCurrentFetching = (address: string) => {
-    return currentFetchingAddress === address;
-  };
+  const urlSharing = useMemo(() =>
+    isClient ? `${window.location.origin}/login` : '', []);
 
-  useEffect(() => {
-    (async () => {
-      const authData = await handleGetCookie('authData');
-      if (authData) {
-        setAddress((authData as { address: string })?.address);
-      }
-    })();
+  // Initialize tree data only once
+  const initializeTreeData = useCallback(() => {
+    const initialTreeData: TreeData = {};
+    for (let i = 1; i <= BOX_COUNT; i++) {
+      initialTreeData[`box${i}`] = {
+        nodes: [],
+        isLoading: false,
+        error: null,
+        totalUsers: 0
+      };
+    }
+    return initialTreeData;
   }, []);
 
+  // Get user address from cookie once
+  useEffect(() => {
+    let isMounted = true;
+
+    const getAuthData = async () => {
+      try {
+        const authData = await handleGetCookie('authData');
+        if (authData && isMounted) {
+          const userAddress = (authData as { address: string })?.address;
+          if (userAddress && !address) { // Chỉ set khi address chưa có
+            setAddress(userAddress);
+          }
+        }
+      } catch (error) {
+        console.error('Error getting auth data:', error);
+      }
+    };
+
+    // Chỉ get auth data khi chưa có address
+    if (!address) {
+      getAuthData();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Remove dependencies để chỉ chạy một lần
+
+  // Initialize tree data once
+  useEffect(() => {
+    setTreeData(initializeTreeData());
+  }, []); // Remove dependency để chỉ chạy một lần
+
   const {
-    data,
-    isSuccess,
     isLoading: isInitialLoading,
-    isFetchingNextPage,
-    isError
-  } = useBoxTree(address);
+    isError,
+    error
+  } = useBoxTree(address, { enabled: !!address });
 
-  const urlSharing = isClient ? `${window.location.origin}/login` : '';
+  // Utility functions
+  const isCurrentFetching = useCallback((targetAddress: string) => {
+    return currentFetchingAddress === targetAddress;
+  }, [currentFetchingAddress]);
 
-  // Hàm phân trang thủ công cho level 1
-  const fetchLevel1Page = useCallback(async (page: number) => {
+  const createPaginationData = useCallback((pagination: any): PaginationData => ({
+    currentPage: pagination.page || 1,
+    totalPages: pagination.pageTotal || 1,
+    hasNext: (pagination.page || 1) < (pagination.pageTotal || 1),
+    hasPrevious: (pagination.page || 1) > 1
+  }), []);
+
+  // Prevent duplicate API calls
+  const preventDuplicateCall = useCallback((key: string) => {
+    if (loadingRef.current[key]) {
+      return true;
+    }
+    loadingRef.current[key] = true;
+    return false;
+  }, []);
+
+  const clearLoadingFlag = useCallback((key: string) => {
+    delete loadingRef.current[key];
+  }, []);
+
+  // Fetch data cho một box cụ thể với caching
+  const fetchBoxData = useCallback(async (
+    boxNumber: number,
+    page: number = 1,
+    targetAddress?: string
+  ): Promise<boolean> => {
+    const currentAddress = targetAddress || address;
+    if (!currentAddress) {
+      return false;
+    }
+
+    const cacheKey = `${currentAddress}-box${boxNumber}-page${page}`;
+
+    // Prevent duplicate calls
+    if (preventDuplicateCall(cacheKey)) {
+      return false;
+    }
+
     try {
-      setCurrentFetchingAddress(address);
+      setCurrentFetchingAddress(`${currentAddress}-box${boxNumber}`);
 
+      // Update loading state
+      setTreeData(prev => ({
+        ...prev,
+        [`box${boxNumber}`]: {
+          ...prev[`box${boxNumber}`],
+          isLoading: true,
+          error: null,
+          nodes: [],
+        }
+      }));
+
+      const limit = getBoxLimit(boxNumber);
+
+      // Single API call per box
       const response = await boxRequest.boxTree({
-        address,
-        page,
-        limit: 9
+        address: currentAddress,
+        page: 1,
+        limit
       });
 
       if (response instanceof Error) {
         throw response;
       }
 
-      const users = response?.result.users;
-      const pagination = response?.result.pagination;
-      if (!users || !pagination) {
-        return;
+      const { users: allUsers, pagination } = response?.result || {};
+      if (!allUsers || !pagination) {
+        return false;
       }
-      // Cập nhật state phân trang cho root
-      setNodePaginationState(prev => ({
+
+      // Calculate users for this specific box and page
+      let users: User[];
+      let totalUsersForBox = 0;
+
+      if (boxNumber === 1) {
+        // Box 1: first 9 items only
+        users = allUsers.slice(0, ITEMS_PER_BOX);
+        totalUsersForBox = Math.min(allUsers.length, ITEMS_PER_BOX);
+      } else {
+        // Other boxes: calculate offset based on previous boxes
+        const previousBoxLimit = 9 ** (boxNumber - 1);
+        const availableUsers = allUsers.slice(previousBoxLimit);
+        totalUsersForBox = availableUsers.length;
+
+        // Users for current page
+        const startIndex = (page - 1) * ITEMS_PER_BOX;
+        const endIndex = startIndex + ITEMS_PER_BOX;
+        users = availableUsers.slice(startIndex, endIndex);
+      }
+
+      // Calculate pagination for boxes with pagination (box 2+)
+      let boxPagination = pagination;
+      if (boxNumber > 1) {
+        const totalPagesForBox = Math.ceil(totalUsersForBox / ITEMS_PER_BOX);
+        boxPagination = {
+          ...pagination,
+          page,
+          pageTotal: totalPagesForBox
+        };
+      }
+
+      // Build nodes
+      const nodes = buildBoxNodes(users, boxPagination, boxNumber, page, totalUsersForBox, currentAddress);
+
+      // Update tree data
+      setTreeData(prev => ({
         ...prev,
-        root: {
-          currentPage: page,
-          pages: {
-            ...(prev.root?.pages || {}),
-            [page]: users
-          },
-          totalPages: pagination.pageTotal
+        [`box${boxNumber}`]: {
+          ...prev[`box${boxNumber}`],
+          nodes,
+          pagination: boxNumber > 1 ? createPaginationData(boxPagination) : undefined,
+          totalUsers: totalUsersForBox,
+          isLoading: false,
+          error: null
         }
       }));
 
-      // Rebuild tree với data mới
-      buildLevel1Tree(users, pagination);
+      return true;
+    } catch (error) {
+      console.error(`Error fetching box ${boxNumber} data:`, error);
+
+      setTreeData(prev => ({
+        ...prev,
+        [`box${boxNumber}`]: {
+          ...prev[`box${boxNumber}`],
+          isLoading: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          nodes: [],
+        }
+      }));
+
+      return false;
     } finally {
       setCurrentFetchingAddress('');
+      clearLoadingFlag(cacheKey);
     }
-  }, [address]);
+  }, [address, preventDuplicateCall, clearLoadingFlag, createPaginationData]);
 
-  // Xây dựng lại tree level 1
-  const buildLevel1Tree = useCallback((users: User[], pagination: any) => {
-    const treeDataV2Initial: TreeNode[] = [];
-    const currentPage = pagination.page;
-    const totalPages = pagination.pageTotal;
-    const hasPrevious = currentPage > 1;
-    const hasNext = currentPage < totalPages;
+  // Build tree nodes cho một box
+  const buildBoxNodes = useCallback((
+    users: User[],
+    pagination: any,
+    boxNumber: number,
+    page: number = 1,
+    totalUsersForBox: number = 0,
+    currentAddress?: string
+  ): TreeNode[] => {
+    const nodeAddress = currentAddress || address;
+    const nodes: TreeNode[] = [];
+    const hasPagination = boxNumber > 1;
 
-    // Nút Previous
-    if (hasPrevious) {
-      treeDataV2Initial.push({
-        id: 'root-previous',
-        level: 1,
-        originalAddress: address,
-        address: `Trở lại`,
-        type: 'previous',
-        paginationData: {
-          currentPage,
-          totalPages,
-          hasNext,
-          hasPrevious
-        }
+    if (hasPagination) {
+      const paginationData = createPaginationData(pagination);
+      const { hasPrevious } = paginationData;
+
+      // Check if there are more than 9 items
+      const hasMoreThan9Items = totalUsersForBox > ITEMS_PER_BOX;
+      const hasNext = page * ITEMS_PER_BOX < totalUsersForBox;
+
+      // Previous button at the top
+      if (hasPrevious) {
+        nodes.push({
+          id: `box${boxNumber}-previous-${page}`,
+          level: 1,
+          originalAddress: nodeAddress,
+          address: 'Trước',
+          type: 'previous',
+          paginationData: {
+            ...paginationData,
+            hasNext
+          }
+        });
+      }
+
+      // User nodes (max 9 items)
+      const displayUsers = users.slice(0, ITEMS_PER_BOX);
+      displayUsers.forEach((user, index) => {
+        nodes.push({
+          id: user._id || `box${boxNumber}-user-${page}-${index}`,
+          level: 1,
+          originalAddress: user.address,
+          address: formatAddress(user.address, 2),
+          type: 'folder',
+          children: [],
+          isExpanded: false
+        });
       });
-    }
 
-    // Thêm users
-    for (let i = 0; i < Math.min(9, users.length); i++) {
-      treeDataV2Initial.push({
-        id: users[i]?._id || `root-${i}`,
-        level: 1,
-        originalAddress: users[i]?.address || '',
-        address: formatAddress(users[i]?.address || '', 2),
-        type: 'folder',
-        children: [],
-        isExpanded: false
+      // More button at the bottom
+      if (hasNext && hasMoreThan9Items) {
+        nodes.push({
+          id: `box${boxNumber}-more-${page}`,
+          level: 1,
+          originalAddress: nodeAddress,
+          address: 'Tiếp',
+          type: 'more',
+          paginationData: {
+            ...paginationData,
+            hasNext
+          }
+        });
+      }
+
+      // Fill remaining slots with share buttons
+      const usedSlots = displayUsers.length + (hasPrevious ? 1 : 0) + (hasNext && hasMoreThan9Items ? 1 : 0);
+      const remainingSlots = Math.max(0, ITEMS_PER_BOX - usedSlots);
+
+      for (let i = 0; i < remainingSlots; i++) {
+        nodes.push({
+          id: `box${boxNumber}-share-${page}-${i}`,
+          level: 1,
+          originalAddress: nodeAddress,
+          address: 'Chia sẻ',
+          type: 'share'
+        });
+      }
+    } else {
+      // Box 1: no pagination
+      const displayUsers = users.slice(0, ITEMS_PER_BOX);
+      displayUsers.forEach((user, index) => {
+        nodes.push({
+          id: user._id || `box1-user-${index}`,
+          level: 1,
+          originalAddress: user.address,
+          address: formatAddress(user.address, 2),
+          type: 'folder',
+          children: [],
+          isExpanded: false
+        });
       });
+
+      // Fill remaining slots with share buttons
+      const remainingSlots = ITEMS_PER_BOX - displayUsers.length;
+      for (let i = 0; i < remainingSlots; i++) {
+        nodes.push({
+          id: `box1-share-${i}`,
+          level: 1,
+          originalAddress: nodeAddress,
+          address: 'Chia sẻ',
+          type: 'share'
+        });
+      }
     }
 
-    // Nút More
-    if (hasNext) {
-      treeDataV2Initial.push({
-        id: 'root-more',
-        level: 1,
-        originalAddress: address,
-        address: `Xem thêm`,
-        type: 'more',
-        paginationData: {
-          currentPage,
-          totalPages,
-          hasNext,
-          hasPrevious
-        }
-      });
+    return nodes;
+  }, [address, createPaginationData]);
+
+  // Load all boxes data efficiently với debounce
+  const loadAllBoxes = useCallback(async (targetAddress: string) => {
+    if (!targetAddress) {
+      return;
     }
 
-    // Padding với Share buttons
-    const currentLength = treeDataV2Initial.length;
-    const isPreviousButton = treeDataV2Initial[0]?.type === 'previous';
-    for (let i = isPreviousButton ? currentLength - 1 : currentLength; i < 9; i++) {
-      treeDataV2Initial.push({
-        id: `root-share-${i}`,
-        level: 1,
-        originalAddress: address,
-        address: 'Chia sẻ',
-        type: 'share',
-      });
+    // Kiểm tra xem đã load cho address này chưa
+    const addressKey = `loaded-${targetAddress}`;
+    if (loadingRef.current[addressKey]) {
+      return;
     }
 
-    setTreeDataV2({ lv1: treeDataV2Initial });
-  }, [address]);
+    loadingRef.current[addressKey] = true;
 
-  // Fetch children với phân trang
-  const fetchChildrenPage = async (
+    try {
+      // Reset tree data cho address mới
+      setTreeData(initializeTreeData());
+
+      // Sequential loading to avoid overwhelming the API
+      for (let i = 1; i <= BOX_COUNT; i++) {
+        await fetchBoxData(i, 1, targetAddress);
+      }
+    } catch (error) {
+      console.error('Error loading boxes:', error);
+    }
+  }, [initializeTreeData]);
+
+  // Handle pagination for box
+  const handleBoxPagination = useCallback(async (
+    boxNumber: number,
+    action: 'next' | 'previous'
+  ) => {
+    const boxData = treeData[`box${boxNumber}`];
+    if (!boxData?.pagination) {
+      return;
+    }
+
+    const currentPage = boxData.pagination.currentPage;
+    const newPage = action === 'next' ? currentPage + 1 : currentPage - 1;
+
+    if (newPage < 1 || newPage > boxData.pagination.totalPages) {
+      return;
+    }
+
+    await fetchBoxData(boxNumber, newPage, address);
+  }, [treeData, fetchBoxData, address]);
+
+  // Fetch children for node expansion
+  const fetchChildrenPage = useCallback(async (
     parentAddress: string,
     parentId: string,
     parentLevel: number,
     page: number
   ) => {
+    const cacheKey = `children-${parentAddress}-${page}`;
+
+    if (preventDuplicateCall(cacheKey)) {
+      return;
+    }
+
     try {
       setCurrentFetchingAddress(parentAddress);
 
       const response = await boxRequest.boxTree({
         address: parentAddress,
         page,
-        limit: 9
+        limit: ITEMS_PER_BOX
       });
 
       if (response instanceof Error) {
         throw response;
       }
 
-      const users = response?.result.users;
-      const pagination = response?.result.pagination;
-
+      const { users, pagination } = response?.result || {};
       if (!users || !pagination) {
         return;
       }
-      // Cập nhật state phân trang cho node này
-      const nodeKey = `${parentAddress}-${parentLevel}`;
-      setNodePaginationState(prev => ({
-        ...prev,
-        [nodeKey]: {
-          currentPage: page,
-          pages: {
-            ...(prev[nodeKey]?.pages || {}),
-            [page]: users
-          },
-          totalPages: pagination.pageTotal
-        }
-      }));
 
-      // Build children nodes
-      const children = buildChildrenNodes(
-        users,
-        pagination,
-        parentId,
-        parentLevel,
-        parentAddress
-      );
-
-      // Update tree
+      const children = buildChildrenNodes(users, pagination, parentId, parentLevel, parentAddress);
       updateNodeChildren(parentAddress, children);
     } finally {
       setCurrentFetchingAddress('');
+      clearLoadingFlag(cacheKey);
     }
-  };
+  }, [preventDuplicateCall, clearLoadingFlag]);
 
-  // Build children nodes với phân trang
-  const buildChildrenNodes = (
+  // Build children nodes
+  const buildChildrenNodes = useCallback((
     users: User[],
     pagination: any,
     parentId: string,
@@ -274,97 +488,60 @@ export default function Tree() {
     parentAddress: string
   ): TreeNode[] => {
     const children: TreeNode[] = [];
-    const currentPage = pagination.page;
-    const totalPages = pagination.pageTotal;
-    const hasPrevious = currentPage > 1;
-    const hasNext = currentPage < totalPages;
+    const paginationData = createPaginationData(pagination);
+    const { hasPrevious, hasNext } = paginationData;
 
-    // Previous button
     if (hasPrevious) {
       children.push({
-        id: `${parentId}-previous-${currentPage}`,
+        id: `${parentId}-previous-${pagination.page}`,
         level: parentLevel + 1,
         originalAddress: parentAddress,
-        address: `Trở lại`,
+        address: 'Trước',
         type: 'previous',
-        paginationData: {
-          currentPage,
-          totalPages,
-          hasNext,
-          hasPrevious
-        }
+        paginationData
       });
     }
 
-    // User nodes
-    for (let i = 0; i < Math.min(9, users.length); i++) {
+    users.slice(0, ITEMS_PER_BOX).forEach((user, index) => {
       children.push({
-        id: users[i]?._id || `${parentId}-child-${i}`,
+        id: user._id || `${parentId}-child-${index}`,
         level: parentLevel + 1,
-        originalAddress: users[i]?.address || '',
-        address: formatAddress(users[i]?.address || '', 2),
+        originalAddress: user.address,
+        address: formatAddress(user.address, 2),
         type: 'folder',
         children: [],
         isExpanded: false
       });
-    }
+    });
 
-    // More button
     if (hasNext) {
       children.push({
-        id: `${parentId}-more-${currentPage}`,
+        id: `${parentId}-more-${pagination.page}`,
         level: parentLevel + 1,
         originalAddress: parentAddress,
-        address: `Xem thêm`,
+        address: 'Tiếp',
         type: 'more',
-        paginationData: {
-          currentPage,
-          totalPages,
-          hasNext,
-          hasPrevious
-        }
+        paginationData
       });
     }
 
-    // Padding với share buttons
-    const currentLength = children.length;
-    const maxItems = hasPrevious || hasNext ? 10 : 9;
-    for (let i = currentLength; i < maxItems; i++) {
+    const currentLength = children.length - (hasPrevious ? 1 : 0) - (hasNext ? 1 : 0);
+    const remainingSlots = ITEMS_PER_BOX - currentLength;
+    for (let i = 0; i < remainingSlots; i++) {
       children.push({
         id: `${parentId}-share-${i}`,
         level: parentLevel + 1,
         originalAddress: parentAddress,
         address: 'Chia sẻ',
-        type: 'share',
+        type: 'share'
       });
     }
 
     return children;
-  };
+  }, [createPaginationData]);
 
-  const handleSearchAddress = () => {
-    if (!isSearching) {
-      setIsSearching(true);
-    } else {
-      if (!searchRef.current || !searchRef.current.value) {
-        return;
-      }
-      hasFetched.current = false;
-      setAddress(searchRef.current.value);
-      setIsSearching(false);
-      searchRef.current?.blur();
-    }
-  };
-
-  // Update node với children mới
-  const updateNodeChildren = (targetAddress: string, newChildren: TreeNode[]) => {
-    setTreeDataV2(prevTreeData => ({
-      lv1: updateNodeRecursively(prevTreeData.lv1, targetAddress, newChildren, true)
-    }));
-  };
-
-  // Update node recursively
-  const updateNodeRecursively = (
+  // Tree manipulation functions
+  const updateNodeRecursively = useCallback((
     nodes: TreeNode[],
     targetAddress: string,
     newChildren: TreeNode[],
@@ -375,77 +552,103 @@ export default function Tree() {
         return {
           ...node,
           isExpanded: forceExpand || !node.isExpanded,
-          children: forceExpand ? newChildren : (node.isExpanded ? [] : newChildren),
+          children: forceExpand ? newChildren : (node.isExpanded ? [] : newChildren)
         };
       }
 
-      if (node.children && node.children.length > 0) {
+      if (node.children?.length) {
         return {
           ...node,
-          children: updateNodeRecursively(node.children, targetAddress, newChildren, forceExpand),
+          children: updateNodeRecursively(node.children, targetAddress, newChildren, forceExpand)
         };
       }
 
       return node;
     });
-  };
+  }, []);
 
-  // Toggle expand/collapse node
-  const toggleNode = async (node: TreeNode) => {
-    if (node.isExpanded) {
-      // Collapse
-      setTreeDataV2(prevTreeData => ({
-        lv1: updateNodeRecursively(prevTreeData.lv1, node.originalAddress, [])
-      }));
-    } else {
-      // Expand - fetch page 1
-      findParentNode(treeDataV2.lv1, node.id);
-      await fetchChildrenPage(
-        node.originalAddress,
-        node.id,
-        node.level,
-        1
-      );
-    }
-  };
+  const updateNodeChildren = useCallback((targetAddress: string, newChildren: TreeNode[]) => {
+    setTreeData((prevData) => {
+      const updatedData = { ...prevData };
+      Object.keys(updatedData).forEach((boxKey) => {
+        if (updatedData[boxKey] && updatedData[boxKey].nodes) {
+          updatedData[boxKey] = {
+            ...updatedData[boxKey],
+            nodes: updateNodeRecursively(updatedData[boxKey].nodes, targetAddress, newChildren, true)
+          };
+        }
+      });
+      return updatedData;
+    });
+  }, [updateNodeRecursively]);
 
-  // Find parent node
-  const findParentNode = (nodes: TreeNode[], childId: string): TreeNode | null => {
+  const findNodeInTree = useCallback((
+    nodes: TreeNode[],
+    predicate: (node: TreeNode) => boolean
+  ): TreeNode | null => {
     for (const node of nodes) {
-      if (node.children?.some(child => child.id === childId)) {
+      if (predicate(node)) {
         return node;
       }
       if (node.children) {
-        const found = findParentNode(node.children, childId);
+        const found = findNodeInTree(node.children, predicate);
         if (found) {
           return found;
         }
       }
     }
     return null;
-  };
+  }, []);
 
-  // Handle button actions
-  const handleNodeAction = async (node: TreeNode) => {
+  const findParentOfNode = useCallback((targetNode: TreeNode): { parent: TreeNode | null; boxNumber: number } => {
+    for (let i = 1; i <= BOX_COUNT; i++) {
+      const boxNodes = treeData[`box${i}`]?.nodes || [];
+      const parent = findNodeInTree(boxNodes, node =>
+        node.children?.some(child => child.id === targetNode.id) ?? false);
+      if (parent) {
+        return { parent, boxNumber: i };
+      }
+    }
+    return { parent: null, boxNumber: 0 };
+  }, [treeData, findNodeInTree]);
+
+  // Event handlers
+  const toggleNode = useCallback(async (node: TreeNode) => {
+    if (node.isExpanded) {
+      setTreeData((prevData) => {
+        const updatedData = { ...prevData };
+        Object.keys(updatedData).forEach((boxKey) => {
+          if (updatedData[boxKey]?.nodes) { // Add optional chaining to safely access 'nodes'
+            updatedData[boxKey] = {
+              ...updatedData[boxKey],
+              nodes: updateNodeRecursively(updatedData[boxKey].nodes, node.originalAddress, [])
+            };
+          }
+        });
+        return updatedData;
+      });
+    } else {
+      await fetchChildrenPage(node.originalAddress, node.id, node.level, 1);
+    }
+  }, [fetchChildrenPage, updateNodeRecursively]);
+
+  const handleNodeAction = useCallback(async (node: TreeNode, boxNumber?: number) => {
     switch (node.type) {
       case 'share':
         handleClipboardCopy(`${urlSharing}?invitedBy=${node.originalAddress}`);
         break;
 
       case 'more':
-        if (node.level === 1) {
-          // Level 1 - fetch next page
-          const currentPage = node.paginationData?.currentPage || 1;
-          await fetchLevel1Page(currentPage + 1);
+        if (node.level === 1 && boxNumber) {
+          await handleBoxPagination(boxNumber, 'next');
         } else {
-          // Child levels
-          const parentNode = findParentOfNode(treeDataV2.lv1, node);
-          if (parentNode) {
+          const { parent } = findParentOfNode(node);
+          if (parent) {
             const currentPage = node.paginationData?.currentPage || 1;
             await fetchChildrenPage(
-              parentNode.originalAddress,
-              parentNode.id,
-              parentNode.level,
+              parent.originalAddress,
+              parent.id,
+              parent.level,
               currentPage + 1
             );
           }
@@ -453,19 +656,16 @@ export default function Tree() {
         break;
 
       case 'previous':
-        if (node.level === 1) {
-          // Level 1 - fetch previous page
-          const currentPage = node.paginationData?.currentPage || 2;
-          await fetchLevel1Page(currentPage - 1);
+        if (node.level === 1 && boxNumber) {
+          await handleBoxPagination(boxNumber, 'previous');
         } else {
-          // Child levels
-          const parentNode = findParentOfNode(treeDataV2.lv1, node);
-          if (parentNode) {
-            const currentPage = node.paginationData?.currentPage || 2;
+          const { parent } = findParentOfNode(node);
+          if (parent) {
+            const currentPage = node.paginationData?.currentPage || 1;
             await fetchChildrenPage(
-              parentNode.originalAddress,
-              parentNode.id,
-              parentNode.level,
+              parent.originalAddress,
+              parent.id,
+              parent.level,
               currentPage - 1
             );
           }
@@ -476,40 +676,44 @@ export default function Tree() {
         await toggleNode(node);
         break;
     }
-  };
+  }, [urlSharing, handleBoxPagination, findParentOfNode, fetchChildrenPage, toggleNode]);
 
-  // Find parent of a node recursively
-  const findParentOfNode = (nodes: TreeNode[], targetNode: TreeNode): TreeNode | null => {
-    for (const node of nodes) {
-      if (node.children?.some(child => child.id === targetNode.id)) {
-        return node;
-      }
-      if (node.children) {
-        const found = findParentOfNode(node.children, targetNode);
-        if (found) {
-          return found;
-        }
-      }
-    }
-    return null;
-  };
-
-  // Initial load
-  useEffect(() => {
-    if (isSuccess && data && !hasFetched.current) {
-      const latestPage = data.pages[data.pages.length - 1];
-      const users = latestPage?.result.users;
-      const pagination = latestPage?.result.pagination;
-      if (!users || !pagination) {
+  const handleSearchAddress = useCallback(() => {
+    if (!isSearching) {
+      setIsSearching(true);
+    } else {
+      const searchValue = searchRef.current?.value?.trim();
+      if (!searchValue) {
         return;
       }
-      buildLevel1Tree(users, pagination);
-      hasFetched.current = true;
+
+      // Clear all loading flags and reset states
+      loadingRef.current = {};
+      setIsDataLoaded(false);
+      setCurrentFetchingAddress('');
+
+      // Set new address và load data ngay lập tức
+      setAddress(searchValue);
+      setIsSearching(false);
+      searchRef.current?.blur();
+
+      // Load data cho address mới ngay lập tức
+      setTimeout(() => {
+        loadAllBoxes(searchValue);
+      }, 100); // Small delay để đảm bảo state đã update
     }
-  }, [isSuccess, data, buildLevel1Tree]);
+  }, [isSearching, loadAllBoxes]);
+
+  // Load data when address changes (chỉ cho lần đầu từ cookie)
+  useEffect(() => {
+    if (address && !isDataLoaded && Object.keys(loadingRef.current).length === 0) {
+      loadAllBoxes(address);
+      setIsDataLoaded(true);
+    }
+  }, [address, isDataLoaded, loadAllBoxes]);
 
   // Render functions
-  const renderIcon = (type: string) => {
+  const renderIcon = useCallback((type: string) => {
     switch (type) {
       case 'share':
         return <Connection2Icon className="translate-y-1" />;
@@ -520,9 +724,9 @@ export default function Tree() {
       default:
         return <WalletIcon className="size-12 translate-y-1 text-white" />;
     }
-  };
+  }, []);
 
-  const getButtonColor = (type: string) => {
+  const getButtonColor = useCallback((type: string) => {
     switch (type) {
       case 'share':
       case 'more':
@@ -531,12 +735,12 @@ export default function Tree() {
       default:
         return 'tree-button';
     }
-  };
+  }, []);
 
-  const renderTreeNode = (node: TreeNode) => {
+  const renderTreeNode = useCallback((node: TreeNode, boxNumber?: number) => {
     const marginLeft = (node.level - 1) * 50;
     const isLoading = isCurrentFetching(node.originalAddress)
-      || (node.type === 'more' && isFetchingNextPage);
+      || (node.type === 'more');
 
     return (
       <div key={node.id} className="relative">
@@ -551,13 +755,15 @@ export default function Tree() {
           <Button
             className={`${getButtonColor(node.type)} rounded-lg py-2 flex items-center min-w-[100px] w-[105px]`}
             disabled={isLoading}
-            onClick={() => handleNodeAction(node)}
+            onClick={() => handleNodeAction(node, boxNumber)}
           >
             {renderIcon(node.type)}
-            <span className="text-white text-[0.625rem] font-[700] -translate-x-4">{node.address}</span>
+            <span className="text-white text-[0.625rem] font-[700] -translate-x-4">
+              {node.address}
+            </span>
           </Button>
 
-          {node.level < 9 && node.type === 'folder' && (
+          {node.level < MAX_LEVEL && node.type === 'folder' && (
             <Button
               onClick={() => toggleNode(node)}
               className="tree-button-3 size-10"
@@ -566,13 +772,15 @@ export default function Tree() {
               {isCurrentFetching(node.originalAddress) ? (
                 <Loader2 className="animate-spin size-4" />
               ) : (
-                !node.isExpanded ? <PlusIcon className="translate-y-1" /> : <MinuteIcon className="translate-y-1" />
+                !node.isExpanded
+                  ? <PlusIcon className="translate-y-1" />
+                  : <MinuteIcon className="translate-y-1" />
               )}
             </Button>
           )}
         </div>
 
-        {node.isExpanded && node.children && node.children.length > 0 && (
+        {node.isExpanded && node.children?.length && (
           <div className="relative">
             <div
               className="absolute w-px bg-white"
@@ -582,70 +790,137 @@ export default function Tree() {
                 height: `${node.children.length * 48 + 8}px`,
               }}
             />
-            {node.children.map(child =>
-              renderTreeNode(child)
-            )}
+            {node.children.map(child => renderTreeNode(child))}
           </div>
         )}
       </div>
     );
-  };
+  }, [
+    isCurrentFetching,
+    getButtonColor,
+    handleNodeAction,
+    renderIcon,
+    toggleNode,
+    isFetching
+  ]);
+
+  // Error handling
+  if (isError) {
+    return (
+      <div className="text-white text-center h-[calc(100vh-170px)] flex flex-col items-center justify-center gap-4">
+        <p className="text-lg font-bold">Không tìm thấy dữ liệu</p>
+        <p className="text-sm">
+          {error?.message || 'Vui lòng thử lại sau.'}
+        </p>
+        <div>
+          <Button
+            className="button-base"
+            onClick={() => window.location.reload()}
+          >
+            Quay lại
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative">
-      <div className="relative z-10 overflow-x-auto p-8 ">
-        <div className="flex flex-col items-center mb-8">
-          <PreviousNavigation isReload />
-          {!isSearching && (
-            <>
-              <h2 className="text-shadow-custom text-[1rem] font-[274]">Hành trình kết nối</h2>
-              <h1 className="text-shadow-custom text-[1.25rem] font-[700]">Sơ đồ hệ thống</h1>
-            </>
-          )}
-          <div className={`absolute right-3 ${isSearching ? 'w-4/5' : 'w-0'} transition-all duration-300 -translate-y-1`}>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => handleSearchAddress()}
-                className="absolute right-0 z-20"
-              >
-                {isSearching ? <Search2Icon /> : <SearchIcon />}
-              </button>
-              <Input
-                className={`absolute top-0 border ${isSearching ? 'h-11 block ' : 'h-0 hidden'} text-white rounded-full pe-10`}
-                onKeyDown={e => e.key === 'Enter' && handleSearchAddress()}
-                ref={searchRef}
-                placeholder="Nhập địa chỉ ví"
-                style={{
-                  background: 'linear-gradient(180deg, rgba(104, 218, 242, 0.50) 0%, rgba(28, 91, 185, 0.50) 95.1%)'
-                }}
-              />
-            </div>
+    <div className="relative z-10 overflow-x-auto p-4">
+      {/* Header */}
+      <div className="flex flex-col items-center mb-8">
+        <PreviousNavigation isReload />
+
+        {!isSearching && (
+          <>
+            <h2 className="text-shadow-custom text-[1rem] font-[274]">
+              Hành trình kết nối
+            </h2>
+            <h1 className="text-shadow-custom text-[1.25rem] font-[700]">
+              Sơ đồ hệ thống
+            </h1>
+          </>
+        )}
+
+        {/* Search */}
+        <div className={`absolute right-3 ${isSearching ? 'w-4/5' : 'w-0'} transition-all duration-300 -translate-y-1`}>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={handleSearchAddress}
+              className="absolute right-0 z-20"
+            >
+              {isSearching ? <Search2Icon /> : <SearchIcon />}
+            </button>
+            <Input
+              className={`absolute top-0 border ${isSearching ? 'h-11 block' : 'h-0 hidden'} text-white rounded-full pe-10`}
+              onKeyDown={e => e.key === 'Enter' && handleSearchAddress()}
+              ref={searchRef}
+              placeholder="Nhập địa chỉ ví"
+              style={{
+                background: 'linear-gradient(180deg, rgba(104, 218, 242, 0.50) 0%, rgba(28, 91, 185, 0.50) 95.1%)'
+              }}
+            />
           </div>
         </div>
-        {isError && (
-          <div className="text-white text-center h-[calc(100vh-170px)] flex flex-col items-center justify-center gap-4">
-            <p className="text-lg font-bold">Không tìm thấy dữ liệu</p>
-            <p className="text-sm">Vui lòng thử lại sau.</p>
-            <div>
-              <Button className="button-base" onClick={() => window.location.reload()}>
-                Quay lại
-              </Button>
-            </div>
-          </div>
-        )}
-        <GiftIcon />
-
-        {!isSearching && !isError && (
-          <div className="h-[calc(100vh-170px)] overflow-y-scroll">
-            {isInitialLoading ? (
-              <Loader2 className="animate-spin text-white fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-            ) : (
-              treeDataV2.lv1.map(node => renderTreeNode(node))
-            )}
-          </div>
-        )}
       </div>
+
+      {/* Content */}
+      {!isSearching && (
+        <div className="h-[calc(100vh-100px)] overflow-y-scroll">
+          {isInitialLoading && !isDataLoaded ? (
+            <Loader2 className="animate-spin text-white fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+          ) : (
+            <div>
+              {Array.from({ length: BOX_COUNT }, (_, index) => {
+                const boxNumber = index + 1;
+                const boxKey = `box${boxNumber}`;
+                const boxData = treeData[boxKey];
+
+                if (!boxData) {
+                  return null;
+                }
+
+                return (
+                  <div key={boxKey} className="mb-8">
+                    <div className="flex items-center translate-y-2">
+                      <GiftIcon className="z-50" />
+                      <span className="text-shadow-custom -translate-x-[6px]">
+                        Box
+                        {' '}
+                        {boxNumber}
+                        {boxData.pagination && (
+                          <span className="text-xs ml-2">
+                            - Trang
+                            {' '}
+                            {boxData.pagination.currentPage}
+                            /
+                            {boxData.pagination.totalPages}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <div className="translate-x-5">
+                      {boxData.isLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="animate-spin text-white" />
+                        </div>
+                      ) : boxData.error ? (
+                        <div className="text-red-400 py-4">
+                          Error:
+                          {' '}
+                          {boxData.error}
+                        </div>
+                      ) : (
+                        boxData.nodes?.map(node => renderTreeNode(node, boxNumber))
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

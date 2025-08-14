@@ -98,7 +98,7 @@ const Page = () => {
   ];
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { mutateAsync, isSuccess: isUpdatedSuccess } = useUpdateMission();
+  const { mutateAsync } = useUpdateMission();
   const handleMission = async ({ type, to, isCompleted }: {
     type: Mission['type'];
     to?: Mission['to'];

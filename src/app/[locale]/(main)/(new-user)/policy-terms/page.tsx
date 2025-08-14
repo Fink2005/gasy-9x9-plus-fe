@@ -61,7 +61,7 @@ const policyTerms = [
     )
   },
   {
-    title: 'Có chế xử lý vi phạm',
+    title: 'Cơ chế xử lý vi phạm',
     subtitle: (
       <ul>
         <li>Mọi trường hợp gian lận, lợi dụng, lôi kéo sai sự thật sẽ bị xử lý tuỳ theo mức độ vi phạm (Cảnh báo, đình chỉ hoặc xoá quyền truy cập).</li>
@@ -72,6 +72,7 @@ const policyTerms = [
     title: (
       <p>
         Thay đổi và điểu chỉnh
+        {' '}
         <strong>9x9Plus</strong>
         {' '}
         có quyền thay đổi điều khoản khi có cập nhật hệ thống hoặc thay đổi quy trình hoạt động. Mọi thay đổi sẽ được thông báo trước trên giao diện website/ứng dụng.

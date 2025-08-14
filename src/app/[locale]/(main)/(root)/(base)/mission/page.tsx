@@ -98,7 +98,7 @@ const Page = () => {
   ];
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { mutateAsync } = useUpdateMission();
+  const { mutateAsync, isSuccess: isUpdatedSuccess } = useUpdateMission();
   const handleMission = async ({ type, to, isCompleted }: {
     type: Mission['type'];
     to?: Mission['to'];
@@ -108,23 +108,43 @@ const Page = () => {
       return;
     }
 
-    // Điều hướng ngay lập tức
-    if (type === 'shareLink' || type === 'joinGroup') {
-      window.open(to, '_blank');
-    } else if (type === 'readTerms' && to) {
-      router.push(to);
-    }
+    let newWindow: Window | null = null;
 
-    // Xử lý async sau khi điều hướng (nếu vẫn ở cùng trang)
+    // Mở popup ngay lập tức nếu là share/join
+
+    // Thực hiện async mutate sau khi mở popup
     mutateAsync(type).then(() => {
-      !isCompleted && toast.success(
+      if ((type === 'shareLink' || type === 'joinGroup') && to) {
+        newWindow = window.open(to, '_blank');
+        newWindow?.focus();
+      }
+      queryClient.invalidateQueries({ queryKey: ['get-mission'] });
+      queryClient.refetchQueries({ queryKey: ['get-mission'] });
+    });
+
+    if (!isCompleted) {
+      toast.success(
         'Chúc mừng bạn đã nhận được phần thưởng từ nhiệm vụ này!',
         { duration: 3000 }
       );
-      queryClient.removeQueries({ queryKey: ['get-mission'] });
-    });
+    }
+
+    // Điều hướng nếu là readTerms
+    if (type === 'readTerms' && to) {
+      router.push(to);
+    }
   };
 
+  // useEffect(() => {
+  //   const [navigation] = performance.getEntriesByType('navigation');
+  //   if (navigation.type === 'reload') {
+  //     toast.success('Chào mừng bạn đến với trang nhiệm vụ!', {
+  //       duration: 30000
+  //     });
+
+  //     // Thực hiện chức năng ở đây
+  //   }
+  // }, []);
   useEffect(() => {
     router.prefetch('/mission/info');
   }, [router]);

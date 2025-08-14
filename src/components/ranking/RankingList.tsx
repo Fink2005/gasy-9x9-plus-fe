@@ -12,9 +12,9 @@ import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 const top3Ranking = [
-  <GoldMedalIcon key="gold-medal" />,
-  <SilverMedalIcon key="silver-medal" />,
-  <BronzeMedalIcon key="bronze-medal" />
+  <GoldMedalIcon key="gold-medal" className="translate-y-1" />,
+  <SilverMedalIcon key="silver-medal" className="translate-y-1" />,
+  <BronzeMedalIcon key="bronze-medal" className="translate-y-1" />
 ];
 //
 
@@ -60,17 +60,17 @@ const RankingList = () => {
             return (
               <div
                 key={`${player._id}-${index}`}
-                className={`ranking-list-items flex items-center justify-around ${(dataRanking.length - 1) === index ? 'mb-4' : ''} ${index === 0 ? '!bg-gradient-to-b from-[#68daf2] to-[#1c5bb9]'
+                className={`ranking-list-items flex items-center justify-between px-6 ${(dataRanking.length - 1) === index ? 'mb-4' : ''} ${index === 0 ? '!bg-gradient-to-b from-[#68daf2] to-[#1c5bb9]'
                   : ''
                 }`}
                 ref={isSetRef ? ref : null}
               >
-                <div className={`flex items-center ${(index !== 0 && index < 4) ? '' : 'translate-x-[2px] space-x-2'} `}>
-                  <span className="text-shadow-custom font-[500] text-[1rem]">
+                <div className={`flex items-center justify-center ${(index !== 0 && index < 4) ? '' : ''} `}>
+                  <span className="text-shadow-custom font-[500] text-[1rem] w-10 text-center">
                     {index === 0 && player.myRanking}
                     {index < 4 ? top3Ranking[index - 1] : index}
                   </span>
-                  <div className="size-8 rounded-full ms-4 flex items-center justify-center bg-[#000C36]">
+                  <div className="size-8 rounded-full ms-4 flex items-center justify-center bg-[#000C36] -translate-x-4">
                     <Image
                       src="/assets/logo-9x9.png"
                       width={80}
@@ -80,7 +80,7 @@ const RankingList = () => {
                     />
                   </div>
                 </div>
-                <span className="text-shadow-custom text-[1rem] font-[400] w-[120px] text-center">{index !== 0 ? formatAddress(player.address, 8) : player.address}</span>
+                <span className={`text-shadow-custom text-[1rem] font-[400] w-[120px] text-center ${index === 0 && '-translate-x-3'}`}>{index !== 0 ? formatAddress(player.address, 8) : player.address}</span>
                 <div className="flex items-center">
                   <span className="text-shadow-custom text-[0.875rem] font-[590]">
                     {player.score.toLocaleString()}

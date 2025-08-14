@@ -41,4 +41,5 @@ export type BoxTreeRes = {
 export type BoxTreeBody = {
   address: string;
   page: number;
+  limit: number;
 };

@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import useGetCookie from '@/hooks/useGetCookie';
 import ChevronDown2Icon from '@/libs/shared/icons/ChevronDown2';
 import Connection2Icon from '@/libs/shared/icons/Connection2';
+import GiftIcon from '@/libs/shared/icons/Gift';
 import MinuteIcon from '@/libs/shared/icons/Minute';
 import PlusIcon from '@/libs/shared/icons/Plus';
 import SearchIcon from '@/libs/shared/icons/Search';
@@ -104,7 +105,8 @@ export default function Tree() {
 
       const response = await boxRequest.boxTree({
         address,
-        page
+        page,
+        limit: 9
       });
 
       if (response instanceof Error) {
@@ -219,7 +221,8 @@ export default function Tree() {
 
       const response = await boxRequest.boxTree({
         address: parentAddress,
-        page
+        page,
+        limit: 9
       });
 
       if (response instanceof Error) {
@@ -631,6 +634,8 @@ export default function Tree() {
             </div>
           </div>
         )}
+        <GiftIcon />
+
         {!isSearching && !isError && (
           <div className="h-[calc(100vh-170px)] overflow-y-scroll">
             {isInitialLoading ? (

@@ -1,5 +1,5 @@
 import { http } from '@/app/http/apiRequest';
-import { BOX_TREE_LIMIT, CACHE_REVALIDATE_MINUTES } from '@/libs/shared/constants/globals';
+import { CACHE_REVALIDATE_MINUTES } from '@/libs/shared/constants/globals';
 import type { BoxDetailRes, BoxRes, BoxTreeBody, BoxTreeRes } from '@/types/box';
 
 export const boxRequest = {
@@ -22,7 +22,7 @@ export const boxRequest = {
     });
   },
   async boxTree(boxTree: BoxTreeBody): Promise<BoxTreeRes | null> {
-    const { address, page } = boxTree;
-    return await http.get<BoxTreeRes | null>(`/box/tree?address=${address}&limit=${BOX_TREE_LIMIT}&page=${page}`);
+    const { address, page, limit } = boxTree;
+    return await http.get<BoxTreeRes | null>(`/box/tree?address=${address}&limit=${limit}&page=${page}`);
   }
 };

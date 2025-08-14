@@ -4,7 +4,7 @@ import type { BoxTreeRes } from '@/types/box';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-export const useBoxTree = (address: string, initialPage = 1) => {
+export const useBoxTree = (address: string, limit = 9, initialPage = 1) => {
   return useInfiniteQuery<BoxTreeRes, Error>({
     queryKey: ['box-tree', address],
 
@@ -12,6 +12,7 @@ export const useBoxTree = (address: string, initialPage = 1) => {
       const response = await boxRequest.boxTree({
         address,
         page: pageParam as number,
+        limit
       });
 
       if (response instanceof Error) {

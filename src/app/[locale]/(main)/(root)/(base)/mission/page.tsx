@@ -99,11 +99,7 @@ const Page = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { mutateAsync } = useUpdateMission();
-  const handleMission = async ({ type, to, isCompleted }: {
-    type: 'shareLink' | 'joinGroup' | 'readTerms';
-    to?: string;
-    isCompleted: boolean;
-  }) => {
+  const handleMission = async ({ type, to, isCompleted }) => {
     if (!type) {
       return;
     }
@@ -115,21 +111,30 @@ const Page = () => {
       // For Telegram links, use deep linking
       if (to.includes('t.me')) {
         const telegramUrl = to.replace('https://t.me/', 'tg://');
-        window.open(telegramUrl, '_blank');
-        // Fallback to web version after a delay
-        setTimeout(() => {
-          window.open(to, '_blank');
-        }, 1000);
+        try {
+          window.open(telegramUrl, '_blank');
+          // Fallback to web version after a delay
+          setTimeout(() => {
+            window.location.href = to;
+          }, 1000);
+        } catch {
+          window.location.href = to;
+        }
       } else if (to.includes('facebook.com')) {
         const fbUrl = to.replace('https://www.facebook.com/', 'fb://');
-        window.open(fbUrl, '_blank');
-        setTimeout(() => {
-          window.open(to, '_blank');
-        }, 1000);
+        try {
+          window.location.href = fbUrl;
+          setTimeout(() => {
+            window.location.href = to;
+          }, 1000);
+        } catch {
+          window.location.href = to;
+        }
       } else {
         window.location.href = to;
       }
     }
+
     queryClient.refetchQueries({ queryKey: ['get-mission'] });
 
     if (!isCompleted) {

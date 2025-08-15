@@ -99,7 +99,11 @@ const Page = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { mutateAsync } = useUpdateMission();
-  const handleMission = async ({ type, to, isCompleted }) => {
+  const handleMission = async ({ type, to, isCompleted }: {
+    type: 'shareLink' | 'joinGroup' | 'readTerms';
+    to?: string;
+    isCompleted: boolean;
+  }) => {
     if (!type) {
       return;
     }

@@ -739,12 +739,12 @@ export default function Tree() {
 
   const renderTreeNode = useCallback((node: TreeNode, boxNumber?: number) => {
     const marginLeft = (node.level - 1) * 50;
-    const isLoading = isCurrentFetching(node.originalAddress)
-      || (node.type === 'more');
+    // const isLoading = isCurrentFetching(node.originalAddress)
+    //   || (node.type === 'more');
 
     return (
       <div key={node.id} className="relative">
-        <div className="flex items-center gap-3 mb-3" style={{ marginLeft: `${marginLeft}px` }}>
+        <div className="flex items-center gap-3 mb-3 w-[250px]" style={{ marginLeft: `${marginLeft}px` }}>
           <span className="text-white text-sm font-medium min-w-[1px] w-[15px]">
             Lv.
             {node.level}
@@ -754,7 +754,6 @@ export default function Tree() {
 
           <Button
             className={`${getButtonColor(node.type)} rounded-lg py-2 flex items-center min-w-[100px] w-[105px]`}
-            disabled={isLoading}
             onClick={() => handleNodeAction(node, boxNumber)}
           >
             {renderIcon(node.type)}
@@ -884,22 +883,13 @@ export default function Tree() {
                   <div key={boxKey} className="mb-8">
                     <div className="flex items-center translate-y-2">
                       <GiftIcon className="z-50" />
-                      <span className="text-shadow-custom -translate-x-[6px]">
+                      <span className="text-shadow-custom -translate-x-[6px] -translate-y-[7px]">
                         Box
                         {' '}
                         {boxNumber}
-                        {boxData.pagination && (
-                          <span className="text-xs ml-2">
-                            - Trang
-                            {' '}
-                            {boxData.pagination.currentPage}
-                            /
-                            {boxData.pagination.totalPages}
-                          </span>
-                        )}
                       </span>
                     </div>
-                    <div className="translate-x-5">
+                    <div className="translate-x-5 w-[calc(100vh-500px)] translate-x-auto">
                       {boxData.isLoading ? (
                         <div className="flex items-center justify-center py-8">
                           <Loader2 className="animate-spin text-white" />

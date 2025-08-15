@@ -14,15 +14,6 @@ export const useUpdateMission = () => {
 
     mutationFn: async (query: 'shareLink' | 'joinGroup' | 'readTerms') =>
       missionRequest.updateTasks(query),
-    // onSuccess: () => {
-    //   window.open('https://www.facebook.com/share/19nBvnkfwo/?mibextid=LQQJ4d');
-
-    //   queryClient.refetchQueries({ queryKey: ['get-mission'] });
-    //   toast.success(
-    //     'Chúc mừng bạn đã nhận được phần thưởng từ nhiệm vụ này!',
-    //     { duration: 3000 }
-    //   );
-    // }
 
   });
 };

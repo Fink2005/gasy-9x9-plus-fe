@@ -66,7 +66,7 @@ const Page = () => {
       describe: 'Like & chia sẻ video trên mạng xã hội',
       score: '+999',
       type: 'shareLink',
-      to: 'https://t.me/+WrtBnbRub-k5ZWM1',
+      to: 'https://www.facebook.com/share/19nBvnkfwo/?mibextid=LQQJ4d',
       isCompleted: dataMission?.shareLink === true
     },
     {
@@ -74,7 +74,7 @@ const Page = () => {
       describe: 'Gia nhập cộng đồng chính thức 9x9Plus',
       score: '+999',
       type: 'joinGroup',
-      to: 'https://www.facebook.com/share/19nBvnkfwo/?mibextid=LQQJ4d',
+      to: 'https://t.me/+WrtBnbRub-k5ZWM1',
       isCompleted: dataMission?.joinGroup === true
     },
     {
@@ -100,27 +100,37 @@ const Page = () => {
   const router = useRouter();
   const { mutateAsync } = useUpdateMission();
   const handleMission = async ({ type, to, isCompleted }: {
-    type: Mission['type'];
-    to?: Mission['to'];
-    isCompleted: Mission['isCompleted'];
+    type: 'shareLink' | 'joinGroup' | 'readTerms';
+    to?: string;
+    isCompleted: boolean;
   }) => {
     if (!type) {
       return;
     }
 
-    let newWindow: Window | null = null;
+    // Perform the mutation first
+    await mutateAsync(type);
 
-    // Mở popup ngay lập tức nếu là share/join
-
-    // Thực hiện async mutate sau khi mở popup
-    mutateAsync(type).then(() => {
-      if ((type === 'shareLink' || type === 'joinGroup') && to) {
-        newWindow = window.open(to, '_blank');
-        newWindow?.focus();
+    if ((type === 'shareLink' || type === 'joinGroup') && to) {
+      // For Telegram links, use deep linking
+      if (to.includes('t.me')) {
+        const telegramUrl = to.replace('https://t.me/', 'tg://');
+        window.open(telegramUrl, '_blank');
+        // Fallback to web version after a delay
+        setTimeout(() => {
+          window.open(to, '_blank');
+        }, 1000);
+      } else if (to.includes('facebook.com')) {
+        const fbUrl = to.replace('https://www.facebook.com/', 'fb://');
+        window.open(fbUrl, '_blank');
+        setTimeout(() => {
+          window.open(to, '_blank');
+        }, 1000);
+      } else {
+        window.location.href = to;
       }
-      queryClient.invalidateQueries({ queryKey: ['get-mission'] });
-      queryClient.refetchQueries({ queryKey: ['get-mission'] });
-    });
+    }
+    queryClient.refetchQueries({ queryKey: ['get-mission'] });
 
     if (!isCompleted) {
       toast.success(
@@ -129,22 +139,10 @@ const Page = () => {
       );
     }
 
-    // Điều hướng nếu là readTerms
     if (type === 'readTerms' && to) {
       router.push(to);
     }
   };
-
-  // useEffect(() => {
-  //   const [navigation] = performance.getEntriesByType('navigation');
-  //   if (navigation.type === 'reload') {
-  //     toast.success('Chào mừng bạn đến với trang nhiệm vụ!', {
-  //       duration: 30000
-  //     });
-
-  //     // Thực hiện chức năng ở đây
-  //   }
-  // }, []);
   useEffect(() => {
     router.prefetch('/mission/info');
   }, [router]);

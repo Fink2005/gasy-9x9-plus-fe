@@ -10,7 +10,7 @@ import { usePathname } from 'next/navigation';
 const tabBar = [
   { icon: HouseIcon, title: 'Trang chủ', to: '/' },
   { icon: HumanIcon, title: 'Thần số học', to: '/numerology' },
-  { icon: ControllerIcon, title: 'Đào vàng', to: '/gold-mining' },
+  { icon: ControllerIcon, title: 'Đào kho báu', to: '/gold-mining' },
   { icon: NotesIcon, title: 'Bảng xếp hạng', to: '/ranking' },
   { icon: QuestionIcon, title: 'Nhiệm vụ', to: '/mission' },
 ];

@@ -428,7 +428,7 @@ export default function Tree() {
   const handleNodeAction = async (node: TreeNode) => {
     switch (node.type) {
       case 'share':
-        handleClipboardCopy(`${urlSharing}?invitedBy=${address}&spillover=${node.originalAddress}`);
+        handleClipboardCopy(`${urlSharing}?invitedBy=${address}${node.originalAddress === address ? '' : `&spillover=${node.originalAddress}`}`);
         break;
 
       case 'more':

@@ -66,11 +66,11 @@ const RankingList = () => {
                 ref={isSetRef ? ref : null}
               >
                 <div className={`flex items-center justify-center ${(index !== 0 && index < 4) ? '' : ''} `}>
-                  <span className="text-shadow-custom font-[500] text-[1rem] w-10 text-center">
+                  <div className="text-shadow-custom font-[500] text-[1rem] min-w-10 text-center">
                     {index === 0 && player.myRanking}
                     {index < 4 ? top3Ranking[index - 1] : index}
-                  </span>
-                  <div className="size-8 rounded-full ms-4 flex items-center justify-center bg-[#000C36] -translate-x-4">
+                  </div>
+                  <div className="size-8 rounded-full ms-5 flex items-center justify-center bg-[#000C36] -translate-x-4">
                     <Image
                       src="/assets/logo-9x9.png"
                       width={80}

@@ -39,10 +39,10 @@ const usdtAbi = [
 ];
 
 // Constants
-const usdtAddress = '0xc45D0156553e000eBcdFc05B08Ea5184911e13De'; // this is for Sepolia testnet USDT
-const contractAddress = '0x3A87e9E8616957eA2F4b8960CFa333fCF5887589';
-// const usdtAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
-// const contractAddress = '0x670Ec3544786843b9B207cC274968e2B58489fF1';
+// const usdtAddress = '0xc45D0156553e000eBcdFc05B08Ea5184911e13De'; // this is for Sepolia testnet USDT
+// const contractAddress = '0x3A87e9E8616957eA2F4b8960CFa333fCF5887589';
+const usdtAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+const contractAddress = '0x670Ec3544786843b9B207cC274968e2B58489fF1';
 const approveAmount = 26 * 10 ** 6; // 26 USDT (6 decimals)
 
 type Props = {
@@ -95,14 +95,14 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
       setIsOpen(false);
       const web3 = new Web3(window.ethereum);
 
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0xaa36a7' }], // 0xaa36a7 = Sepolia chain ID in hex
-      });
       // await window.ethereum.request({
       //   method: 'wallet_switchEthereumChain',
-      //   params: [{ chainId: '0x1' }], // 0x1 = Ethereum mainnet chain ID in hex
+      //   params: [{ chainId: '0xaa36a7' }], // 0xaa36a7 = Sepolia chain ID in hex
       // });
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0x1' }], // 0x1 = Ethereum mainnet chain ID in hex
+      });
 
       const accounts = await web3.eth.getAccounts();
       const sender = accounts[0];

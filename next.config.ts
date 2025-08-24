@@ -35,6 +35,43 @@ const finalConfig = {
           },
         ],
       },
+      {
+        source: '/numerology/result',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600',
+          },
+        ],
+      },
+      {
+        source: '/numerology/result',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, stale-while-revalidate=600',
+          },
+        ],
+      },
+      {
+        source: '/box/:id',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=60, s-maxage=300',
+          },
+        ],
+      },
+      {
+        source: '/',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, stale-while-revalidate=600',
+          },
+        ],
+      },
+
     ];
   },
 

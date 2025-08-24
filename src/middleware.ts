@@ -42,7 +42,8 @@ export default async function middleware(request: NextRequest) {
   // Set custom header with pathname
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
-
+  requestHeaders.set('con-me-may', request.nextUrl.search);
+  const response = NextResponse.next();
   // Safely parse authData cookie
   let isAuthenticated: boolean | undefined;
   const authDataCookie = request.cookies.get('authData');
@@ -62,8 +63,17 @@ export default async function middleware(request: NextRequest) {
     ...request,
     headers: requestHeaders,
   });
+
+  const handleResponse = handleI18nRouting(requestWithHeaders);
+  // handleResponse.cookies.set({
+  //   name: 'userId',
+  //   value: '12345',
+  //   httpOnly: true,
+  //   path: '/',
+  //   maxAge: 60 * 60 * 24
+  // });
   if (pathname.startsWith('/request')) {
-    return NextResponse.next();
+    return response;
   }
 
   // Arcjet protection
@@ -102,7 +112,7 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
   // Apply i18n routing
-  return handleI18nRouting(requestWithHeaders);
+  return handleResponse;
 }
 
 // Middleware matcher

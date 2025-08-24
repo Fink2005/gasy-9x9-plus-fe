@@ -75,9 +75,7 @@ const apiRequest = async <T>(
       ...(options?.cache && { cache: options.cache }),
       credentials: 'include',
     };
-    console.log(config);
     const response = await fetch(`${baseUrl}${endpoint}`, config);
-    console.log(response);
 
     if (!response.ok) {
       if (response.status === 401) {

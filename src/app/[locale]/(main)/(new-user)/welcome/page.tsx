@@ -1,9 +1,13 @@
+import { getCookie } from '@/app/actions/cookie';
 import { montserrat } from '@/app/fonts/montserrat';
 import WelcomeFooter from '@/components/welcome/WelcomeFooter';
 import WelcomeList1 from '@/components/welcome/WelcomeList1';
 import Shield2Icon from '@/libs/shared/icons/Shield2';
 
-const page = () => {
+const page = async () => {
+  const authData = await getCookie('authData');
+  const isKyc = authData ? JSON.parse(authData)?.isKyc : false;
+
   return (
     <div className="flex flex-col items-center">
       <div className="title-welcome flex flex-col">
@@ -40,7 +44,7 @@ const page = () => {
             </p>
           </div>
         </div>
-        <WelcomeFooter />
+        <WelcomeFooter isKyc={isKyc} />
       </div>
     </div>
   );

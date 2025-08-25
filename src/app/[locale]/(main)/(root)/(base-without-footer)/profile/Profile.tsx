@@ -11,8 +11,7 @@ export const dynamic = 'force-dynamic';
 
 const Profile = async () => {
   const userRes = await userRequest.userGetMe();
-  // eslint-disable-next-line no-console
-  console.log(userRes);
+
   const userData = [
     {
       id: 1,

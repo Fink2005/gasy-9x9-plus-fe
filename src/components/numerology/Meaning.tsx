@@ -46,6 +46,7 @@ const Meaning = ({ baseUrl, numerologyResult }: Props) => {
         {numerologyResult?.number.mainNumber}
         {' '}
         -
+        {' '}
         {numerologyResult?.meaning.description}
       </h2>
       <div className="mt-5">

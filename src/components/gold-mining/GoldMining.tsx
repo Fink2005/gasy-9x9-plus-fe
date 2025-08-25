@@ -34,6 +34,8 @@ const GoldMining = () => {
     }
   }, [isSuccess, data]);
   const { data: dataMe, isSuccess: isDataMeSuccess } = useGetMe();
+  // eslint-disable-next-line no-console
+  console.log(dataMe);
 
   const handlePlayGame = async () => {
     const result = await goldMiningRequest.GoldMiningStart();

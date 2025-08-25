@@ -1,5 +1,6 @@
 'use client';
 
+import { handleRevalidateTag } from '@/app/actions/revalidation';
 import { useGetMission, useUpdateMission } from '@/app/http/queries/useMission';
 import GoodSign2Icon from '@/libs/shared/icons/GoodSign2';
 import RightArrowIcon from '@/libs/shared/icons/RightArrow2';
@@ -110,6 +111,8 @@ const Page = () => {
 
     // Perform the mutation first
     await mutateAsync(type);
+    queryClient.removeQueries({ queryKey: ['get-me'] });
+    handleRevalidateTag('get-me');
 
     if ((type === 'shareLink' || type === 'joinGroup') && to) {
       // For Telegram links, use deep linking

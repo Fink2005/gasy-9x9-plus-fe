@@ -11,6 +11,8 @@ export const dynamic = 'force-dynamic';
 
 const Profile = async () => {
   const userRes = await userRequest.userGetMe();
+  // eslint-disable-next-line no-console
+  console.log(userRes);
   const userData = [
     {
       id: 1,
@@ -57,7 +59,7 @@ const Profile = async () => {
         </div>
         {
           userData.map(item => (
-            <div key={item.id} className="flex items-center justify-between  border-b border-white/10">
+            <div key={item.id} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <item.icon className="w-20 h-14 text-white translate-y-1" />
                 <span className="text-shadow-custom text-[1rem] font-[860]">{item.title}</span>

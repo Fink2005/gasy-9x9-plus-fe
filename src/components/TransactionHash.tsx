@@ -28,6 +28,8 @@ const TRANSACTION_CHECKING_ROUTE = ['/', '/gold-mining', '/numerology', '/missio
 const TransactionHash = () => {
   const { handleGetCookie } = useGetCookie();
   const { setLoading } = useBox();
+  let intervalId: NodeJS.Timeout | null = null;
+
   const getAddress = async () => {
     const authData = await handleGetCookie('authData');
     const userAddress = (authData as { address: string })?.address;
@@ -127,12 +129,13 @@ const TransactionHash = () => {
       }
     } catch (error) {
       console.error('Error fetching latest openBox transaction:', error);
+      localStorage.removeItem('boxData');
+      clearInterval(intervalId as unknown as number);
+
       return null; // Explicitly return null in case of an error
     }
   };
   useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null;
-
     const timer = setTimeout(async () => {
       const boxDataString = localStorage.getItem('boxData');
       const isOnValidRoute = TRANSACTION_CHECKING_ROUTE.includes(pathname);

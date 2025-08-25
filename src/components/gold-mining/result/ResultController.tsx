@@ -1,5 +1,6 @@
 'use client';
 import { deleteCookie, getCookie } from '@/app/actions/cookie';
+import { handleRevalidateTag } from '@/app/actions/revalidation';
 import { Button } from '@/components/ui/button';
 import GamePad2 from '@/libs/shared/icons/GamePad2';
 import { useQueryClient } from '@tanstack/react-query';
@@ -7,6 +8,7 @@ import { useRouter } from 'nextjs-toploader/app';
 
 import { useEffect, useState } from 'react';
 
+const revalidateList = ['get-me', 'get-mission', 'user-ranking', 'get-rest-time'];
 const ResultController = () => {
   const [playLeft, setPlayLeft] = useState<string | undefined>('0');
   const router = useRouter();
@@ -17,18 +19,11 @@ const ResultController = () => {
     router.replace('/gold-mining');
   };
   useEffect(() => {
-    queryClient.removeQueries({
-      queryKey: ['user-ranking'],
-    });
-    queryClient.removeQueries({
-      queryKey: ['get-mission',],
-    });
-    queryClient.removeQueries({
-      queryKey: ['get-rest-time'],
-    });
-    queryClient.removeQueries({
-      queryKey: ['get-me'],
-    });
+    revalidateList.forEach(tag => queryClient.removeQueries({
+      queryKey: [tag],
+    }));
+    handleRevalidateTag('get-me');
+
     (async () => {
       const playTimes = await getCookie('playLeft');
       setPlayLeft(playTimes);

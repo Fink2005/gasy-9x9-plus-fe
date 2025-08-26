@@ -226,6 +226,10 @@
   background: linear-gradient(180deg, #68daf2 0%, #1c5bb9 95.1%);
   box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
 }
+
+.button-rounded:active {
+  background: linear-gradient(180deg, #4ac4e8 0%, #0f3d7a 95.1%);
+}
 .text-shadow-custom {
   text-shadow: 0px 4px 15px rgba(145, 213, 255, 0.5);
   color: #bae7ff;

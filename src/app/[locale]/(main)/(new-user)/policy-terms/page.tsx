@@ -107,7 +107,7 @@ const page = async () => {
         </ol>
 
         <Link href="/welcome" prefetch>
-          <Button className="button-rounded mt-[1.13rem]">
+          <Button className="button-rounded mt-[1.13rem] focus:bg-white">
             <CheckCircle className="size-6" />
             <span
               className={`${montserrat.variable} font-[700] text-[0.875rem] text-wrap`}

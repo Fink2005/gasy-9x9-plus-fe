@@ -1,6 +1,5 @@
 'use client';
 
-import CoinIcon from '@/libs/shared/icons/Coin';
 import GoodSign from '@/libs/shared/icons/GoodSign';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
@@ -13,6 +12,7 @@ import {
   DialogTrigger
 } from '../ui/dialog';
 // Minimal USDT ABI for approval
+import CoinIcon from '@/libs/shared/icons/Coin';
 import useBoxStore from '@/store/useBoxStore';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -40,8 +40,10 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
   const handleOpenChange = (open: boolean) => {
     if ((!isOpenBox && boxNumber !== 1) && currentBox !== boxNumber) {
       toast.warning(`Bạn cần phải mở hộp ${currentBox}`);
+      return;
     } else if (isOpenBox) {
       router.push(`/box/${boxNumber}`);
+      return;
     }
     setIsOpen(open);
   };
@@ -77,9 +79,11 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
         </DialogHeader>
 
         {!isSuccess ? (
-          <div className="-translate-y-3">
+          // </div>
+          <div className="-translate-y-3 flex flex-col items-center">
             <CoinIcon />
             <p className="text-shadow-custom text-[1.5rem] font-[860] text-center">26$ USDT</p>
+            <p className="text-yellow-200 text-sm text-center mt-1">"Vui lòng không được tắt ứng dụng hoặc làm mới trang trong quá trình mở box"</p>
           </div>
         ) : (
           <div className="w-full flex flex-col items-center -translate-y-3">

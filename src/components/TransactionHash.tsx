@@ -17,9 +17,9 @@ import { toast } from 'sonner';
 import { useShallow } from 'zustand/react/shallow';
 
 const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
-const USDT_ADDRESS = process.env.USDT_ADDRESS;
+const USDT_ADDRESS = process.env.NEXT_PUBLIC_USDT_ADDRESS;
 
-const API_BNB_KEY = process.env.API_BNB_KEY;
+const API_BNB_KEY = process.env.NEXT_PUBLIC_API_BNB_KEY;
 
 const TRANSACTION_CHECKING_ROUTE = ['/', '/gold-mining', '/numerology', '/mission', '/ranking', '/box', '/profile'];
 
@@ -54,22 +54,25 @@ const TransactionHash = () => {
 
     const data = methodId + ownerPadded + spenderPadded;
     // ✅ Correct - this is Sepolia testnet
-    const url = `${etherUrl}?chainId=97&module=proxy&action=eth_call&to=${USDT_ADDRESS}&data=${data}&tag=latest&apikey=${API_BNB_KEY}`;
+    const url = `${etherUrl}?chainId=56&module=proxy&action=eth_call&to=${USDT_ADDRESS}&data=${data}&tag=latest&apikey=${API_BNB_KEY}`;
 
     try {
       const res = await fetch(url);
       const json = await res.json();
 
+      console.log(json);
+
       if (!json.result || json.result === '0x' || json.result === '0x0') {
+        console.log('123');
         return 0; // not approved yet
       }
 
-      const rawAllowance = Number.parseInt(json.result, 16); // hex → number
-      return rawAllowance / 1e6; // USDT has 6 decimals
+      const rawAllowance = BigInt(json.result); // hex → number
+      console.log(rawAllowance);
+      return Number(rawAllowance) / 1e18; // USDT has 18 decimals
     } catch (err) {
       clearBox();
       clearInterval(intervalId as any);
-
       console.error('Fetch allowance error:', err);
       return 0;
     }
@@ -85,10 +88,12 @@ const TransactionHash = () => {
 
     try {
       const response = await fetch(
-        `${etherUrl}?chainId=97&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=100&sort=desc&apikey=${API_BNB_KEY}`
+        `${etherUrl}?chainId=56&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=100&sort=desc&apikey=${API_BNB_KEY}`
       );
 
       const data = await response.json();
+
+      console.log(data);
       const openTransactionLength = data?.result?.filter((item: { methodId: string }) => item.methodId === openBoxMethodId).length;
       if (data.status === '1') {
         // Find the first transaction that matches openBox method
@@ -99,7 +104,7 @@ const TransactionHash = () => {
           }
 
           // Check if transaction calls openBox method
-          if (tx.input && tx.input.startsWith(openBoxMethodId)) {
+          if (tx.methodId === openBoxMethodId) {
             return {
               openTransactionLength,
               transactionHash: tx.hash,
@@ -123,10 +128,12 @@ const TransactionHash = () => {
 
     try {
       const response = await fetch(
-        `${etherUrl}?chainId=97&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=100&sort=desc&apikey=${API_BNB_KEY}`
+        `${etherUrl}?chainId=56&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=100&sort=desc&apikey=${API_BNB_KEY}`
       );
 
       const data = await response.json();
+
+      console.log(data);
 
       if (data.status === '1') {
         // Find the first transaction that matches openBox method
@@ -147,17 +154,18 @@ const TransactionHash = () => {
   useEffect(() => {
     // (
     //   async () => {
-    //     const openBoxHash = await getLatestOpenBoxTransaction('0x00814c99860e654ff26fd138f02136c01f381a8e');
+    //     const openBoxHash = await getLatestOpenBoxTransaction('0xb3c07d1ffe5ad5d38d69305232844f10b780a6b9');
     //     console.log(openBoxHash);
-    //     boxRequest.boxOpen(openBoxHash.transactionHash);
+    //     await boxRequest.boxOpen(openBoxHash?.transactionHash);
     //   }
     // )();
 
-    //  (
+    // (
     //   async () => {
-    //     const isApproving = await getAllowanceEtherscan('0x6a645bba369aa39fd4fb30507782f224a350eed1', contractAddress);
+    //     const isApproving = await getAllowanceEtherscan('0xb3c07d1ffe5ad5d38d69305232844f10b780a6b9', contractAddress);
     //     console.log(isApproving);
-    //     await getLatestApproveTransaction('0x6a645bba369aa39fd4fb30507782f224a350eed1');
+    //     const a = await getLatestApproveTransaction('0xb3c07d1ffe5ad5d38d69305232844f10b780a6b9');
+    //     console.log(a);
     //   }
     // )();
 
@@ -168,6 +176,7 @@ const TransactionHash = () => {
       const web3 = new Web3(window.ethereum); // or your provider
       const contract = new web3.eth.Contract(BoxDistributor, contractAddress);
       const isApproving = await getAllowanceEtherscan(address, contractAddress!);
+      console.log(isApproving);
       try {
         if (isApproving) {
           console.log('is approving');
@@ -189,7 +198,6 @@ const TransactionHash = () => {
                 if (!openBoxHash) {
                   return;
                 }
-                console.log('vao');
                 await boxRequest.boxOpen(openBoxHash.transactionHash);
                 await Promise.allSettled([
                   handleRevalidateTag('get-me'),
@@ -206,7 +214,7 @@ const TransactionHash = () => {
             }
           };
 
-          intervalId = setInterval(handleRetryOpenBox, 1000);
+          intervalId = setInterval(handleRetryOpenBox, 10000);
         }
       } catch {
         toast.error('Có lỗi xảy ra trong quá trình kiểm tra giao dịch. Vui lòng liên hệ với admin nếu lỗi vẫn tiếp diễn.');

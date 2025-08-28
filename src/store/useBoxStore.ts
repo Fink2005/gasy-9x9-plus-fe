@@ -3,7 +3,6 @@ import { handleRevalidateTag } from '@/app/actions/revalidation';
 import { ApiException } from '@/app/http/apiRequest';
 import { boxRequest } from '@/app/http/requests/box';
 import BoxDistributor from '@/contracts/BoxDistributor.json';
-import { delay } from '@/libs/utils';
 import { toast } from 'sonner';
 import Web3 from 'web3';
 import { create } from 'zustand';
@@ -49,8 +48,8 @@ const usdtAbi = [
   }
 ];
 
-const usdtAddress = '0xc1Be51dc3872f33d8AD2847adeadEF1061DD480B'; // this is for Sepolia testnet USDT
-const contractAddress = '0x6c1175baCC46BB85884Cb287485d3469dBAfeD65';
+const usdtAddress = process.env.NEXT_PUBLIC_USDT_ADDRESS;
+const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 const approveAmount = 26 * 10 ** 18; // 26 USDT (18 decimals)
 
 const useBoxStore = create<StoreState>()(
@@ -108,7 +107,6 @@ const useBoxStore = create<StoreState>()(
 
             if (usdtContract.methods.approve) {
               let hax;
-
               if (!txHash) {
                 hax = await usdtContract.methods.approve(contractAddress, approveAmount).send({ from: sender });
               }
@@ -121,8 +119,6 @@ const useBoxStore = create<StoreState>()(
                 toast.error('Giao dịch thất bại vui lòng liên hệ admin.');
                 return false;
               }
-
-              await delay(5000);
 
               const res = await boxRequest.boxApprove((transactionHash as string), currentBox as number);
 

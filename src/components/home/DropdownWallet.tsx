@@ -98,10 +98,13 @@ const DropdownWallet = ({ address }: Props) => {
     queryClient.clear();
     setIsLoggingOut(true);
     try {
-      await authRequests.logout();
+      await Promise.allSettled([
+        authRequests.logout(),
+        deleteCookie('boxData')
+      ]);
       router.replace('/login');
     } catch {
-      Promise.allSettled([
+      await Promise.allSettled([
         deleteCookie('authData'),
         deleteCookie('accessToken9x9'),
         deleteCookie('refreshToken9x9'),

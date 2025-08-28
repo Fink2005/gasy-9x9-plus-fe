@@ -76,7 +76,6 @@ const apiRequest = async <T>(
       credentials: 'include',
     };
     const response = await fetch(`${baseUrl}${endpoint}`, config);
-
     if (!response.ok) {
       if (response.status === 401) {
         if (isClient) {

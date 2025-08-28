@@ -16,7 +16,7 @@ import useBoxStore from '@/store/useBoxStore';
 import { toast } from 'sonner';
 import { useShallow } from 'zustand/react/shallow';
 
-const contractAddress = process.env.CONTRACT_ADDRESS;
+const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 const USDT_ADDRESS = process.env.USDT_ADDRESS;
 
 const API_BNB_KEY = process.env.API_BNB_KEY;

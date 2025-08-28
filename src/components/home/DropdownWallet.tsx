@@ -20,7 +20,7 @@ import Web3 from 'web3';
 type Props = {
   address: string;
 };
-const USDT_ADDRESS = process.env.USDT_ADDRESS;
+const USDT_ADDRESS = process.env.NEXT_PUBLIC_USDT_ADDRESS;
 const USDT_DECIMALS = 18;
 const ERC20_ABI = [
   {

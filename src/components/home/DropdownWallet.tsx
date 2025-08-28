@@ -20,10 +20,8 @@ import Web3 from 'web3';
 type Props = {
   address: string;
 };
-
-const USDT_CONTRACT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
-// const USDT_CONTRACT_ADDRESS = '0xc45D0156553e000eBcdFc05B08Ea5184911e13De'; // Sepolia testnet USDT
-const USDT_DECIMALS = 6;
+const USDT_ADDRESS = process.env.USDT_ADDRESS;
+const USDT_DECIMALS = 18;
 const ERC20_ABI = [
   {
     constant: true,
@@ -65,15 +63,11 @@ const DropdownWallet = ({ address }: Props) => {
         throw new Error('Web3 or Ethereum provider not available');
       }
 
-      // await window.ethereum.request({
-      //   method: 'wallet_switchEthereumChain',
-      //   params: [{ chainId: '0xaa36a7' }], // Sepolia chain ID
-      // });
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x1' }], // 0x1 = Ethereum mainnet chain ID in hex
+        params: [{ chainId: '0x38' }], // 0x38 = 56 in decimal (BSC mainnet)
       });
-      const contract = new web3.eth.Contract(ERC20_ABI, USDT_CONTRACT_ADDRESS);
+      const contract = new web3.eth.Contract(ERC20_ABI, USDT_ADDRESS);
       if (!contract || !contract.methods.balanceOf) {
         throw new Error('Failed to create contract instance');
       }
@@ -85,7 +79,7 @@ const DropdownWallet = ({ address }: Props) => {
         return undefined;
       }
 
-      const balanceInUSDT = NumberFormat(Number(rawBalance || '0') / 10 ** USDT_DECIMALS);
+      const balanceInUSDT = NumberFormat(Number(rawBalance || '0') / 10 ** USDT_DECIMALS as number);
       return balanceInUSDT;
     } catch (error) {
       console.error('Balance fetch error:', error);
@@ -111,6 +105,7 @@ const DropdownWallet = ({ address }: Props) => {
         deleteCookie('authData'),
         deleteCookie('accessToken9x9'),
         deleteCookie('refreshToken9x9'),
+        deleteCookie('boxData')
       ]);
       window.location.href = '/login';
     } finally {
@@ -206,10 +201,10 @@ const DropdownWallet = ({ address }: Props) => {
       <Dialog open={isWarningEth}>
         <DialogContent className="fixed top-1/2 left-1/2 -translate-1/2 confirm-dialog gap-3 max-w-[512px] h-[331px] w-full flex flex-col justify-center">
           <DialogHeader className="flex flex-col items-center">
-            <DialogTitle className="text-shadow-custom font-semibold text-2xl">Đổi mạng sang Ethereum</DialogTitle>
+            <DialogTitle className="text-shadow-custom font-semibold text-2xl">Đổi mạng sang BNB</DialogTitle>
             <TriangleAlert className="size-[100px] text-shadow-custom" />
             <DialogDescription className="text-shadow-custom">
-              Vui lòng kết nối mạng Ethereum để sử dụng app
+              Vui lòng kết nối mạng BNB để sử dụng app
             </DialogDescription>
           </DialogHeader>
           <Button

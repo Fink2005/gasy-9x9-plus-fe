@@ -16,7 +16,6 @@ const config = withNextIntl(baseConfig);
 const finalConfig = {
   ...config,
   async rewrites() {
-    console.log('✅ Rewrites function called'); // <--- Add this!
     return [
       {
         source: '/request/:path*',

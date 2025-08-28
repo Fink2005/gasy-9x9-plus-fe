@@ -6,30 +6,27 @@
 import useGetCookie from '@/hooks/useGetCookie';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import web3, { Web3 } from 'web3';
+import { Web3 } from 'web3';
 
-// const contractAddress = '0x670Ec3544786843b9B207cC274968e2B58489fF1'; sepolia
-import { handleRevalidateTag } from '@/app/actions/revalidation';
-import { ApiException } from '@/app/http/apiRequest';
+import { deleteCookie } from '@/app/actions/cookie';
+import { handleRevalidatePath, handleRevalidateTag } from '@/app/actions/revalidation';
 import { boxRequest } from '@/app/http/requests/box';
 import BoxDistributor from '@/contracts/BoxDistributor.json';
-import useBox from '@/store/useBox';
+import useBoxStore from '@/store/useBoxStore';
 import { toast } from 'sonner';
+import { useShallow } from 'zustand/react/shallow';
 
-// const contractAddress = '0x3A87e9E8616957eA2F4b8960CFa333fCF5887589'; //sepolia test
-// const USDT_CONTRACT_ADDRESS = '0xc45D0156553e000eBcdFc05B08Ea5184911e13De'; // Sepolia testnet USDT
-const contractAddress = '0x670Ec3544786843b9B207cC274968e2B58489fF1'; // mainnet
-const USDT_CONTRACT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+const contractAddress = process.env.CONTRACT_ADDRESS;
+const USDT_ADDRESS = process.env.USDT_ADDRESS;
 
-const API_KEY = 'R77H27MWUSI5JAWSX7GAZ69QXFNP763KCN';
+const API_BNB_KEY = process.env.API_BNB_KEY;
 
 const TRANSACTION_CHECKING_ROUTE = ['/', '/gold-mining', '/numerology', '/mission', '/ranking', '/box', '/profile'];
 
+const etherUrl = 'https://api.etherscan.io/v2/api';
+
 const TransactionHash = () => {
   const { handleGetCookie } = useGetCookie();
-  const { setLoading } = useBox();
-  let intervalId: NodeJS.Timeout | null = null;
-
   const getAddress = async () => {
     const authData = await handleGetCookie('authData');
     const userAddress = (authData as { address: string })?.address;
@@ -37,15 +34,27 @@ const TransactionHash = () => {
   };
   const router = useRouter();
   const pathname = usePathname();
+  let intervalId: NodeJS.Timeout | null = null;
 
-  async function getAllowanceEtherscan(owner: string, spender: string) {
+  const { clearBox, setLoading, handleOpenBox } = useBoxStore(
+    useShallow(
+      state => ({
+        clearBox: state.clearBox,
+        setLoading: state.setLoading,
+        handleOpenBox: state.handleOpenBox
+      })
+    ),
+  );
+
+  const getAllowanceEtherscan = async (owner: string, spender: string) => {
     const methodId = '0xdd62ed3e'; // allowance(address,address)
 
     const ownerPadded = owner.replace('0x', '').toLowerCase().padStart(64, '0');
     const spenderPadded = spender.replace('0x', '').toLowerCase().padStart(64, '0');
 
     const data = methodId + ownerPadded + spenderPadded;
-    const url = `https://api.etherscan.io/api?module=proxy&action=eth_call&to=${USDT_CONTRACT_ADDRESS}&data=${data}&tag=latest&apikey=${API_KEY}`;
+    // ✅ Correct - this is Sepolia testnet
+    const url = `${etherUrl}?chainId=97&module=proxy&action=eth_call&to=${USDT_ADDRESS}&data=${data}&tag=latest&apikey=${API_BNB_KEY}`;
 
     try {
       const res = await fetch(url);
@@ -58,25 +67,25 @@ const TransactionHash = () => {
       const rawAllowance = Number.parseInt(json.result, 16); // hex → number
       return rawAllowance / 1e6; // USDT has 6 decimals
     } catch (err) {
+      clearBox();
+      clearInterval(intervalId as any);
+
       console.error('Fetch allowance error:', err);
       return 0;
     }
-  }
+  };
 
   const MethodId = (type: 'openBox' | 'approve') => {
     // Your openBox function signature from the ABI
-    const functionSignature = 'openBox(address[],uint256[],bytes)';
-    const methodId = web3.utils.keccak256(functionSignature).slice(0, 10);
-    return type === 'openBox' ? methodId : '0x095ea7b3';
+    return type === 'openBox' ? '0xc20897b5' : '0x095ea7b3';
   };
 
   const getLatestOpenBoxTransaction = async (address: string) => {
-    const baseURL = 'https://api.etherscan.io/api';
     const openBoxMethodId = MethodId('openBox');
 
     try {
       const response = await fetch(
-        `${baseURL}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=100&sort=desc&apikey=${API_KEY}`
+        `${etherUrl}?chainId=97&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=100&sort=desc&apikey=${API_BNB_KEY}`
       );
 
       const data = await response.json();
@@ -110,15 +119,15 @@ const TransactionHash = () => {
   };
 
   const getLatestApproveTransaction = async (address: string) => {
-    const baseURL = 'https://api.etherscan.io/api';
     const approveMethodId = MethodId('approve');
 
     try {
       const response = await fetch(
-        `${baseURL}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=100&sort=desc&apikey=${API_KEY}`
+        `${etherUrl}?chainId=97&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=100&sort=desc&apikey=${API_BNB_KEY}`
       );
 
       const data = await response.json();
+
       if (data.status === '1') {
         // Find the first transaction that matches openBox method
         const { hash } = data.result.find((item: { methodId: string; hash: string }) => item.methodId === approveMethodId);
@@ -128,76 +137,94 @@ const TransactionHash = () => {
         return null; // Explicitly return null in case of failure
       }
     } catch (error) {
+      clearInterval(intervalId as any);
+      clearBox();
       console.error('Error fetching latest openBox transaction:', error);
-      localStorage.removeItem('boxData');
-      clearInterval(intervalId as unknown as number);
-
       return null; // Explicitly return null in case of an error
     }
   };
+
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      const boxDataString = localStorage.getItem('boxData');
-      const isOnValidRoute = TRANSACTION_CHECKING_ROUTE.includes(pathname);
-      // console.log('boxDataString:', boxDataString, typeof boxDataString);
-      // console.log('isOnValidRoute:', isOnValidRoute, typeof isOnValidRoute);
-      // console.log('pathname:', pathname);
-      // console.log('condition result:', !!(boxDataString && isOnValidRoute));
-      if (boxDataString && isOnValidRoute) {
-        const { userAddress: address } = await getAddress();
-        const web3 = new Web3(window.ethereum); // or your provider
-        const contract = new web3.eth.Contract(BoxDistributor, contractAddress);
-        const boxData = JSON.parse(boxDataString);
-        const isApproving = await getAllowanceEtherscan(address, contractAddress);
-        try {
-          if (isApproving) {
-            const approveHash = await getLatestApproveTransaction(address);
-            localStorage.setItem('boxData', JSON.stringify({
-              ...boxData,
-              txHash: approveHash,
-            }));
-          } else {
-            const handleRefreshOpenBox = async () => {
-              const onChainCurrentBox = Number((await contract.methods.boxesOpened!(address).call()));
-              const openBoxHash = await getLatestOpenBoxTransaction(address);
-              console.log(onChainCurrentBox, boxData?.currentBox, openBoxHash?.openTransactionLength);
+    // (
+    //   async () => {
+    //     const openBoxHash = await getLatestOpenBoxTransaction('0x00814c99860e654ff26fd138f02136c01f381a8e');
+    //     console.log(openBoxHash);
+    //     boxRequest.boxOpen(openBoxHash.transactionHash);
+    //   }
+    // )();
 
-              if (onChainCurrentBox === boxData?.currentBox && onChainCurrentBox === openBoxHash?.openTransactionLength) {
-                console.log('done');
-                setLoading(true, boxData?.currentBox);
-                try {
-                  if (!openBoxHash) {
-                    return;
-                  }
-                  boxRequest.boxOpen(openBoxHash.transactionHash);
-                  clearInterval(intervalId as unknown as number);
-                  await handleRevalidateTag('get-me');
-                  router.refresh();
-                  localStorage.removeItem('boxData');
-                } catch (error) {
-                  if (error instanceof ApiException) {
-                    clearInterval(intervalId as unknown as number);
-                    localStorage.removeItem('boxData');
-                  }
-                } finally {
-                  setLoading(false, boxData?.currentBox);
+    //  (
+    //   async () => {
+    //     const isApproving = await getAllowanceEtherscan('0x6a645bba369aa39fd4fb30507782f224a350eed1', contractAddress);
+    //     console.log(isApproving);
+    //     await getLatestApproveTransaction('0x6a645bba369aa39fd4fb30507782f224a350eed1');
+    //   }
+    // )();
+
+    const isOnValidRoute = TRANSACTION_CHECKING_ROUTE.includes(pathname);
+
+    const handleBoxError = async (currentBox: number) => {
+      const { userAddress: address } = await getAddress();
+      const web3 = new Web3(window.ethereum); // or your provider
+      const contract = new web3.eth.Contract(BoxDistributor, contractAddress);
+      const isApproving = await getAllowanceEtherscan(address, contractAddress!);
+      try {
+        if (isApproving) {
+          console.log('is approving');
+          const approveHash = await getLatestApproveTransaction(address);
+          handleOpenBox({
+            txHash: approveHash,
+            currentBox
+          });
+        } else {
+          const handleRetryOpenBox = async () => {
+            const onChainCurrentBox = Number((await contract.methods.boxesOpened!(address).call()));
+            const openBoxHash = await getLatestOpenBoxTransaction(address);
+            console.log(onChainCurrentBox, currentBox, openBoxHash?.openTransactionLength);
+
+            if (onChainCurrentBox === currentBox && onChainCurrentBox === openBoxHash?.openTransactionLength) {
+              clearInterval(intervalId as unknown as number);
+
+              try {
+                if (!openBoxHash) {
+                  return;
                 }
-              }
-            };
+                console.log('vao');
+                await boxRequest.boxOpen(openBoxHash.transactionHash);
+                await Promise.allSettled([
+                  handleRevalidateTag('get-me'),
+                  handleRevalidatePath('/'),
+                ]);
 
-            intervalId = setInterval(handleRefreshOpenBox, 1000);
-          }
-        } catch {
-          toast.error('Có lỗi xảy ra trong quá trình kiểm tra giao dịch. Vui lòng liên hệ với admin nếu lỗi vẫn tiếp diễn.');
+                router.refresh();
+              } finally {
+                await deleteCookie('boxData');
+                clearInterval(intervalId as unknown as number);
+                setLoading(false, currentBox as number);
+                clearBox();
+              }
+            }
+          };
+
+          intervalId = setInterval(handleRetryOpenBox, 1000);
+        }
+      } catch {
+        toast.error('Có lỗi xảy ra trong quá trình kiểm tra giao dịch. Vui lòng liên hệ với admin nếu lỗi vẫn tiếp diễn.');
+      }
+    };
+    handleGetCookie('boxData').then(async (result) => {
+      if (result) {
+        const { isConfirmed, currentBox } = result as { isConfirmed: boolean; currentBox: number };
+        if (isConfirmed && isOnValidRoute) {
+          handleBoxError(currentBox);
         }
       }
-    }, 100);
+    });
 
     return () => {
       if (intervalId) {
         clearInterval(intervalId);
       }
-      clearTimeout(timer);
     };
   }, [pathname, router]);
 

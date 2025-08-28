@@ -2,7 +2,6 @@
 import { createCookie } from '@/app/actions/cookie';
 import authRequests from '@/app/http/requests/auth';
 import connectWalletRequest from '@/app/http/requests/connectWallet';
-import { ADMIN_SYSTEM_ADDRESS } from '@/libs/shared/constants/globals';
 import { useRouter } from 'nextjs-toploader/app';
 
 import { useState } from 'react';
@@ -41,7 +40,7 @@ const useSafePalWallet = () => {
               method: 'personal_sign',
               params: [responseNonce.nonce, response[0]]
             });
-            const authData = await authRequests.login({ address: response[0], signature, message: responseNonce.nonce, ...(invitedBy ? { invitedBy } : { invitedBy: ADMIN_SYSTEM_ADDRESS }), ...(spillover && { spillover }) });
+            const authData = await authRequests.login({ address: response[0], signature, message: responseNonce.nonce, ...(invitedBy ? { invitedBy } : { invitedBy: process.env.NEXT_PUBLIC_ADMIN_SYSTEM_ADDRESS }), ...(spillover && { spillover }) });
             if (authData) {
               await Promise.allSettled([
                 createCookie({

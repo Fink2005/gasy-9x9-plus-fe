@@ -95,7 +95,7 @@ const TransactionHash = () => {
   };
 
   useEffect(() => {
-    let MAX_RETRIES = 20;
+    let MAX_RETRIES = 30;
     let isProcessing = false;
     const isOnValidRoute = TRANSACTION_CHECKING_ROUTE.includes(pathname);
 
@@ -114,7 +114,8 @@ const TransactionHash = () => {
 
           const onChainCurrentBox = Number((await contract.methods.boxesOpened!(address).call()));
           const openBoxHash = await getLatestOpenBoxTransaction(address);
-          // console.log(onChainCurrentBox, currentBox, openBoxHash?.openTransactionLength);
+          // eslint-disable-next-line no-console
+          console.log(onChainCurrentBox, currentBox, openBoxHash?.openTransactionLength);
 
           if (onChainCurrentBox === currentBox && onChainCurrentBox === openBoxHash?.openTransactionLength) {
             clearInterval(intervalOpenBox as unknown as number);
@@ -146,6 +147,8 @@ const TransactionHash = () => {
         toast.error('Có lỗi xảy ra trong quá trình kiểm tra giao dịch. Vui lòng liên hệ với admin nếu lỗi vẫn tiếp diễn.');
       }
     };
+    // handleBoxError(5);
+
     handleGetCookie('boxData').then(async (result) => {
       if (result) {
         const { isConfirmed, currentBox } = result as { isConfirmed: boolean; currentBox: number };

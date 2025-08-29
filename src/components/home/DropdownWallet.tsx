@@ -54,46 +54,60 @@ const DropdownWallet = ({ address }: Props) => {
   }, []);
 
   const onGetBalance = useCallback(async () => {
-    // Check if component is still mounted before proceeding
     if (!isMountedRef.current) {
       return undefined;
     }
 
-    try {
-      const web3 = getWeb3Instance();
-      if (!web3 || !window.ethereum) {
-        throw new Error('Web3 or Ethereum provider not available');
-      }
+    const maxRetries = 2; // retry tối đa 2 lần
 
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x38' }], // 0x38 = 56 in decimal (BSC mainnet)
-      });
-      const contract = new web3.eth.Contract(ERC20_ABI, USDT_ADDRESS);
-      if (!contract || !contract.methods.balanceOf) {
-        throw new Error('Failed to create contract instance');
-      }
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const web3 = getWeb3Instance();
+        if (!web3 || !window.ethereum) {
+          throw new Error('Web3 or Ethereum provider not available');
+        }
 
-      const rawBalance: string | undefined = await contract.methods.balanceOf(address).call();
-      // console.log(rawBalance);
-      // Check again if component is still mounted before setting state
-      if (!isMountedRef.current) {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x38' }], // BSC mainnet
+        });
+
+        const contract = new web3.eth.Contract(ERC20_ABI, USDT_ADDRESS);
+        if (!contract || !contract.methods.balanceOf) {
+          throw new Error('Failed to create contract instance');
+        }
+
+        const rawBalance: string | undefined = await contract.methods.balanceOf(address).call();
+
+        if (!isMountedRef.current) {
+          return undefined;
+        }
+
+        const balanceInUSDT = NumberFormat(Number(rawBalance || '0') / 10 ** USDT_DECIMALS as number);
+        return balanceInUSDT;
+      } catch (error) {
+        console.error(`Balance fetch error (attempt ${attempt}):`, error);
+
+        // thử tiếp nếu chưa hết số lần retry
+        if (attempt < maxRetries) {
+          continue;
+        }
+
+        // Nếu đã hết retry thì xử lý error cuối cùng
+        if (isMountedRef.current) {
+          setWarningEth(true);
+          isMountedRef.current = false;
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current as unknown as number);
+            intervalRef.current = null;
+          }
+        }
         return undefined;
       }
-
-      const balanceInUSDT = NumberFormat(Number(rawBalance || '0') / 10 ** USDT_DECIMALS as number);
-      return balanceInUSDT;
-    } catch (error) {
-      console.error('Balance fetch error:', error);
-      // Only show toast if component is still mounted
-      if (isMountedRef.current) {
-        setWarningEth(true);
-        isMountedRef.current = false; // Mark component as unmounted
-        intervalRef.current = null;
-        clearInterval(intervalRef.current as unknown as number);
-      }
-      return undefined;
     }
+
+    // fallback nếu vì lý do gì đó loop không return
+    return undefined;
   }, [address, getWeb3Instance]);
 
   const handleLogout = useCallback(async () => {

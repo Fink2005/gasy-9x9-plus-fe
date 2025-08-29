@@ -13,10 +13,11 @@ import {
 } from '../ui/dialog';
 // Minimal USDT ABI for approval
 import CoinIcon from '@/libs/shared/icons/Coin';
+import { isClient } from '@/libs/utils';
 import useBoxStore from '@/store/useBoxStore';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 type Props = {
@@ -27,6 +28,7 @@ type Props = {
 
 const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [loadingItemsStore, setLoadingItemsStore] = useState<boolean>(false);
   const { handleOpenBox, loadingItems } = useBoxStore(
     useShallow(
       state => ({
@@ -35,6 +37,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
       })
     ),
   );
+
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const handleOpenChange = async (open: boolean) => {
@@ -63,12 +66,19 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
     res && setIsSuccess(true);
   };
 
+  useEffect(() => {
+    if (isClient) {
+      const LoadingItem = localStorage.getItem('LoadingItem') ? JSON.parse(localStorage.getItem('LoadingItem')!) : {};
+      setLoadingItemsStore(LoadingItem[boxNumber] || false);
+    }
+  }, [boxNumber]);
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger
         className={`${(boxNumber === 1 || isOpenBox || currentBox === boxNumber) ? 'button-base' : 'button-base-disabled'} text-white !py-1 font-[700] text-[11px] text-nowrap w-20`}
       >
-        { loadingItems[boxNumber] ? <Loader2 className="animate-spin size-4" /> : !isOpenBox ? 'Mở khóa' : 'Chi tiết'}
+        { loadingItems[boxNumber] || loadingItemsStore ? <Loader2 className="animate-spin size-4" /> : !isOpenBox ? 'Mở khóa' : 'Chi tiết'}
       </DialogTrigger>
       <DialogContent className="confirm-dialog gap-3">
         <DialogHeader>
@@ -112,9 +122,9 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
             onClick={() => {
               !isSuccess ? handleConfirm() : router.push(`box/${boxNumber}`);
             }}
-            disabled={loadingItems[boxNumber]}
+            disabled={loadingItems[boxNumber] || loadingItemsStore}
           >
-            { loadingItems[boxNumber] ? 'Đang xử lý...' : isSuccess ? 'Chi tiết' : 'Xác nhận'}
+            { loadingItems[boxNumber] || loadingItemsStore ? 'Đang xử lý...' : isSuccess ? 'Chi tiết' : 'Xác nhận'}
           </Button>
         </div>
       </DialogContent>

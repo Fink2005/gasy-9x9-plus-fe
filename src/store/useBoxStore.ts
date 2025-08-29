@@ -1,6 +1,5 @@
 import { createCookie, deleteCookie } from '@/app/actions/cookie';
 import { handleRevalidateTag } from '@/app/actions/revalidation';
-import { ApiException } from '@/app/http/apiRequest';
 import { boxRequest } from '@/app/http/requests/box';
 import BoxDistributor from '@/contracts/BoxDistributor.json';
 
@@ -21,11 +20,10 @@ type StoreState = {
   };
 
   isOpen: boolean;
-  shouldLoading: boolean;
 
   boxRetry: BoxRetryType;
   // Actions
-  setLoading: (loading: boolean, boxNumber: number) => void;
+  setLoading: (loading: boolean, boxNumber: number, shouldLoading?: boolean) => void;
   handleOpenBox: ({
     currentBox,
     isConfirmed,
@@ -58,15 +56,19 @@ const useBoxStore = create<StoreState>()(
       (set, get) => ({
       // Initial state
         loadingItems: {},
-        shouldLoading: false,
         boxRetry: {
           currentBox: 0,
           isConfirmed: false,
         },
         isOpen: false,
-        setLoading: (isLoading: boolean, boxNumber: number) => set({ loadingItems: {
-          [boxNumber]: isLoading,
-        } }),
+        setLoading: (isLoading: boolean, boxNumber: number, shouldLoading?: boolean) => {
+          shouldLoading && localStorage.setItem('LoadingItem', JSON.stringify({ [boxNumber]: isLoading }));
+          set(
+            { loadingItems: {
+              [boxNumber]: isLoading,
+            } }
+          );
+        },
 
         handleOpenBox: async ({ currentBox, isConfirmed }: BoxRetryType) => {
           const state = get();
@@ -120,9 +122,7 @@ const useBoxStore = create<StoreState>()(
                   })
                 });
               }
-              set({
-                shouldLoading: true
-              });
+              state.setLoading(false, currentBox as number, true);
 
               if (!res) {
                 throw new Error('Box approval failed');
@@ -172,13 +172,6 @@ const useBoxStore = create<StoreState>()(
                 });
                 toast.success('Mở box thành công!');
                 handleRevalidateTag('get-me');
-
-                state.clearBox();
-                state.setLoading(false, currentBox as number);
-                set({
-                  shouldLoading: false
-                });
-                await deleteCookie('boxData');
               } else {
                 toast.error('Giao dịch thất bại hoặc bị huỷ.');
                 return false;
@@ -188,14 +181,15 @@ const useBoxStore = create<StoreState>()(
             return false;
           } catch (err) {
             toast.error('Đã xảy ra lỗi, vui lòng thử lại.');
-            state.clearBox();
-            set({
-              shouldLoading: false
-            });
-            await deleteCookie('boxData');
             console.error('Error during box opening:', err);
-            state.setLoading(false, currentBox as number);
-            throw new ApiException('Error during box opening', 500);
+            throw new Error('Box opening failed');
+          } finally {
+            set({
+              loadingItems: {},
+              boxRetry: { currentBox: 0, isConfirmed: false }
+            });
+            localStorage.removeItem('LoadingItem');
+            await deleteCookie('boxData');
           }
         },
         getAllowance: async (owner: string, spender: string, tokenContract: any) => {
@@ -223,11 +217,8 @@ const useBoxStore = create<StoreState>()(
       }),
       {
         partialize: (state) => {
-          return {
-            boxRetry: state.boxRetry,
-            ...(state.shouldLoading && { loadingItems: state.loadingItems }),
-            shouldLoading: state.shouldLoading
-          };
+          const { isOpen, loadingItems, ...rest } = state;
+          return rest;
         },
         name: 'box-storage', // Name of the storage (must be unique)
       }

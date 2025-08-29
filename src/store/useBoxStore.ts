@@ -61,8 +61,7 @@ const useBoxStore = create<StoreState>()(
           isConfirmed: false,
         },
         isOpen: false,
-        setLoading: (isLoading: boolean, boxNumber: number, shouldLoading?: boolean) => {
-          shouldLoading && localStorage.setItem('LoadingItem', JSON.stringify({ [boxNumber]: isLoading }));
+        setLoading: (isLoading: boolean, boxNumber: number) => {
           set(
             { loadingItems: {
               [boxNumber]: isLoading,
@@ -122,8 +121,7 @@ const useBoxStore = create<StoreState>()(
                   })
                 });
               }
-              state.setLoading(false, currentBox as number, true);
-
+              localStorage.setItem('LoadingItem', JSON.stringify({ [currentBox]: true }));
               if (!res) {
                 throw new Error('Box approval failed');
               }

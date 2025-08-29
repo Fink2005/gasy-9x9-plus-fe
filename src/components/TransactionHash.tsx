@@ -90,12 +90,13 @@ const TransactionHash = () => {
     }
     toast.error('Đã xảy ra lỗi, vui lòng thử lại.');
     clearBox();
+    localStorage.removeItem('LoadingItem');
     setLoading(false, currentBox!);
     await deleteCookie('boxData');
   };
 
   useEffect(() => {
-    let MAX_RETRIES = 30;
+    let MAX_RETRIES = 40;
     let isProcessing = false;
     const isOnValidRoute = TRANSACTION_CHECKING_ROUTE.includes(pathname);
 
@@ -114,8 +115,8 @@ const TransactionHash = () => {
 
           const onChainCurrentBox = Number((await contract.methods.boxesOpened!(address).call()));
           const openBoxHash = await getLatestOpenBoxTransaction(address);
-          // eslint-disable-next-line no-console
-          console.log(onChainCurrentBox, currentBox, openBoxHash?.openTransactionLength);
+
+          // console.log(onChainCurrentBox, currentBox, openBoxHash?.openTransactionLength);
 
           if (onChainCurrentBox === currentBox && onChainCurrentBox === openBoxHash?.openTransactionLength) {
             clearInterval(intervalOpenBox as unknown as number);
@@ -137,6 +138,7 @@ const TransactionHash = () => {
             } finally {
               await deleteCookie('boxData');
               clearInterval(intervalOpenBox as unknown as number);
+              localStorage.removeItem('LoadingItem');
               setLoading(false, currentBox as number);
               clearBox();
             }
@@ -147,7 +149,7 @@ const TransactionHash = () => {
         toast.error('Có lỗi xảy ra trong quá trình kiểm tra giao dịch. Vui lòng liên hệ với admin nếu lỗi vẫn tiếp diễn.');
       }
     };
-    // handleBoxError(5);
+    // handleBoxError(1);
 
     handleGetCookie('boxData').then(async (result) => {
       if (result) {

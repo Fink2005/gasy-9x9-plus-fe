@@ -37,7 +37,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
   );
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const handleOpenChange = (open: boolean) => {
+  const handleOpenChange = async (open: boolean) => {
     if ((!isOpenBox && boxNumber !== 1) && currentBox !== boxNumber) {
       toast.warning(`Bạn cần phải mở hộp ${currentBox}`);
       return;
@@ -83,7 +83,7 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
           <div className="-translate-y-3 flex flex-col items-center">
             <CoinIcon />
             <p className="text-shadow-custom text-[1.5rem] font-[860] text-center">26$ USDT</p>
-            <p className="text-yellow-200 text-sm text-center mt-1">"Vui lòng không được thoát ứng dụng hoặc làm mới trang trong quá trình mở box"</p>
+            <p className="text-yellow-200 text-xs text-center mt-1">"Vui lòng không được thoát ứng dụng hoặc làm mới trang trong quá trình mở box"</p>
           </div>
         ) : (
           <div className="w-full flex flex-col items-center -translate-y-3">

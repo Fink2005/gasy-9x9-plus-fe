@@ -9,6 +9,7 @@ import ExitIcon from '@/libs/shared/icons/Exit';
 import LoadingDots from '@/libs/shared/icons/LoadingDots';
 import UserIcon from '@/libs/shared/icons/User';
 import { formatAddress, handleClipboardCopy, NumberFormat } from '@/libs/utils';
+import useBoxStore from '@/store/useBoxStore';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, TriangleAlert } from 'lucide-react';
@@ -43,6 +44,7 @@ const DropdownWallet = ({ address }: Props) => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true); // Track component mount status
   const queryClient = useQueryClient();
+  const { clearBox } = useBoxStore();
   // Initialize Web3 instance only once
   const getWeb3Instance = useCallback(() => {
     if (!web3Instance && typeof window !== 'undefined' && window.ethereum) {
@@ -98,6 +100,7 @@ const DropdownWallet = ({ address }: Props) => {
     queryClient.clear();
     setIsLoggingOut(true);
     try {
+      clearBox();
       await Promise.allSettled([
         authRequests.logout(),
         deleteCookie('boxData')
@@ -116,7 +119,7 @@ const DropdownWallet = ({ address }: Props) => {
         setIsLoggingOut(false);
       }
     }
-  }, [queryClient, router]);
+  }, [queryClient, router, clearBox]);
 
   const fetchBalance = useCallback(async () => {
     if (!isMountedRef.current) {

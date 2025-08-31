@@ -6,12 +6,7 @@ import BoxDistributor from '@/contracts/BoxDistributor.json';
 import { toast } from 'sonner';
 import Web3 from 'web3';
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
-
-type BoxRetryType = {
-  currentBox: number;
-  isConfirmed: boolean;
-};
+import { devtools } from 'zustand/middleware';
 
 type StoreState = {
   // State
@@ -20,19 +15,18 @@ type StoreState = {
   };
 
   isOpen: boolean;
+  isTriggerLoading: boolean;
+  isProcessing: boolean;
 
-  boxRetry: BoxRetryType;
   // Actions
   setLoading: (loading: boolean, boxNumber: number, shouldLoading?: boolean) => void;
-  handleOpenBox: ({
-    currentBox,
-    isConfirmed,
-  }: BoxRetryType) => Promise<boolean | undefined>;
-  clearBox: () => void;
-  getAllowance: (owner: string, spender: string, tokenContract: any) => Promise<number>;
+  setIsTriggerLoading: (isLoading: boolean) => void;
+  setIsProcessing: (isProcessing: boolean) => void;
+  handleOpenBox: (
+    currentBox: number
+  ) => Promise<boolean | undefined>;
   setIsOpen: (isOpen: boolean) => void;
 };
-
 const usdtAbi = [
   {
     constant: false,
@@ -52,175 +46,136 @@ const approveAmount = 26 * 10 ** 18; // 26 USDT (18 decimals)
 
 const useBoxStore = create<StoreState>()(
   devtools(
-    persist(
-      (set, get) => ({
+    (set, get) => ({
       // Initial state
-        loadingItems: {},
-        boxRetry: {
-          currentBox: 0,
-          isConfirmed: false,
-        },
-        isOpen: false,
-        setLoading: (isLoading: boolean, boxNumber: number) => {
-          set(
-            { loadingItems: {
-              [boxNumber]: isLoading,
-            } }
-          );
-        },
+      loadingItems: {},
+      isOpen: false,
+      isTriggerLoading: false,
+      setLoading: (isLoading: boolean, boxNumber: number) => {
+        set(
+          { loadingItems: {
+            [boxNumber]: isLoading,
+          } }
+        );
+      },
+      setIsTriggerLoading: (isLoading: boolean) => {
+        set({ isTriggerLoading: isLoading });
+      },
 
-        handleOpenBox: async ({ currentBox, isConfirmed }: BoxRetryType) => {
-          const state = get();
-          state.setLoading(true, currentBox as number);
+      handleOpenBox: async (currentBox: number) => {
+        const state = get();
+        state.setLoading(true, currentBox as number);
 
-          const web3 = new Web3(window.ethereum);
+        const web3 = new Web3(window.ethereum);
 
-          if (typeof window.ethereum === 'undefined') {
-            toast.error('Vui lòng cài đặt ví');
-            return false;
+        if (typeof window.ethereum === 'undefined') {
+          toast.error('Vui lòng cài đặt ví');
+          return false;
+        }
+
+        // switch to BSC testnet
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x38' }],
+          });
+          const accounts = await web3.eth.getAccounts();
+          const sender = accounts[0];
+          const usdtContract = new web3.eth.Contract(usdtAbi as any, usdtAddress);
+
+          if (!sender || !contractAddress) {
+            toast.error('Vui lòng kết nối ví');
+            return;
           }
 
-          // switch to BSC testnet
-          try {
-            await window.ethereum.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0x38' }],
-            });
-            const accounts = await web3.eth.getAccounts();
-            const sender = accounts[0];
-            const usdtContract = new web3.eth.Contract(usdtAbi as any, usdtAddress);
+          if (usdtContract.methods.approve) {
+            // console.log(allowance, 'dau');
+            const hax = await usdtContract.methods.approve(contractAddress, approveAmount).send({ from: sender });
 
-            if (!sender || !contractAddress) {
-              toast.error('Vui lòng kết nối ví');
-              return;
+            const transactionHash = hax?.transactionHash;
+            if (!transactionHash) {
+              toast.error('Giao dịch thất bại vui lòng liên hệ admin.');
+              return false;
             }
 
-            if (usdtContract.methods.approve) {
-              // console.log(allowance, 'dau');
-              const hax = await usdtContract.methods.approve(contractAddress, approveAmount).send({ from: sender });
+            const res = await boxRequest.boxApprove((transactionHash as string), currentBox as number);
 
-              const transactionHash = hax?.transactionHash;
-              if (!transactionHash) {
-                toast.error('Giao dịch thất bại vui lòng liên hệ admin.');
-                return false;
-              }
+            if (!res) {
+              throw new Error('Box approval failed');
+            }
+            const { signature, addresses, amounts } = res;
 
-              const res = await boxRequest.boxApprove((transactionHash as string), currentBox as number);
+            const amountsFormated = amounts.map(amount => BigInt(amount));
+
+            // Encode data cho openBox
+            const parsed = JSON.parse(JSON.stringify(BoxDistributor));
+            const contract = new web3.eth.Contract(parsed, contractAddress);
+
+            createCookie({
+              name: 'isShouldRefetch',
+              value: true
+            });
+            localStorage.setItem('LoadingItem', JSON.stringify({ [currentBox]: true }));
+
+            const data = contract.methods.openBox!(
+              addresses,
+              amountsFormated,
+              signature
+            ).encodeABI();
+
+            const gasLimit = await web3.eth.estimateGas({
+              to: contractAddress,
+              data,
+              from: sender
+            });
+
+            // Lấy gas price
+            const gasPrice = await web3.eth.getGasPrice();
+            // Tạo transaction object
+            const txObject = {
+              to: contractAddress,
+              data,
+              gas: gasLimit, // ✅ Use estimated gas limit
+              gasPrice, // ✅ Use gas price separately
+              from: sender
+            };
+
+            const response = await web3.eth.sendTransaction({
+              ...txObject,
+              from: sender
+            });
+
+            const receiptRes = await web3.eth.getTransactionReceipt(response.transactionHash);
+
+            if (receiptRes.status) {
+              await boxRequest.boxOpen(response.transactionHash as string);
               set({
-                boxRetry: {
-                  currentBox: currentBox ?? state.boxRetry.currentBox,
-                  isConfirmed: isConfirmed ?? state.boxRetry.isConfirmed,
-                }
+                isOpen: true
               });
-              if (isConfirmed) {
-                createCookie({
-                  name: 'boxData',
-                  value: JSON.stringify({
-                    isConfirmed,
-                    currentBox
-                  })
-                });
-              }
-              localStorage.setItem('LoadingItem', JSON.stringify({ [currentBox]: true }));
-              if (!res) {
-                throw new Error('Box approval failed');
-              }
-              const { signature, addresses, amounts } = res;
-
-              const amountsFormated = amounts.map(amount => BigInt(amount));
-
-              // Encode data cho openBox
-              const parsed = JSON.parse(JSON.stringify(BoxDistributor));
-              const contract = new web3.eth.Contract(parsed, contractAddress);
-
-              const data = contract.methods.openBox!(
-                addresses,
-                amountsFormated,
-                signature
-              ).encodeABI();
-
-              const gasLimit = await web3.eth.estimateGas({
-                to: contractAddress,
-                data,
-                from: sender
-              });
-
-              // Lấy gas price
-              const gasPrice = await web3.eth.getGasPrice();
-              // Tạo transaction object
-              const txObject = {
-                to: contractAddress,
-                data,
-                gas: gasLimit, // ✅ Use estimated gas limit
-                gasPrice, // ✅ Use gas price separately
-                from: sender
-              };
-
-              const response = await web3.eth.sendTransaction({
-                ...txObject,
-                from: sender
-              });
-
-              const receiptRes = await web3.eth.getTransactionReceipt(response.transactionHash);
-
-              if (receiptRes.status) {
-                await boxRequest.boxOpen(response.transactionHash as string);
-                set({
-                  isOpen: true
-                });
-                toast.success('Mở box thành công!');
-                handleRevalidateTag('get-me');
-              } else {
-                toast.error('Giao dịch thất bại hoặc bị huỷ.');
-                return false;
-              }
-              return true;
+              toast.success('Mở box thành công!');
+              handleRevalidateTag('get-me');
+            } else {
+              toast.error('Giao dịch thất bại hoặc bị huỷ.');
+              return false;
             }
-            return false;
-          } catch (err) {
-            toast.error('Đã xảy ra lỗi, vui lòng thử lại.');
-            console.error('Error during box opening:', err);
-            throw new Error('Box opening failed');
-          } finally {
-            set({
-              loadingItems: {},
-              boxRetry: { currentBox: 0, isConfirmed: false }
-            });
-            localStorage.removeItem('LoadingItem');
-            await deleteCookie('boxData');
+            return true;
           }
-        },
-        getAllowance: async (owner: string, spender: string, tokenContract: any) => {
-          try {
-            if (!tokenContract?.methods?.allowance) {
-              return 0;
-            }
-            const allowance = await tokenContract.methods.allowance(owner, spender).call();
-            return Number(allowance) / 1e18; // USDT decimals = 18 (nếu contract USDT của bạn khác thì chỉnh)
-          } catch (err) {
-            console.error('Allowance fetch error:', err);
-            return 0;
-          }
-        },
-
-        setIsOpen: async (isOpen: boolean) => {
-          set({ isOpen });
-        },
-
-        clearBox: () => set({ boxRetry: {
-          currentBox: 0,
-          isConfirmed: false,
-        } }),
-
-      }),
-      {
-        partialize: (state) => {
-          const { isOpen, loadingItems, ...rest } = state;
-          return rest;
-        },
-        name: 'box-storage', // Name of the storage (must be unique)
-      }
-    )
+          return false;
+        } catch (err) {
+          console.error('Error during box opening:', err);
+          throw new Error('Box opening failed');
+        } finally {
+          set({
+            loadingItems: {},
+          });
+          localStorage.removeItem('LoadingItem');
+          await deleteCookie('isShouldRefetch');
+        }
+      },
+      setIsOpen: async (isOpen: boolean) => {
+        set({ isOpen });
+      },
+    }),
   )
 );
 

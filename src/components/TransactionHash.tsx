@@ -2,48 +2,49 @@
 
 'use client';
 
-import useGetCookie from '@/hooks/useGetCookie';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 
-import { deleteCookie } from '@/app/actions/cookie';
+import { deleteCookie, getCookie } from '@/app/actions/cookie';
 import { handleRevalidatePath, handleRevalidateTag } from '@/app/actions/revalidation';
 import { boxRequest } from '@/app/http/requests/box';
+import ABI from '@/contracts/BoxDistributor.json';
 import { API_BNB_KEY, CONTRACT_ADDRESS } from '@/libs/shared/constants/globals';
 import useBoxStore from '@/store/useBoxStore';
 import { toast } from 'sonner';
+import Web3 from 'web3';
 import { useShallow } from 'zustand/react/shallow';
 
 const etherUrl = 'https://api.etherscan.io/v2/api';
+type Props = { address: string; currentBox: number; latestOpenedBox: number };
 
-const TransactionHash = () => {
-  const { handleGetCookie } = useGetCookie();
-  const getAddress = async () => {
-    const authData = await handleGetCookie('authData');
-    const userAddress = (authData as { address: string })?.address;
-    return { userAddress };
-  };
+let web3Singleton: Web3 | null = null;
+let contractSingleton: any | null = null;
+function getWeb3AndContract() {
+  if (!web3Singleton) {
+    web3Singleton = new Web3(new Web3.providers.HttpProvider(process.env.NEXT_PUBLIC_BSC_RPC_URL!));
+    contractSingleton = new web3Singleton.eth.Contract(ABI, CONTRACT_ADDRESS);
+  }
+  return { web3: web3Singleton!, contract: contractSingleton! };
+}
+const TransactionHash = ({ address, currentBox, latestOpenedBox }: Props) => {
   const router = useRouter();
-  const pathname = usePathname();
+  const isProcessing = useRef<boolean>(false);
   let intervalOpenBox: NodeJS.Timeout | null = null;
-
-  const { clearBox, setLoading } = useBoxStore(
+  const { setIstriggerLoading } = useBoxStore(
     useShallow(
       state => ({
-        currentBox: state.boxRetry.currentBox,
-        clearBox: state.clearBox,
-        setLoading: state.setLoading,
-
+        setIstriggerLoading: state.setIsTriggerLoading
       })
     ),
   );
 
-  const getLatestOpenBoxTransaction = async (address: string) => {
+  const getLatestOpenBoxTransaction = async () => {
     const openBoxMethodId = '0xc20897b5';
 
     try {
       const response = await fetch(
-        `${etherUrl}?chainId=56&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=200&sort=desc&apikey=${API_BNB_KEY}`
+        `${etherUrl}?chainId=56&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=9999&sort=desc&apikey=${API_BNB_KEY}`
       );
 
       const data = await response.json();
@@ -78,67 +79,62 @@ const TransactionHash = () => {
   };
 
   useEffect(() => {
-    let isProcessing = false;
-
-    const handleBoxError = async (currentBox: number) => {
-      const { userAddress: address } = await getAddress();
-      console.log('chay r be oi');
+    const handleBoxError = async () => {
+      const isShouldRefetch = await getCookie('isShouldRefetch');
 
       try {
         const handleRetryOpenBox = async () => {
-          const openBoxHash = await getLatestOpenBoxTransaction(address);
+          const { contract } = getWeb3AndContract();
 
-          console.log(currentBox, openBoxHash?.openTransactionLength, 'hehe');
+          const boxCount = await contract.methods.boxesOpened(address).call();
 
-          if (currentBox === openBoxHash?.openTransactionLength) {
+          if (Number(boxCount) === latestOpenedBox && !isShouldRefetch) {
             clearInterval(intervalOpenBox as unknown as number);
-            if (isProcessing) {
-              return;
-            }
+            return;
+          }
+
+          if (isProcessing.current) {
+            return;
+          }
+          const openBoxHash = await getLatestOpenBoxTransaction();
+          // console.log(Number(boxCount), currentBox, openBoxHash?.openTransactionLength, 'hehe');
+          if (Number(boxCount) === currentBox && currentBox === openBoxHash?.openTransactionLength) {
             try {
-              if (!openBoxHash) {
+              if (!openBoxHash || isProcessing.current) {
                 return;
               }
               await boxRequest.boxOpen(openBoxHash.transactionHash);
-              isProcessing = true;
               await Promise.allSettled([
                 handleRevalidateTag('get-me'),
                 handleRevalidatePath('/'),
               ]);
+              isProcessing.current = true;
               toast.success('Mở box thành công!');
+            } catch (error) {
+              console.error('Error opening box:', error);
+              toast.error('Mở box thất bại!, vui lòng liên hệ với admin');
             } finally {
               router.refresh();
-              clearInterval(intervalOpenBox as unknown as number);
-              clearBox();
-              setLoading(false, (currentBox) as number);
-              await deleteCookie('boxData');
               localStorage.removeItem('LoadingItem');
-              // window.location.reload();
+              setIstriggerLoading(true);
+              clearInterval(intervalOpenBox as unknown as number);
+              await deleteCookie('isShouldRefetch');
             }
           }
         };
+
         intervalOpenBox = setInterval(handleRetryOpenBox, 2000);
       } catch {
         toast.error('Có lỗi xảy ra trong quá trình kiểm tra giao dịch. Vui lòng liên hệ với admin nếu lỗi vẫn tiếp diễn.');
       }
     };
-    // handleBoxError(1);
-
-    handleGetCookie('boxData').then(async (result) => {
-      if (result) {
-        const { isConfirmed, currentBox } = result as { isConfirmed: boolean; currentBox: number };
-        if (isConfirmed) {
-          handleBoxError(currentBox);
-        }
-      }
-    });
-
+    handleBoxError();
     return () => {
       if (intervalOpenBox) {
         clearInterval(intervalOpenBox);
       }
     };
-  }, [pathname, router]);
+  }, []);
 
   return null;
 };

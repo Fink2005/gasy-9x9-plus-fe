@@ -12,34 +12,125 @@ import {
   DialogTrigger
 } from '../ui/dialog';
 // Minimal USDT ABI for approval
+import { deleteCookie } from '@/app/actions/cookie';
+import { handleRevalidatePath, handleRevalidateTag } from '@/app/actions/revalidation';
+import { boxRequest } from '@/app/http/requests/box';
+import { API_BNB_KEY, etherUrl } from '@/libs/shared/constants/globals';
 import CoinIcon from '@/libs/shared/icons/Coin';
 import { isClient } from '@/libs/utils';
 import useBoxStore from '@/store/useBoxStore';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 type Props = {
   boxNumber: number;
   currentBox: number;
   isOpenBox: boolean;
+  address: string;
 };
 
-const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
+const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+
+const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox, address }: Props) => {
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [loadingItemsStore, setLoadingItemsStore] = useState<boolean>(false);
-  const { handleOpenBox, loadingItems } = useBoxStore(
+  const { handleOpenBox, loadingItems, setLoading, clearBox } = useBoxStore(
     useShallow(
       state => ({
         loadingItems: state.loadingItems,
         handleOpenBox: state.handleOpenBox,
+        setLoading: state.setLoading,
+        clearBox: state.clearBox,
       })
     ),
   );
+  const intervalOpenBox = useRef<NodeJS.Timeout | null>(null);
+  const isProcessing = useRef<boolean>(false);
 
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+
+  const getLatestOpenBoxTransaction = useCallback(
+    async () => {
+      const openBoxMethodId = '0xc20897b5';
+
+      try {
+        const response = await fetch(
+          `${etherUrl}?chainId=56&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=200&sort=desc&apikey=${API_BNB_KEY}`
+        );
+
+        const data = await response.json();
+
+        const openTransactionLength = data?.result?.filter((item: { methodId: string }) => item.methodId === openBoxMethodId).length;
+        if (data.status === '1') {
+        // Find the first transaction that matches openBox method
+          for (const tx of data.result) {
+          // Filter by contract address if specified
+            if (contractAddress && tx.to?.toLowerCase() !== contractAddress.toLowerCase()) {
+              continue;
+            }
+
+            // Check if transaction calls openBox method
+            if (tx.methodId === openBoxMethodId) {
+              return {
+                openTransactionLength,
+                transactionHash: tx.hash,
+              };
+            }
+          }
+
+          return null; // No openBox transaction found
+        } else {
+          console.error(data.message || 'Failed to fetch transactions');
+          return null; // Explicitly return null in case of failure
+        }
+      } catch (error) {
+        console.error('Error fetching latest openBox transaction:', error);
+        return null; // Explicitly return null in case of an error
+      }
+    },
+    [address]
+  );
+
+  const handleBoxError = useCallback(async () => {
+    const openBoxHash = await getLatestOpenBoxTransaction();
+    if (isProcessing.current || openBoxHash?.openTransactionLength === (currentBox - 1)) {
+      console.log('return ne em iu');
+      return;
+    }
+
+    try {
+      const handleRetryOpenBox = async () => {
+        console.log((currentBox - 1), openBoxHash?.openTransactionLength);
+
+        try {
+          await boxRequest.boxOpen(openBoxHash?.transactionHash);
+          isProcessing.current = true;
+          await Promise.allSettled([
+            handleRevalidateTag('get-me'),
+            handleRevalidatePath('/'),
+          ]);
+          toast.success('Mở box thành công!');
+        } catch (err) {
+          console.warn(err);
+          toast.error('Đã xảy ra lỗi, vui lòng thử lại.');
+        } finally {
+          router.refresh();
+          clearInterval(intervalOpenBox as unknown as number);
+          await deleteCookie('boxData');
+          setLoading(false, boxNumber as number);
+          localStorage.removeItem('LoadingItem');
+          clearBox();
+        }
+      };
+      intervalOpenBox.current = setInterval(handleRetryOpenBox, 1000);
+    } catch {
+      toast.error('Có lỗi xảy ra trong quá trình kiểm tra giao dịch. Vui lòng liên hệ với admin nếu lỗi vẫn tiếp diễn.');
+    }
+  }, [clearBox, currentBox, getLatestOpenBoxTransaction, router, setLoading, boxNumber]);
+
   const handleOpenChange = async (open: boolean) => {
     if ((!isOpenBox && boxNumber !== 1) && currentBox !== boxNumber) {
       toast.warning(`Bạn cần phải mở hộp ${currentBox}`);
@@ -72,6 +163,15 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
       setLoadingItemsStore(LoadingItem[boxNumber] || false);
     }
   }, [boxNumber]);
+
+  useEffect(() => {
+    (async () => {
+      await handleBoxError();
+    })();
+    return () => {
+      clearInterval(intervalOpenBox.current as unknown as number);
+    };
+  }, [handleBoxError]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>

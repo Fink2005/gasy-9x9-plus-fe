@@ -23,6 +23,7 @@ type Props = {
 };
 const USDT_ADDRESS = process.env.NEXT_PUBLIC_USDT_ADDRESS;
 const USDT_DECIMALS = 18;
+const RPC_URL = process.env.NEXT_PUBLIC_BSC_RPC_URL!;
 const ERC20_ABI = [
   {
     constant: true,
@@ -33,8 +34,8 @@ const ERC20_ABI = [
   },
 ];
 
-// Move Web3 instance outside component to prevent recreation
-let web3Instance: Web3 | null = null;
+let httpWeb3Instance: Web3 | null = null;
+let httpContractInstance: any = null;
 
 const DropdownWallet = ({ address }: Props) => {
   const [balance, setBalance] = useState<string | undefined>(undefined);
@@ -45,12 +46,13 @@ const DropdownWallet = ({ address }: Props) => {
   const isMountedRef = useRef(true); // Track component mount status
   const queryClient = useQueryClient();
   const { clearBox } = useBoxStore();
-  // Initialize Web3 instance only once
-  const getWeb3Instance = useCallback(() => {
-    if (!web3Instance && typeof window !== 'undefined' && window.ethereum) {
-      web3Instance = new Web3(window.ethereum);
+
+  const getHttpWeb3Instance = useCallback(() => {
+    if (!httpWeb3Instance) {
+      httpWeb3Instance = new Web3(new Web3.providers.HttpProvider(RPC_URL));
+      httpContractInstance = new httpWeb3Instance.eth.Contract(ERC20_ABI, USDT_ADDRESS);
     }
-    return web3Instance;
+    return { web3: httpWeb3Instance, contract: httpContractInstance };
   }, []);
 
   const onGetBalance = useCallback(async () => {
@@ -58,57 +60,34 @@ const DropdownWallet = ({ address }: Props) => {
       return undefined;
     }
 
-    const maxRetries = 2; // retry tối đa 2 lần
+    try {
+      const { contract } = getHttpWeb3Instance();
+      if (!contract || !contract.methods.balanceOf) {
+        throw new Error('Contract instance not available');
+      }
 
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        const web3 = getWeb3Instance();
-        if (!web3 || !window.ethereum) {
-          throw new Error('Web3 or Ethereum provider not available');
-        }
+      const rawBalance: string | undefined = await contract.methods.balanceOf(address).call();
 
-        await window.ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: '0x38' }], // BSC mainnet
-        });
-
-        const contract = new web3.eth.Contract(ERC20_ABI, USDT_ADDRESS);
-        if (!contract || !contract.methods.balanceOf) {
-          throw new Error('Failed to create contract instance');
-        }
-
-        const rawBalance: string | undefined = await contract.methods.balanceOf(address).call();
-
-        if (!isMountedRef.current) {
-          return undefined;
-        }
-
-        const balanceInUSDT = NumberFormat(Number(rawBalance || '0') / 10 ** USDT_DECIMALS as number);
-        return balanceInUSDT;
-      } catch (error) {
-        console.error(`Balance fetch error (attempt ${attempt}):`, error);
-
-        // thử tiếp nếu chưa hết số lần retry
-        if (attempt < maxRetries) {
-          continue;
-        }
-
-        // Nếu đã hết retry thì xử lý error cuối cùng
-        if (isMountedRef.current) {
-          setWarningEth(true);
-          isMountedRef.current = false;
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current as unknown as number);
-            intervalRef.current = null;
-          }
-        }
+      if (!isMountedRef.current) {
         return undefined;
       }
-    }
 
-    // fallback nếu vì lý do gì đó loop không return
-    return undefined;
-  }, [address, getWeb3Instance]);
+      const balanceInUSDT = NumberFormat(Number(rawBalance || '0') / 10 ** USDT_DECIMALS as number);
+      return balanceInUSDT;
+    } catch (error) {
+      console.error('Balance fetch error:', error);
+
+      if (isMountedRef.current) {
+        setWarningEth(true);
+        isMountedRef.current = false;
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current as unknown as number);
+          intervalRef.current = null;
+        }
+      }
+      return undefined;
+    }
+  }, [address, getHttpWeb3Instance]);
 
   const handleLogout = useCallback(async () => {
     queryClient.clear();

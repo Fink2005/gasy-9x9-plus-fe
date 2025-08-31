@@ -5,21 +5,14 @@
 import useGetCookie from '@/hooks/useGetCookie';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Web3 } from 'web3';
 
 import { deleteCookie } from '@/app/actions/cookie';
 import { handleRevalidatePath, handleRevalidateTag } from '@/app/actions/revalidation';
 import { boxRequest } from '@/app/http/requests/box';
-import BoxDistributor from '@/contracts/BoxDistributor.json';
+import { API_BNB_KEY, CONTRACT_ADDRESS } from '@/libs/shared/constants/globals';
 import useBoxStore from '@/store/useBoxStore';
 import { toast } from 'sonner';
 import { useShallow } from 'zustand/react/shallow';
-
-const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
-
-const API_BNB_KEY = process.env.NEXT_PUBLIC_API_BNB_KEY;
-
-const TRANSACTION_CHECKING_ROUTE = ['/', '/gold-mining', '/numerology', '/mission', '/ranking', '/box', '/profile'];
 
 const etherUrl = 'https://api.etherscan.io/v2/api';
 
@@ -34,7 +27,7 @@ const TransactionHash = () => {
   const pathname = usePathname();
   let intervalOpenBox: NodeJS.Timeout | null = null;
 
-  const { clearBox, setLoading, currentBox } = useBoxStore(
+  const { clearBox, setLoading } = useBoxStore(
     useShallow(
       state => ({
         currentBox: state.boxRetry.currentBox,
@@ -60,7 +53,7 @@ const TransactionHash = () => {
         // Find the first transaction that matches openBox method
         for (const tx of data.result) {
           // Filter by contract address if specified
-          if (contractAddress && tx.to?.toLowerCase() !== contractAddress.toLowerCase()) {
+          if (CONTRACT_ADDRESS && tx.to?.toLowerCase() !== CONTRACT_ADDRESS.toLowerCase()) {
             continue;
           }
 
@@ -84,41 +77,20 @@ const TransactionHash = () => {
     }
   };
 
-  const handleMaxRetriesExceeded = async (intervalValue: NodeJS.Timeout | null) => {
-    if (intervalValue) {
-      clearInterval(intervalValue);
-    }
-    toast.error('Đã xảy ra lỗi, vui lòng thử lại.');
-    clearBox();
-    localStorage.removeItem('LoadingItem');
-    setLoading(false, currentBox!);
-    await deleteCookie('boxData');
-  };
-
   useEffect(() => {
-    let MAX_RETRIES = 40;
     let isProcessing = false;
-    const isOnValidRoute = TRANSACTION_CHECKING_ROUTE.includes(pathname);
 
     const handleBoxError = async (currentBox: number) => {
-      const web3 = new Web3(window.ethereum); // or your provider
       const { userAddress: address } = await getAddress();
-
-      const contract = new web3.eth.Contract(BoxDistributor, contractAddress);
+      console.log('chay r be oi');
 
       try {
         const handleRetryOpenBox = async () => {
-          MAX_RETRIES--;
-          if (MAX_RETRIES <= 0) {
-            handleMaxRetriesExceeded(intervalOpenBox);
-          }
-
-          const onChainCurrentBox = Number((await contract.methods.boxesOpened!(address).call()));
           const openBoxHash = await getLatestOpenBoxTransaction(address);
 
-          // console.log(onChainCurrentBox, currentBox, openBoxHash?.openTransactionLength);
+          console.log(currentBox, openBoxHash?.openTransactionLength, 'hehe');
 
-          if (onChainCurrentBox === currentBox && onChainCurrentBox === openBoxHash?.openTransactionLength) {
+          if (currentBox === openBoxHash?.openTransactionLength) {
             clearInterval(intervalOpenBox as unknown as number);
             if (isProcessing) {
               return;
@@ -133,18 +105,19 @@ const TransactionHash = () => {
                 handleRevalidateTag('get-me'),
                 handleRevalidatePath('/'),
               ]);
-
-              router.refresh();
+              toast.success('Mở box thành công!');
             } finally {
-              await deleteCookie('boxData');
+              router.refresh();
               clearInterval(intervalOpenBox as unknown as number);
-              localStorage.removeItem('LoadingItem');
-              setLoading(false, currentBox as number);
               clearBox();
+              setLoading(false, (currentBox) as number);
+              await deleteCookie('boxData');
+              localStorage.removeItem('LoadingItem');
+              // window.location.reload();
             }
           }
         };
-        intervalOpenBox = setInterval(handleRetryOpenBox, 1000);
+        intervalOpenBox = setInterval(handleRetryOpenBox, 2000);
       } catch {
         toast.error('Có lỗi xảy ra trong quá trình kiểm tra giao dịch. Vui lòng liên hệ với admin nếu lỗi vẫn tiếp diễn.');
       }
@@ -154,7 +127,7 @@ const TransactionHash = () => {
     handleGetCookie('boxData').then(async (result) => {
       if (result) {
         const { isConfirmed, currentBox } = result as { isConfirmed: boolean; currentBox: number };
-        if (isConfirmed && isOnValidRoute) {
+        if (isConfirmed) {
           handleBoxError(currentBox);
         }
       }

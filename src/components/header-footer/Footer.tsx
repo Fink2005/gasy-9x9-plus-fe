@@ -20,7 +20,6 @@ export function Footer() {
   if (pathName.includes('game') || pathName.includes('info')) {
     return null;
   }
-
   return (
     <footer
       className="absolute bottom-0 w-full footer"
@@ -28,12 +27,13 @@ export function Footer() {
     >
       {tabBar.map((item) => {
         const Icon = item.icon;
+        const isActive = item.to === '/' ? pathName === '/' : pathName.includes(item.to);
         return (
           <Link
             href={item.to}
             key={item.title}
             prefetch
-            className={`footer-items ${pathName === item.to ? '' : 'opacity-50'}`}
+            className={`footer-items ${isActive ? '' : 'opacity-50'}`}
           >
             <Icon />
             <span className="text-white font-[500] text-[0.5625rem]">

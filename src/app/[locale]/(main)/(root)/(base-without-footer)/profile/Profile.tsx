@@ -21,7 +21,7 @@ const Profile = async () => {
     },
     {
       id: 2,
-      title: `Hành trình: ${differenceInDays(new Date(), new Date(userRes?.createdAt || new Date())) || 0}  ngày liên tục`,
+      title: `Hành trình: ${differenceInDays(new Date(), new Date(userRes?.createdAt || new Date())) || 0}  ngày`,
       icon: DiamonIcon,
     },
     {

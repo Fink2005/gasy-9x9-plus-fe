@@ -201,6 +201,9 @@
     0px 2px 4px 0px rgba(255, 255, 255, 0.75) inset,
     0px 4px 15px 0px rgba(145, 213, 255, 0.5);
 }
+.button-custom:active {
+  background: linear-gradient(180deg, #4ac4e8 0%, #0f3d7a 95.1%);
+}
 .button-base-2 {
   border-radius: 0.5rem;
   border: 1px solid var(--9x9, #68daf2);
@@ -228,6 +231,10 @@
 }
 
 .button-rounded:active {
+  background: linear-gradient(180deg, #4ac4e8 0%, #0f3d7a 95.1%);
+}
+
+.button-base:active {
   background: linear-gradient(180deg, #4ac4e8 0%, #0f3d7a 95.1%);
 }
 .text-shadow-custom {

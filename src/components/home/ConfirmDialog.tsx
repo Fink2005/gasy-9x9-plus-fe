@@ -122,7 +122,7 @@ const ConfirmDialog = ({ boxNumber, isOpenedBox, currentBox, address }: Props) =
             Quay lại
           </Button>
           <Button
-            className={`${loadingItems[boxNumber] || loadingItemsStore ? 'w-full' : 'w-1/2'} button-custom`}
+            className={`${loadingItems[boxNumber] || loadingItemsStore ? 'w-full' : 'w-1/2'} transition-all button-custom`}
             onClick={() => {
               !isSuccess ? handleConfirm() : router.push(`box/${boxNumber}`);
             }}

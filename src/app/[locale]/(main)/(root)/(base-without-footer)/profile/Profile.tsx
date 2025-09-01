@@ -5,6 +5,7 @@ import Arrow3Icon from '@/libs/shared/icons/Arrow3';
 import DiamonIcon from '@/libs/shared/icons/Diamon';
 import GamePad4 from '@/libs/shared/icons/GamePad4';
 import UserConnection from '@/libs/shared/icons/UserConnection';
+import { differenceInDays } from 'date-fns';
 import Image from 'next/image';
 
 export const dynamic = 'force-dynamic';
@@ -20,7 +21,7 @@ const Profile = async () => {
     },
     {
       id: 2,
-      title: `Hành trình: ${userRes?.continiousPlayDay || 0}  ngày liên tục`,
+      title: `Hành trình: ${differenceInDays(new Date(), new Date(userRes?.createdAt || new Date())) || 0}  ngày liên tục`,
       icon: DiamonIcon,
     },
     {

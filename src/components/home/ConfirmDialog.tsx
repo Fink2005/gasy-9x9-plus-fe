@@ -84,7 +84,7 @@ const ConfirmDialog = ({ boxNumber, isOpenedBox, currentBox, address }: Props) =
       >
         { loadingItems[boxNumber] || loadingItemsStore ? <Loader2 className="animate-spin size-4" /> : !isOpenedBox ? 'Mở khóa' : 'Chi tiết'}
       </DialogTrigger>
-      <DialogContent className="confirm-dialog gap-3 h-[351px]">
+      <DialogContent className="confirm-dialog gap-3 min-h-[351px]">
         <DialogHeader>
           <DialogTitle className="text-shadow-custom text-[1.5rem] font-[700] mb-0">
             {!isSuccess && 'Xác nhận thanh toán'}

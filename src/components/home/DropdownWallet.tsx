@@ -34,9 +34,6 @@ const ERC20_ABI = [
   },
 ];
 
-// Hỗ trợ BNB mainnet và testnet
-const BNB_CHAIN_IDS = ['0x38'];
-
 let httpWeb3Instance: Web3 | null = null;
 let httpContractInstance: any = null;
 
@@ -60,11 +57,10 @@ const DropdownWallet = ({ address }: Props) => {
   const checkNetwork = useCallback(async () => {
     if (typeof window !== 'undefined' && (window as any).ethereum) {
       try {
-        const chainId = await (window as any).ethereum.request({ method: 'eth_chainId' });
-        if (!BNB_CHAIN_IDS.includes(chainId)) {
-          setWarningEth(true);
-          return false;
-        }
+        await (window as any).ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x38' }], // BSC Mainnet
+        }); ;
         return true;
       } catch (err) {
         console.error('Network check error:', err);

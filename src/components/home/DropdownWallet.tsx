@@ -43,7 +43,7 @@ let httpContractInstance: any = null;
 const DropdownWallet = ({ address }: Props) => {
   const [balance, setBalance] = useState<string | undefined>(undefined);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isWarningEth, setWarningEth] = useState<boolean>(false);
+  const [, setWarningEth] = useState<boolean>(false);
   const router = useRouter();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true);
@@ -199,7 +199,7 @@ const DropdownWallet = ({ address }: Props) => {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={isWarningEth}>
+      <Dialog>
         <DialogContent className="fixed top-1/2 left-1/2 -translate-1/2 confirm-dialog gap-3 max-w-[512px] h-[331px] w-full flex flex-col justify-center">
           <DialogHeader className="flex flex-col items-center">
             <DialogTitle className="text-shadow-custom font-semibold text-2xl">Đổi mạng sang BNB</DialogTitle>

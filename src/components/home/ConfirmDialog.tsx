@@ -84,7 +84,7 @@ const ConfirmDialog = ({ boxNumber, isOpenedBox, currentBox, address }: Props) =
       >
         { loadingItems[boxNumber] || loadingItemsStore ? <Loader2 className="animate-spin size-4" /> : !isOpenedBox ? 'Mở khóa' : 'Chi tiết'}
       </DialogTrigger>
-      <DialogContent className="confirm-dialog gap-3">
+      <DialogContent className="confirm-dialog gap-3 h-[351px]">
         <DialogHeader>
           <DialogTitle className="text-shadow-custom text-[1.5rem] font-[700] mb-0">
             {!isSuccess && 'Xác nhận thanh toán'}
@@ -122,7 +122,7 @@ const ConfirmDialog = ({ boxNumber, isOpenedBox, currentBox, address }: Props) =
             Quay lại
           </Button>
           <Button
-            className={`${loadingItems[boxNumber] || loadingItemsStore ? 'w-full' : 'w-1/2'} transition-all button-custom`}
+            className={`${loadingItems[boxNumber] || loadingItemsStore ? 'w-full duration-300 transition-all absolute right-0' : 'w-1/2'}  button-custom`}
             onClick={() => {
               !isSuccess ? handleConfirm() : router.push(`box/${boxNumber}`);
             }}

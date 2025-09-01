@@ -116,13 +116,13 @@ const ConfirmDialog = ({ boxNumber, isOpenedBox, currentBox, address }: Props) =
         <div className="space-x-3 px-3 flex w-full -translate-y-3">
           <Button
             variant="outline"
-            className={`bg-transparent text-white w-1/2 ${loadingItems[boxNumber] || loadingItemsStore ? 'hidden' : ''}`}
+            className={`bg-transparent text-white w-1/2 ${loadingItems[boxNumber] || loadingItemsStore ? 'hidden' : 'flex-1'} transition-all`}
             onClick={handleCancel}
           >
             Quay lại
           </Button>
           <Button
-            className={`${loadingItems[boxNumber] || loadingItemsStore ? 'w-full duration-300 transition-all absolute right-0' : 'w-1/2'}  button-custom`}
+            className={`${loadingItems[boxNumber] || loadingItemsStore ? 'flex-grow' : 'flex-1'}  button-custom`}
             onClick={() => {
               !isSuccess ? handleConfirm() : router.push(`box/${boxNumber}`);
             }}

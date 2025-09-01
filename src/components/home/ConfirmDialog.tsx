@@ -23,10 +23,11 @@ import { useShallow } from 'zustand/react/shallow';
 type Props = {
   boxNumber: number;
   currentBox: number;
-  isOpenBox: boolean;
+  isOpenedBox: boolean;
+  address: string;
 };
 
-const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
+const ConfirmDialog = ({ boxNumber, isOpenedBox, currentBox, address }: Props) => {
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [loadingItemsStore, setLoadingItemsStore] = useState<boolean>(false);
   const { handleOpenBox, loadingItems, isTriggerLoading } = useBoxStore(
@@ -44,10 +45,10 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleOpenChange = async (open: boolean) => {
-    if ((!isOpenBox && boxNumber !== 1) && currentBox !== boxNumber) {
+    if ((!isOpenedBox && boxNumber !== 1) && currentBox !== boxNumber) {
       toast.warning(`Bạn cần phải box ${currentBox}`);
       return;
-    } else if (isOpenBox) {
+    } else if (isOpenedBox) {
       router.push(`/box/${boxNumber}`);
       return;
     }
@@ -63,7 +64,8 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
 
   const handleConfirm = async () => {
     const res = await handleOpenBox(
-      boxNumber
+      boxNumber,
+      address
     );
     res && setIsSuccess(true);
   };
@@ -78,9 +80,9 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger
-        className={`${(boxNumber === 1 || isOpenBox || currentBox === boxNumber) ? 'button-base' : 'button-base-disabled'} text-white !py-1 font-[700] text-[11px] text-nowrap w-20`}
+        className={`${(boxNumber === 1 || isOpenedBox || currentBox === boxNumber) ? 'button-base' : 'button-base-disabled'} text-white !py-1 font-[700] text-[11px] text-nowrap w-20`}
       >
-        { loadingItems[boxNumber] || loadingItemsStore ? <Loader2 className="animate-spin size-4" /> : !isOpenBox ? 'Mở khóa' : 'Chi tiết'}
+        { loadingItems[boxNumber] || loadingItemsStore ? <Loader2 className="animate-spin size-4" /> : !isOpenedBox ? 'Mở khóa' : 'Chi tiết'}
       </DialogTrigger>
       <DialogContent className="confirm-dialog gap-3">
         <DialogHeader>
@@ -114,13 +116,13 @@ const ConfirmDialog = ({ boxNumber, isOpenBox, currentBox }: Props) => {
         <div className="space-x-3 px-3 flex w-full -translate-y-2">
           <Button
             variant="outline"
-            className="bg-transparent text-white w-1/2"
+            className={`bg-transparent text-white w-1/2 ${loadingItems[boxNumber] || loadingItemsStore ? 'hidden' : ''}`}
             onClick={handleCancel}
           >
-            Hủy bỏ
+            Quay lại
           </Button>
           <Button
-            className="w-1/2 button-custom"
+            className={`${loadingItems[boxNumber] || loadingItemsStore ? 'w-full' : 'w-1/2'} button-custom`}
             onClick={() => {
               !isSuccess ? handleConfirm() : router.push(`box/${boxNumber}`);
             }}

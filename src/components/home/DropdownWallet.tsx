@@ -20,6 +20,7 @@ import Web3 from 'web3';
 type Props = {
   address: string;
 };
+
 const USDT_ADDRESS = process.env.NEXT_PUBLIC_USDT_ADDRESS;
 const USDT_DECIMALS = 18;
 const RPC_URL = process.env.NEXT_PUBLIC_BSC_RPC_URL!;
@@ -33,6 +34,9 @@ const ERC20_ABI = [
   },
 ];
 
+// Hỗ trợ BNB mainnet và testnet
+const BNB_CHAIN_IDS = ['0x38'];
+
 let httpWeb3Instance: Web3 | null = null;
 let httpContractInstance: any = null;
 
@@ -42,7 +46,7 @@ const DropdownWallet = ({ address }: Props) => {
   const [isWarningEth, setWarningEth] = useState<boolean>(false);
   const router = useRouter();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const isMountedRef = useRef(true); // Track component mount status
+  const isMountedRef = useRef(true);
   const queryClient = useQueryClient();
 
   const getHttpWeb3Instance = useCallback(() => {
@@ -51,6 +55,24 @@ const DropdownWallet = ({ address }: Props) => {
       httpContractInstance = new httpWeb3Instance.eth.Contract(ERC20_ABI, USDT_ADDRESS);
     }
     return { web3: httpWeb3Instance, contract: httpContractInstance };
+  }, []);
+
+  const checkNetwork = useCallback(async () => {
+    if (typeof window !== 'undefined' && (window as any).ethereum) {
+      try {
+        const chainId = await (window as any).ethereum.request({ method: 'eth_chainId' });
+        if (!BNB_CHAIN_IDS.includes(chainId)) {
+          setWarningEth(true);
+          return false;
+        }
+        return true;
+      } catch (err) {
+        console.error('Network check error:', err);
+        setWarningEth(true);
+        return false;
+      }
+    }
+    return false;
   }, []);
 
   const onGetBalance = useCallback(async () => {
@@ -65,24 +87,14 @@ const DropdownWallet = ({ address }: Props) => {
       }
 
       const rawBalance: string | undefined = await contract.methods.balanceOf(address).call();
-
       if (!isMountedRef.current) {
         return undefined;
       }
 
-      const balanceInUSDT = NumberFormat(Number(rawBalance || '0') / 10 ** USDT_DECIMALS as number);
+      const balanceInUSDT = NumberFormat(Number(rawBalance || '0') / 10 ** USDT_DECIMALS);
       return balanceInUSDT;
     } catch (error) {
       console.error('Balance fetch error:', error);
-
-      if (isMountedRef.current) {
-        setWarningEth(true);
-        isMountedRef.current = false;
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current as unknown as number);
-          intervalRef.current = null;
-        }
-      }
       return undefined;
     }
   }, [address, getHttpWeb3Instance]);
@@ -91,17 +103,14 @@ const DropdownWallet = ({ address }: Props) => {
     queryClient.clear();
     setIsLoggingOut(true);
     try {
-      await Promise.allSettled([
-        authRequests.logout(),
-        deleteCookie('isShouldRefetch')
-      ]);
+      await Promise.allSettled([authRequests.logout(), deleteCookie('isShouldRefetch')]);
       router.replace('/login');
     } catch {
       await Promise.allSettled([
         deleteCookie('authData'),
         deleteCookie('accessToken9x9'),
         deleteCookie('refreshToken9x9'),
-        deleteCookie('isShouldRefetch')
+        deleteCookie('isShouldRefetch'),
       ]);
       window.location.href = '/login';
     } finally {
@@ -115,7 +124,6 @@ const DropdownWallet = ({ address }: Props) => {
     if (!isMountedRef.current) {
       return;
     }
-
     const USDTbalance = await onGetBalance();
     if (USDTbalance && isMountedRef.current) {
       setBalance(USDTbalance);
@@ -129,19 +137,23 @@ const DropdownWallet = ({ address }: Props) => {
       return;
     }
 
-    fetchBalance(); // Initial fetch
-    intervalRef.current = setInterval(fetchBalance, 2000);
+    (async () => {
+      const isCorrectNetwork = await checkNetwork();
+      if (isCorrectNetwork) {
+        fetchBalance(); // Initial fetch
+        intervalRef.current = setInterval(fetchBalance, 2000);
+      }
+    })();
 
     return () => {
-      isMountedRef.current = false; // Mark component as unmounted
+      isMountedRef.current = false;
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
     };
-  }, [address, fetchBalance]);
+  }, [address, fetchBalance, checkNetwork]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
@@ -155,41 +167,34 @@ const DropdownWallet = ({ address }: Props) => {
   return (
     <div className="flex items-center">
       <div className="text-shadow-custom text-[0.75rem] font-[510] border-r border-r-white px-3 me-3 h-5 flex items-center">
-        {!balance ? <LoadingDots size="size-1" /> : (
-          <span>
-            {balance}
-          </span>
-        )}
+        {!balance ? <LoadingDots size="size-1" /> : <span>{balance}</span>}
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger
           className="bg-white rounded-[6.25rem] w-[5.625rem] h-[1.875rem] text-[0.75rem] p-1 text-white gap-[0.25rem]"
-          style={{ boxShadow: '0px 20px 50px 0px rgba(54, 114, 233, 0.41)', background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)' }}
+          style={{
+            boxShadow: '0px 20px 50px 0px rgba(54, 114, 233, 0.41)',
+            background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)',
+          }}
         >
           {formatAddress(address, 5)}
         </DropdownMenuTrigger>
         <DropdownMenuContent className="dropdown-address text-white">
           <DropdownMenuItem className="w-full" onClick={() => router.push(`/profile`)}>
             <UserIcon className="absolute left-1 -top-[1px]" />
-            <span className="w-full translate-x-8">
-              Profile
-            </span>
+            <span className="w-full translate-x-8">Profile</span>
           </DropdownMenuItem>
           <DropdownMenuItem
             className="flex items-center justify-start !focus:bg-red-500 w-full"
             onClick={() => handleClipboardCopy(address)}
           >
-            <span className="w-full text-right">
-              {formatAddress(address, 5)}
-            </span>
+            <span className="w-full text-right">{formatAddress(address, 5)}</span>
             <CopyIcon className="absolute left-1 top-0" />
             {' '}
           </DropdownMenuItem>
           <DropdownMenuItem className="w-full" onClick={handleLogout}>
             <ExitIcon className=" absolute left-1 -top-[1px]" />
-            <span className="w-full text-right -translate-x-1">
-              Disconnect
-            </span>
+            <span className="w-full text-right -translate-x-1">Disconnect</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -203,10 +208,7 @@ const DropdownWallet = ({ address }: Props) => {
               Vui lòng kết nối mạng BNB để sử dụng app
             </DialogDescription>
           </DialogHeader>
-          <Button
-            className="w-1/2 button-custom"
-            onClick={() => handleLogout()}
-          >
+          <Button className="w-1/2 button-custom" onClick={() => handleLogout()}>
             {isLoggingOut ? <Loader2 className="animate-spin" /> : 'OK'}
           </Button>
         </DialogContent>

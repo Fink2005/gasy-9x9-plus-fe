@@ -27,7 +27,7 @@ const BoxTable = async () => {
                   {index + 1}
                 </p>
                 <p className="text-shadow-custom text-nowrap font-[590] text-[10px]">{item.description.title}</p>
-                <ConfirmDialog boxNumber={item.boxNumber} isOpenBox={item.open} currentBox={userData.currentBox} />
+                <ConfirmDialog boxNumber={item.boxNumber} isOpenedBox={item.open} currentBox={userData.currentBox} address={userData.address} />
               </div>
             </div>
           ))

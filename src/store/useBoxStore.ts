@@ -16,14 +16,13 @@ type StoreState = {
 
   isOpen: boolean;
   isTriggerLoading: boolean;
-  isProcessing: boolean;
 
   // Actions
   setLoading: (loading: boolean, boxNumber: number, shouldLoading?: boolean) => void;
   setIsTriggerLoading: (isLoading: boolean) => void;
-  setIsProcessing: (isProcessing: boolean) => void;
   handleOpenBox: (
-    currentBox: number
+    currentBox: number,
+    sender: string
   ) => Promise<boolean | undefined>;
   setIsOpen: (isOpen: boolean) => void;
 };
@@ -62,7 +61,7 @@ const useBoxStore = create<StoreState>()(
         set({ isTriggerLoading: isLoading });
       },
 
-      handleOpenBox: async (currentBox: number) => {
+      handleOpenBox: async (currentBox: number, sender: string) => {
         const state = get();
         state.setLoading(true, currentBox as number);
 
@@ -79,8 +78,6 @@ const useBoxStore = create<StoreState>()(
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: '0x38' }],
           });
-          const accounts = await web3.eth.getAccounts();
-          const sender = accounts[0];
           const usdtContract = new web3.eth.Contract(usdtAbi as any, usdtAddress);
 
           if (!sender || !contractAddress) {
@@ -108,8 +105,7 @@ const useBoxStore = create<StoreState>()(
             const amountsFormated = amounts.map(amount => BigInt(amount));
 
             // Encode data cho openBox
-            const parsed = JSON.parse(JSON.stringify(BoxDistributor));
-            const contract = new web3.eth.Contract(parsed, contractAddress);
+            const contract = new web3.eth.Contract(BoxDistributor, contractAddress);
 
             createCookie({
               name: 'isShouldRefetch',

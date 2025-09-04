@@ -6,6 +6,7 @@ const baseConfig = {
   eslint: {
     dirs: ['.'],
   },
+  output: 'standalone' as const,
   poweredByHeader: false,
   reactStrictMode: false,
 };
